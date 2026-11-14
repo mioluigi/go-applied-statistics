@@ -3,6 +3,7 @@ package rrand
 import (
 	"bufio"
 	"math"
+	"math/bits"
 	"os"
 	"strconv"
 	"strings"
@@ -155,15 +156,53 @@ func TestFloat64IsNeverZeroOrOne(t *testing.T) {
 	}
 }
 
-// indexWithLogarithm is Index as first written (task T02), kept only to measure and to check
-// the performance step "bit count without a logarithm". It follows R's source literally.
-func (generator *Generator) indexWithLogarithm(n int) int {
-	bitCount := int(math.Ceil(math.Log2(float64(n))))
+// The generator as it was before each performance step, kept only to measure the steps and
+// to check that the faster code draws the same numbers.
+
+// valuesPerDraw is 2^16: R multiplies a uniform number by it to take 16 random bits.
+const valuesPerDraw = 1 << bitsPerDraw
+
+// refillWithRemainder is refill as first written: one loop, wrapping indices with %.
+func (generator *Generator) refillWithRemainder() {
+	state := &generator.state
+	for word := 0; word < stateSize; word++ {
+		mixed := (state[word] & upperMask) | (state[(word+1)%stateSize] & lowerMask)
+		twisted := mixed >> 1
+		if mixed&1 == 1 {
+			twisted ^= matrixA
+		}
+		state[word] = state[(word+middleWord)%stateSize] ^ twisted
+	}
+	generator.next = 0
+}
+
+// float64Before is Float64 on top of refillWithRemainder.
+func (generator *Generator) float64Before() float64 {
+	if generator.next >= stateSize {
+		generator.refillWithRemainder()
+	}
+	output := generator.state[generator.next]
+	generator.next++
+	output ^= output >> 11
+	output ^= (output << 7) & 0x9d2c5680
+	output ^= (output << 15) & 0xefc60000
+	output ^= output >> 18
+	if value := float64(output) * toUnitInterval; value > 0 {
+		return value
+	}
+	return 0.5 * toUnitInterval
+}
+
+// indexFromUniforms is Index after step 3 and before step 4: the bit count is fast, but
+// every 16 bits still come from a uniform number, as R's source writes it, and the state is
+// refilled with the remainder loop.
+func (generator *Generator) indexFromUniforms(n int) int {
+	bitCount := bits.Len(uint(n - 1))
 	mask := uint64(1)<<bitCount - 1
 	for {
 		var candidate uint64
 		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
-			candidate = valuesPerDraw*candidate + uint64(generator.Float64()*valuesPerDraw)
+			candidate = valuesPerDraw*candidate + uint64(generator.float64Before()*valuesPerDraw)
 		}
 		candidate &= mask
 		if candidate < uint64(n) {
@@ -172,9 +211,27 @@ func (generator *Generator) indexWithLogarithm(n int) int {
 	}
 }
 
-// TestIndexEqualsTheLogarithmVersion: the faster bit count must draw the same indices for
-// every size up to 5,000 and around each power of two up to 2^30 (constitution 1.2).
-func TestIndexEqualsTheLogarithmVersion(t *testing.T) {
+// indexWithLogarithm is Index as first written (task T02): R's source followed literally,
+// with a logarithm for the bit count.
+func (generator *Generator) indexWithLogarithm(n int) int {
+	bitCount := int(math.Ceil(math.Log2(float64(n))))
+	mask := uint64(1)<<bitCount - 1
+	for {
+		var candidate uint64
+		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
+			candidate = valuesPerDraw*candidate + uint64(generator.float64Before()*valuesPerDraw)
+		}
+		candidate &= mask
+		if candidate < uint64(n) {
+			return int(candidate)
+		}
+	}
+}
+
+// TestIndexEqualsTheEarlierVersions: each faster version must draw the same indices as the
+// literal first version, for every size up to 5,000 and around each power of two up to 2^30,
+// and over enough draws to refill the state many times (constitution 1.2).
+func TestIndexEqualsTheEarlierVersions(t *testing.T) {
 	sizes := []int{}
 	for n := 1; n <= 5000; n++ {
 		sizes = append(sizes, n)
@@ -183,11 +240,33 @@ func TestIndexEqualsTheLogarithmVersion(t *testing.T) {
 		sizes = append(sizes, 1<<power-1, 1<<power, 1<<power+1)
 	}
 	for _, n := range sizes {
-		faster, literal := New(431), New(431)
+		final, afterStep3, literal := New(431), New(431), New(431)
 		for draw := 0; draw < 20; draw++ {
-			if got, want := faster.Index(n), literal.indexWithLogarithm(n); got != want {
-				t.Fatalf("n = %d, draw %d: Index = %d, logarithm version = %d", n, draw, got, want)
+			want := literal.indexWithLogarithm(n)
+			if got := final.Index(n); got != want {
+				t.Fatalf("n = %d, draw %d: Index = %d, first version = %d", n, draw, got, want)
 			}
+			if got := afterStep3.indexFromUniforms(n); got != want {
+				t.Fatalf("n = %d, draw %d: step-3 version = %d, first version = %d", n, draw, got, want)
+			}
+		}
+	}
+	// 200,000 draws at one size: about 420 refills of the 624-word state.
+	final, literal := New(9999), New(9999)
+	for draw := 0; draw < 200000; draw++ {
+		if got, want := final.Index(100000), literal.indexWithLogarithm(100000); got != want {
+			t.Fatalf("draw %d: Index = %d, first version = %d", draw, got, want)
+		}
+	}
+}
+
+// TestFloat64EqualsTheEarlierVersion: the refill without remainders must give the same
+// uniform numbers across many refills.
+func TestFloat64EqualsTheEarlierVersion(t *testing.T) {
+	final, before := New(431), New(431)
+	for draw := 0; draw < 100000; draw++ {
+		if got, want := final.Float64(), before.float64Before(); got != want {
+			t.Fatalf("draw %d: Float64 = %v, earlier version = %v", draw, got, want)
 		}
 	}
 }
@@ -211,6 +290,27 @@ func BenchmarkStep3Index(b *testing.B) {
 			}
 		})
 		b.Run("after=bitlength/n="+strconv.Itoa(n), func(b *testing.B) {
+			generator := New(431)
+			b.ReportAllocs()
+			for b.Loop() {
+				generator.indexFromUniforms(n)
+			}
+		})
+	}
+}
+
+// Performance step "generator without remainders or floating point" (spec FR-12), chosen
+// from the official CPU profile: before and after.
+func BenchmarkStep4Generator(b *testing.B) {
+	for _, n := range []int{100, 100000} {
+		b.Run("before=uniforms/n="+strconv.Itoa(n), func(b *testing.B) {
+			generator := New(431)
+			b.ReportAllocs()
+			for b.Loop() {
+				generator.indexFromUniforms(n)
+			}
+		})
+		b.Run("after=bits/n="+strconv.Itoa(n), func(b *testing.B) {
 			generator := New(431)
 			b.ReportAllocs()
 			for b.Loop() {

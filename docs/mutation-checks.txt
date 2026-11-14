@@ -61,3 +61,7 @@ stats | MedianInPlace: lower middle taken from the neighbouring position, not th
 stats | selection narrows one position too far | caught
 stats | MedianInPlace: even count returns the upper middle only | caught
 rrand | bit count of n instead of n - 1 (one bit too many at powers of two) | caught
+rrand | refill: second loop reads one word too far | caught
+rrand | refill: last word mixed with the wrong neighbour | caught
+rrand | index takes the low 16 bits instead of the top 16 | caught
+rrand | refill: first loop stops one word early | caught

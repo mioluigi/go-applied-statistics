@@ -23,7 +23,6 @@ const (
 	scrambleRounds = 50                     // rounds R applies before filling the state
 	toUnitInterval = 2.3283064365386963e-10 // 2^-32, R's scale from a 32-bit output to [0, 1)
 	bitsPerDraw    = 16                     // random bits R takes from each uniform number
-	valuesPerDraw  = 1 << bitsPerDraw
 )
 
 // Generator is a Mersenne Twister in the state R would have after set.seed.
@@ -48,17 +47,30 @@ func New(seed uint32) *Generator {
 	return generator
 }
 
-// refill replaces all state words with the next 624, the Mersenne Twister's "twist".
+// twist combines the top bit of one state word with the low 31 bits of the next and applies
+// the Mersenne Twister's recurrence matrix.
+func twist(upper, lower uint32) uint32 {
+	mixed := (upper & upperMask) | (lower & lowerMask)
+	twisted := mixed >> 1
+	if mixed&1 == 1 {
+		twisted ^= matrixA
+	}
+	return twisted
+}
+
+// refill replaces all state words with the next 624. The recurrence reads the word
+// middleWord places ahead, wrapping around; three plain loops cover the part before the
+// wrap, the part after it, and the last word, so no index needs a remainder operation.
 func (generator *Generator) refill() {
 	state := &generator.state
-	for word := 0; word < stateSize; word++ {
-		mixed := (state[word] & upperMask) | (state[(word+1)%stateSize] & lowerMask)
-		twisted := mixed >> 1
-		if mixed&1 == 1 {
-			twisted ^= matrixA
-		}
-		state[word] = state[(word+middleWord)%stateSize] ^ twisted
+	word := 0
+	for ; word < stateSize-middleWord; word++ {
+		state[word] = state[word+middleWord] ^ twist(state[word], state[word+1])
 	}
+	for ; word < stateSize-1; word++ {
+		state[word] = state[word+middleWord-stateSize] ^ twist(state[word], state[word+1])
+	}
+	state[stateSize-1] = state[middleWord-1] ^ twist(state[stateSize-1], state[0])
 	generator.next = 0
 }
 
@@ -92,7 +104,9 @@ func (generator *Generator) Float64() float64 {
 // least 1 and below 2^31, the range in which R uses this method.
 //
 // R builds a candidate from just enough random bits to cover n, 16 bits per uniform number,
-// and draws again while the candidate is n or more.
+// and draws again while the candidate is n or more. R takes those 16 bits as
+// floor(unif_rand() * 65536); that is exactly the top 16 bits of the generator's 32-bit
+// output, so they are taken directly, without a detour through floating point.
 func (generator *Generator) Index(n int) int {
 	// The number of bits needed to write n-1 equals ceil(log2(n)), R's bit count, and
 	// costs no logarithm.
@@ -101,7 +115,7 @@ func (generator *Generator) Index(n int) int {
 	for {
 		var candidate uint64
 		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
-			candidate = valuesPerDraw*candidate + uint64(generator.Float64()*valuesPerDraw)
+			candidate = candidate<<bitsPerDraw | uint64(generator.uint32()>>bitsPerDraw)
 		}
 		candidate &= mask
 		if candidate < uint64(n) {
