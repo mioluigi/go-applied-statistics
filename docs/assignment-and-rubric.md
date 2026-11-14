@@ -63,6 +63,27 @@ Acceptable 5 · Unacceptable 0.
 | **[Doc] Documentation** | Effective Git/GitHub use; README with roles of programs and data, how to test and use. |
 | **[A] Application** | **Instructions for creating** an executable (`.exe` or `.app`); *changed from Week 7, which asked for delivery of one*. Runs to completion; validates user input and explains mistakes; clean UX/UI. |
 
+## Course guidance on benchmark studies (Canvas page *Performance Comparisons of R, Python, and Go*)
+
+Read in full on 2026-11-14 (two pages, supplied by Luis; not committed, it is course material). S6 points to
+it, so its advice is treated as requirements, numbered for traceability:
+
+| # | Guidance, in our words | How we will meet it |
+|---|---|---|
+| G1 | Same computer for every condition | Everything official runs on the Mac |
+| G2 | Close other programs while measuring | A manual step before `measure.sh`, stated in the hand-off |
+| G3 | **Batch execution for all** conditions (no RStudio against a command-line Go) | `Rscript` and the built Go binary, both from the same shell script |
+| G4 | **Same tasks** in every condition (if one plots, all plot) | Same data, replicates, statistic and output; neither side plots |
+| G5 | Same measurement method, preferably command-line utilities | `/usr/bin/time -l` for both (whole-process time and peak memory) |
+| G6 | **Run each condition hundreds or thousands of times** and average | Hundreds of whole-process runs per condition. *Changes our habit:* Weeks 6–7 used medians of a handful of runs; this week reports mean and median over hundreds |
+| G7 | Keep a log or listing of the results in the repository | Raw per-run results committed under `results/` |
+| G8 | Consider whether **package loading** is part of the measured time; very large ratios usually reflect start-up and loading | Report start-up separately: an empty R script against an empty Go program, and computation time measured inside each program |
+| G9 | Same random number algorithm across languages; the Go Mersenne Twister package is suggested | Spike 001 §5–§6: the suggested package is the 64-bit variant, R uses the 32-bit one; Go can reproduce R's stream exactly |
+
+The page also shows a table from a past class: R measured from about 2× to about 1,900× slower than Go
+across students, on a different, earlier assignment. The spread itself is the lesson: the ratio depends on
+what is timed (G8). Our README must say what each ratio includes.
+
 ## Differences from Week 7 that matter
 
 1. **Two languages.** R code is a deliverable and the baseline; it runs only on the Mac (the workspace has no R).
