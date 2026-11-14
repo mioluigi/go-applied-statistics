@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **DRAFT v2, 2026-11-14**: R1 findings applied (`docs/reviews/001-spec-review.md`); awaiting owner answers to Q1–Q10 and approval |
+| Status | **APPROVED v2, 2026-11-14** by Luis: Q1–Q10 all as recommended (`docs/decisions.md`) |
 | Inputs | `docs/assignment-and-rubric.md` (S1–S12, M1–M2, G1–G9) · `docs/constitution.md` · `docs/spikes/001-environment-and-baseline.md` |
 | Deadline | 2026-11-15, 11:59 PM ET. Nothing is built before approval. |
 

@@ -1,6 +1,6 @@
 # Tasks 001
 
-Status: **DRAFT, 2026-11-14**, for owner approval. One task = one commit (`T07: …`). 🔴 failing test first, 🟢 then code.
+Status: **APPROVED 2026-11-14** by Luis. One task = one commit (`T07: …`). 🔴 failing test first, 🟢 then code.
 **Where**: C = Claude's workspace · M = Luis's Mac.
 
 | ID | Where | Task | Verify | Covers |

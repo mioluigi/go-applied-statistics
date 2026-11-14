@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **DRAFT, 2026-11-14**, for owner approval with spec v2 |
+| Status | **APPROVED 2026-11-14** by Luis |
 | Module | `github.com/mioluigi/go-applied-statistics`, `go 1.24`, **standard library only** (if Q2 = a): no `go.sum` needed |
 
 ## 1. Layout
