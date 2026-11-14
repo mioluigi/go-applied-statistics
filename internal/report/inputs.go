@@ -32,6 +32,11 @@ type Inputs struct {
 	Checks     []ComparisonRow
 	Machine    []string // lines of results/machine.txt
 	Root       string   // repository root, for counting lines of code
+	Results    string   // the results folder
+	// Earlier holds the summaries of official run 1 (results/run-1), measured before
+	// performance step 4, and EarlierMachine its machine record.
+	Earlier        []Summary
+	EarlierMachine []string
 }
 
 // Load reads the saved results and prices. root is the repository folder.
@@ -41,7 +46,7 @@ func Load(root string) (*Inputs, error) {
 	if err != nil {
 		return nil, err
 	}
-	inputs := &Inputs{Summaries: Summarize(runs), Root: root}
+	inputs := &Inputs{Summaries: Summarize(runs), Root: root, Results: results}
 	if inputs.Benchmarks, err = ReadBenchmarks(filepath.Join(results, "benchmarks.txt")); err != nil {
 		return nil, err
 	}
@@ -52,6 +57,14 @@ func Load(root string) (*Inputs, error) {
 		return nil, err
 	}
 	if inputs.Machine, err = readLines(filepath.Join(results, "machine.txt")); err != nil {
+		return nil, err
+	}
+	earlierRuns, err := ReadRuns(filepath.Join(results, "run-1", "runs.tsv"))
+	if err != nil {
+		return nil, err
+	}
+	inputs.Earlier = Summarize(earlierRuns)
+	if inputs.EarlierMachine, err = readLines(filepath.Join(results, "run-1", "machine.txt")); err != nil {
 		return nil, err
 	}
 	return inputs, nil
@@ -101,7 +114,12 @@ func readLines(path string) ([]string, error) {
 
 // machineValue returns the text after "key: " in the machine record, or "" if absent.
 func (inputs *Inputs) machineValue(key string) string {
-	for _, line := range inputs.Machine {
+	return valueOf(inputs.Machine, key)
+}
+
+// valueOf returns the text after "key: " in a machine record, or "" if absent.
+func valueOf(machine []string, key string) string {
+	for _, line := range machine {
 		if value, found := strings.CutPrefix(line, key+": "); found {
 			return value
 		}

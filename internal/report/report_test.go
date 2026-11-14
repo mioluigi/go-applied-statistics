@@ -195,6 +195,8 @@ func TestBlocksFromRealShapedResults(t *testing.T) {
 		"predictions": "| P7 | Every different-draws check passes at 15 %",
 		"machine":     "- parallel workers: 2",
 		"benchmarks":  "| 1. Median by selection instead of sorting (n = 10,000) |",
+		"example":     "| R, `sample()` loop (`r/bootstrap-se.R`) | 86.648300000000006 |",
+		"step4":       "| n | Runs before | Before step 4 (ms) | Runs after | After step 4 (ms) | Speed-up |",
 	} {
 		if !strings.Contains(bodies[name], want) {
 			t.Errorf("block %s lacks %q:\n%s", name, want, bodies[name])
@@ -223,6 +225,7 @@ func syntheticInputs() *Inputs {
 		}
 		add("r-loop", 3.6)
 		add("go-r", 0.36)
+		add("go-block-1", 0.18)
 		add("go-block-multi", 0.09) // four times faster than one core, on eight workers
 	}
 	return inputs
@@ -236,10 +239,12 @@ func TestCostTablesAgainstHandComputedAnswers(t *testing.T) {
 	for _, want := range []string{
 		// Scenario A: $36.30 against $3.63; 90 % from means; medians are half of both, so also 90 %;
 		// $32.67 saved per million jobs, so 30,609 jobs save one dollar.
-		"| 100 | $36.30 | $3.63 | **90.0 %** | 90.0 % | 30,609 |",
+		// The block stream at 0.18 s: $1.815, shown as $1.81 or $1.82; saving 95 %.
+		"| 100 | $36.30 | $3.63 | **90.0 %** | 90.0 % | 30,609 | $1.8", "| 95.0 % |",
 		// Scenario B on the 8-vCPU instance at $0.29: R 8 at once 125 h = $36.25; Go one-core $3.625,
 		// shown as $3.62 or $3.63 by rounding; parallel Go 0.09 s x 1e6 / 3600 = 25 h = $7.25.
-		"| $36.25 |", "| $7.25 | 90.0 % | 80.0 % |",
+		// The block stream one worker each, 8 at once: 0.18 s -> 6.25 h -> $1.8125, saving 95 %.
+		"| $36.25 |", "| 90.0 % | $1.81 | 95.0 % | $7.25 | 80.0 % |",
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("cost tables lack %q:\n%s", want, body)
@@ -260,7 +265,7 @@ func TestNoSavingIsSaidPlainly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(body, "| **0.0 %** | 0.0 % | no saving |") {
+	if !strings.Contains(body, "| **0.0 %** | 0.0 % | no saving | $1.8") {
 		t.Errorf("a zero saving is not reported plainly:\n%s", body)
 	}
 }

@@ -10,9 +10,11 @@ import (
 type costRow struct {
 	n                              int
 	rSmall, goSmall                float64 // USD per million jobs, 1-vCPU instance, one job at a time
+	goBlockSmall                   float64 // the same for Go's block stream on one worker
 	savingMean, savingMedian       float64 // right-sized saving, from mean and from median times
 	jobsPerDollar                  float64
 	rLarge, goOneCoreLarge, goMany float64 // USD per million jobs on the multi-vCPU instance
+	goBlockLarge                   float64 // block stream, one worker per job, one job per vCPU
 }
 
 // costs computes the cost figures for every size.
@@ -40,14 +42,20 @@ func (inputs *Inputs) costs() ([]costRow, Price, Price, error) {
 		if err != nil {
 			return nil, Price{}, Price{}, err
 		}
+		goBlock, err := inputs.scaling("go-block-1", n)
+		if err != nil {
+			return nil, Price{}, Price{}, err
+		}
 		goMulti, err := inputs.scaling("go-block-multi", n)
 		if err != nil {
 			return nil, Price{}, Price{}, err
 		}
 		row := costRow{n: n,
 			rSmall: CostPerJobs(loop.Mean, small, 1), goSmall: CostPerJobs(goR.Mean, small, 1),
+			goBlockSmall: CostPerJobs(goBlock.Mean, small, 1),
 			// A single-threaded program fills the large instance with one job per vCPU.
 			rLarge: CostPerJobs(loop.Mean, large, large.VCPUs), goOneCoreLarge: CostPerJobs(goR.Mean, large, large.VCPUs),
+			goBlockLarge: CostPerJobs(goBlock.Mean, large, large.VCPUs),
 			// The parallel Go program uses every vCPU for one job at a time.
 			goMany: CostPerJobs(goMulti.Mean, large, 1),
 		}
@@ -74,20 +82,25 @@ func (inputs *Inputs) costTables() (string, error) {
 	var smallRows, largeRows [][]string
 	for _, row := range rows {
 		smallRows = append(smallRows, []string{thousands(row.n), dollars(row.rSmall), dollars(row.goSmall),
-			"**" + percent(row.savingMean) + "**", percent(row.savingMedian), jobsText(row.jobsPerDollar)})
-		largeRows = append(largeRows, []string{thousands(row.n), dollars(row.rLarge), dollars(row.goOneCoreLarge),
-			dollars(row.goMany), percent(Saving(row.rLarge, row.goOneCoreLarge)), percent(Saving(row.rLarge, row.goMany))})
+			"**" + percent(row.savingMean) + "**", percent(row.savingMedian), jobsText(row.jobsPerDollar),
+			dollars(row.goBlockSmall), percent(Saving(row.rSmall, row.goBlockSmall))})
+		largeRows = append(largeRows, []string{thousands(row.n), dollars(row.rLarge),
+			dollars(row.goOneCoreLarge), percent(Saving(row.rLarge, row.goOneCoreLarge)),
+			dollars(row.goBlockLarge), percent(Saving(row.rLarge, row.goBlockLarge)),
+			dollars(row.goMany), percent(Saving(row.rLarge, row.goMany))})
 	}
 	workers := inputs.machineValue("parallel workers")
 	var out strings.Builder
 	out.WriteString("**Published prices used** (on-demand, Linux)\n\n")
 	out.WriteString(table([]string{"Instance", "vCPUs", "Memory (GiB)", "Region", "USD per hour", "USD per vCPU-hour", "Source", "Captured"}, priceRows))
 	out.WriteString(fmt.Sprintf("\n**Scenario A, right-sized: one job at a time on `%s` (1 vCPU).** Cost of one million jobs (B = 1,000), from mean whole-process times.\n\n", small.Instance))
-	out.WriteString(table([]string{"n", "R, `sample()` loop", "Go, R stream", "Saving (from means)", "Saving (from medians)", "Jobs to save one dollar"}, smallRows))
-	out.WriteString(fmt.Sprintf("\n**Scenario B, one `%s` (%d vCPUs) kept busy.** R and one-core Go run %d jobs at once; parallel Go runs one job at a time on %s workers.\n\n",
+	out.WriteString(table([]string{"n", "R, `sample()` loop", "Go, R stream", "Saving (from means)", "Saving (from medians)", "Jobs to save one dollar",
+		"Go, block stream, 1 worker", "Saving, block stream"}, smallRows))
+	out.WriteString(fmt.Sprintf("\n**Scenario B, one `%s` (%d vCPUs) kept busy.** One-core programs run %d jobs at once; parallel Go runs one job at a time on %s workers. Savings are against R.\n\n",
 		large.Instance, large.VCPUs, large.VCPUs, workers))
-	out.WriteString(table([]string{"n", "R, " + fmt.Sprint(large.VCPUs) + " jobs at once", "Go one-core, " + fmt.Sprint(large.VCPUs) + " jobs at once",
-		"Go parallel, 1 job at a time", "Saving: Go one-core", "Saving: Go parallel"}, largeRows))
+	atOnce := fmt.Sprint(large.VCPUs) + " jobs at once"
+	out.WriteString(table([]string{"n", "R, " + atOnce, "Go, R stream, " + atOnce, "Saving",
+		"Go, block stream, 1 worker each, " + atOnce, "Saving", "Go, block stream, " + workers + " workers, 1 job at a time", "Saving"}, largeRows))
 	return out.String(), nil
 }
 

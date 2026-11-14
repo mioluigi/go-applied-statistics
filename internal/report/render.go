@@ -106,6 +106,7 @@ func (inputs *Inputs) Blocks() ([]Block, error) {
 		generate func() (string, error)
 	}{
 		{"headline", inputs.headline},
+		{"example", inputs.exampleAnalysis},
 		{"correctness", inputs.correctness},
 		{"startup", inputs.startupTable},
 		{"scaling", inputs.scalingTable},
@@ -114,6 +115,7 @@ func (inputs *Inputs) Blocks() ([]Block, error) {
 		{"course", inputs.courseComparison},
 		{"memory", inputs.memoryTable},
 		{"benchmarks", inputs.benchmarkTables},
+		{"step4", inputs.stepFourOfficial},
 		{"cost", inputs.costTables},
 		{"effort", inputs.effortTable},
 		{"predictions", inputs.predictions},
@@ -245,13 +247,15 @@ func (inputs *Inputs) ratiosTable() (string, error) {
 		rows = append(rows, []string{thousands(n),
 			times(loop.Mean / goR.Mean), times(loop.Median / goR.Median),
 			times(loop.MeanComputeMs / goR.MeanComputeMs),
+			times(loop.MeanComputeMs / summaries["go-block-1"].MeanComputeMs),
 			percent(empty.Mean / loop.Mean),
 			times(summaries["go-block-1"].MeanComputeMs / summaries["go-block-multi"].MeanComputeMs),
 			times(loop.Mean / summaries["go-block-multi"].Mean),
 			times(summaries["r-boot"].Mean / loop.Mean)})
 	}
 	workers := inputs.machineValue("parallel workers")
-	return table([]string{"n", "R ÷ Go, whole process (means)", "(medians)", "R ÷ Go, computation only",
+	return table([]string{"n", "R ÷ Go (R stream), whole process, means", "same, medians",
+		"R ÷ Go (R stream), computation only", "R ÷ Go (block stream, 1 worker), computation only",
 		"R start-up as share of R's time", "Go: " + workers + " workers ÷ 1 worker, computation",
 		"R ÷ Go with " + workers + " workers, whole process", "`boot` ÷ `sample()` loop"}, rows), nil
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/mioluigi/go-applied-statistics/record"
 )
 
 // shapesTable compares R and Go on the two other shapes at n = 10,000.
@@ -94,6 +96,8 @@ func (inputs *Inputs) benchmarkTables() (string, error) {
 		{"2. One resample buffer per worker (n = 10,000, B = 100)", "Step2Resample/before=allocate", "Step2Resample/after=reuse"},
 		{"3. Index bit count without a logarithm (n = 100)", "Step3Index/before=logarithm/n=100", "Step3Index/after=bitlength/n=100"},
 		{"   same, n = 100,000", "Step3Index/before=logarithm/n=100000", "Step3Index/after=bitlength/n=100000"},
+		{"4. Generator without remainders or floating point (n = 100)", "Step4Generator/before=uniforms/n=100", "Step4Generator/after=bits/n=100"},
+		{"   same, n = 100,000", "Step4Generator/before=uniforms/n=100000", "Step4Generator/after=bits/n=100000"},
 		{"Whole engine, steps 1 and 2 (n = 1,000, B = 100)", "Engine/before/n=1000", "Engine/after/n=1000"},
 		{"Whole engine, steps 1 and 2 (n = 100,000, B = 100)", "Engine/before/n=100000", "Engine/after/n=100000"},
 		{"Parallel workers: " + strings.TrimPrefix(workerNames[len(workerNames)-1], "Workers/workers=") +
@@ -125,6 +129,28 @@ func (inputs *Inputs) benchmarkTables() (string, error) {
 		table([]string{"Benchmark", "Repetitions", "Time per operation", "Bytes per operation", "Allocations per operation"}, componentRows), nil
 }
 
+// stepFourOfficial shows the effect of performance step 4 on the whole program, from the two
+// official runs: run 1 was measured before the step, the final run after it.
+func (inputs *Inputs) stepFourOfficial() (string, error) {
+	var rows [][]string
+	for _, n := range Sizes {
+		dataset := fmt.Sprintf("%s-%d.csv", ScalingShape, n)
+		before, found := Find(inputs.Earlier, "scaling", "go-r", dataset)
+		if !found {
+			return "", fmt.Errorf("results/run-1/runs.tsv has no go-r runs on %s", dataset)
+		}
+		after, err := inputs.scaling("go-r", n)
+		if err != nil {
+			return "", err
+		}
+		rows = append(rows, []string{thousands(n), fmt.Sprint(before.Count), milliseconds(before.MeanComputeMs),
+			fmt.Sprint(after.Count), milliseconds(after.MeanComputeMs), times(before.MeanComputeMs / after.MeanComputeMs)})
+	}
+	return fmt.Sprintf("Go, R stream, computation time for B = 1,000. Before: official run 1 (commit `%s`). After: the final run (commit `%s`).\n\n",
+		valueOf(inputs.EarlierMachine, "commit"), inputs.machineValue("commit")) +
+		table([]string{"n", "Runs before", "Before step 4 (ms)", "Runs after", "After step 4 (ms)", "Speed-up"}, rows), nil
+}
+
 // duration formats nanoseconds with a fitting unit.
 func duration(nanos float64) string {
 	switch {
@@ -147,6 +173,42 @@ func bytesText(bytes float64) string {
 		return fmt.Sprintf("%.1f kB", bytes/1e3)
 	}
 	return fmt.Sprintf("%.0f B", bytes)
+}
+
+// exampleDataset is the data set whose results the README shows as the worked example.
+const exampleDataset = "lognormal-1000.csv"
+
+// exampleAnalysis shows one analysis as each implementation reported it: the record every
+// program wrote for the example data set during the official comparison.
+func (inputs *Inputs) exampleAnalysis() (string, error) {
+	sources := []struct{ file, label string }{
+		{"r-loop.tsv", "R, `sample()` loop (`r/bootstrap-se.R`)"},
+		{"go-r.tsv", "Go, R stream (`bootse`)"},
+		{"r-boot.tsv", "R, `boot` package (`r/bootstrap-se-boot.R`)"},
+		{"go-block-1.tsv", "Go, block stream (`bootse -stream block`)"},
+	}
+	var rows [][]string
+	for _, source := range sources {
+		lines, err := readLines(filepath.Join(inputs.Results, "comparison", source.file))
+		if err != nil {
+			return "", err
+		}
+		found := false
+		for _, line := range lines {
+			result, err := record.Parse(line)
+			if err != nil || result.Dataset != exampleDataset {
+				continue // comment lines and other data sets
+			}
+			rows = append(rows, []string{source.label, record.Exact(result.SampleMedian), record.Exact(result.SEMedian),
+				record.Exact(result.SampleMean), record.Exact(result.SEMean)})
+			found = true
+		}
+		if !found {
+			return "", fmt.Errorf("results/comparison/%s has no record for %s", source.file, exampleDataset)
+		}
+	}
+	return fmt.Sprintf("Data set `data/%s`, B = 1,000 resamples, seed 431; every digit as the program printed it.\n\n", exampleDataset) +
+		table([]string{"Implementation", "Sample median", "Bootstrap SE of the median", "Sample mean", "Bootstrap SE of the mean"}, rows), nil
 }
 
 // machineBlock lists the machine record as it was saved by measure.sh.
