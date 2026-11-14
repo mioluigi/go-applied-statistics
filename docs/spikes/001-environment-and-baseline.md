@@ -38,7 +38,7 @@ Measured 2026-11-14 by `scripts/env-probe.sh`; raw output in `docs/spikes/env-ma
 **Phase 0 gate: met.** Steps and rubric written down, push access verified by a fresh clone, work tagged
 Claude or Mac.
 
-## 2. Inputs not yet in our hands
+## 2. Inputs requested at intake (all received 2026-11-14: the two R files in commit `80060ad`; the guidance page read the same day)
 
 | Input | Needed for | Owner |
 |---|---|---|
@@ -178,3 +178,30 @@ a tight tolerance for the mean.
 | P2 | **Held.** 5.1–5.2 s per run (predicted 3–15 s). | §7 |
 | P3 | **Held, and stronger than predicted:** the median's SE is identical, not merely within 1e-12. | §7 |
 | P4–P6 | Open until the official measurement on the Mac. | |
+
+---
+
+## Addendum A (2026-11-14, after review R1): the identity claim is narrower than §7 said
+
+§7 concluded that Go gives R's bootstrap standard error of the median "digit for digit". The evidence
+supports less than that sentence, and review R1 (DR-1, EC-1) was right to challenge it:
+
+- What is **proved identical** is the sequence of index draws, and therefore each resample and **each
+  resample median**.
+- The **standard error** is a standard deviation of B medians: a sum. A simulation with extended-precision
+  accumulators (what R uses on Intel) differs from plain doubles in the last bit in about one case in five
+  (maximum relative difference 1.4e-16), for integer data as much as decimal data. The identity observed in
+  §7 holds on Apple silicon, where R's `long double` is a plain double; it is not portable.
+- The spec (§6, v2) therefore requires identity for medians and 1e-12 for standard errors.
+- The reference data in §7 was integer-valued. Decimal data is covered by the official comparison on the
+  12 data sets (spec AC-3), which is still to run.
+
+## Addendum B (2026-11-14, after review R1): P4–P6 restated with checkable conditions
+
+The original wording in §8 stays as written. Checked versions (review EC-3):
+
+| # | Restated prediction | Checked by |
+|---|---|---|
+| P4 | On the M1 Max, single-core Go does the course study's resampling volume (100 × (25 + 100 + 225 + 400) × 100 resamples, median and mean) in **under 0.20 s of computation time**: at least 25× less than the unchanged R program's 5.1 s whole-process time. Same resampling volume, not the same program. | A Go benchmark in the official measurement |
+| P5 | **Computation time** (`compute_ms`) of the final single-core Go against idiomatic base R (`sample()` loop), B = 1,000, is between **2× and 10×** in Go's favour for n = 1,000 and n = 10,000. | Generated tables |
+| P6 | At n = 100, B = 1,000, R's start-up is **more than 50 %** of its whole-process time; at n = 100,000 it is **under 20 %**. | Generated tables |

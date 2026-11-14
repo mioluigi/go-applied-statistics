@@ -36,7 +36,7 @@ wants an **independent data scientist** to answer two questions:
 Bootstrap sampling for a **robust, distribution-free estimate of the standard error of the median**, for
 distributions of **various shapes (positively skewed, symmetric, negatively skewed)**: "Start by implementing
 in R and then refactor into Go." It adds that bootstrap-median code **may be reusable in the Week 9
-assignment**. Jump-start material named on the page (Canvas login required, **not yet in our hands**):
+assignment**. Jump-start material named on the page (Canvas login required; **received 2026-11-14**, commit `80060ad`, in `r/original/`):
 
 - `run-bootstrap-median.R`: R code for the standard error of the median from a normal distribution.
 - `listing-from-100-run-bootstrap-median.txt`: its sample output.

@@ -52,7 +52,7 @@ it did (structured, to standard error).
 3.4 **(W8) Fair comparison.** R and Go do **the same work on the same data on the same machine**: same
 observations, same number of replicates, same statistic definition. The comparison states each side's
 defaults (R is single-threaded unless told otherwise), **times the whole process as well as the computation**,
-and reports single-core Go separately from multi-core Go. Medians of repeated runs; printing outside timed code.
+and reports single-core Go separately from multi-core Go. **Mean and median** of repeated runs, with the number of runs and the spread; the **mean drives cost figures**, because a bill is a sum of run times *(amended 2026-11-14, review R1 CON-3; was "medians")*. Reading input and printing are outside timed computation.
 3.5 **(W8)** Each performance improvement is **one measured step**: benchmark before, change, benchmark after,
 both kept, so the README can say what improved the program and by how much.
 3.6 Guards, scripts and acceptance checks are themselves tested on a passing and a failing case; exit codes
@@ -63,7 +63,7 @@ are tested on the **built binary**.
 4.1 The statistical method lives in a **reusable package** with no printing and no `os.Exit`. The statistic
 (median, mean, …) and the random source are **replaceable parts**, so the same resampling code serves another
 statistic, another generator, and next week's assignment. The command-line program is a thin layer.
-4.2 Sequential and concurrent runs use **the same code path**; only the worker count differs.
+4.2 **One execution path**: every run hands its replicates to a pool of one or more workers. The random stream is a setting: the block stream gives the same result for any worker count (1.4); the R-compatible stream is sequential by nature and runs with one worker; the difference between the two is stated (1.2). *(Amended 2026-11-14, review R1 CON-2.)*
 4.3 Pin every dependency version (`go.mod`, `go.sum`); `go.sum` is generated on Luis's Mac. R package
 versions are recorded with the results. **(W8)**
 

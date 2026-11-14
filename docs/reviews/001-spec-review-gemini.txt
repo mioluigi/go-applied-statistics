@@ -1,0 +1,808 @@
+The review bundle from commit 3fe1156 (REVIEW BUNDLE: 4 files, from commit 3fe1156 on line
+1 of 001-spec-review-bundle.txt) contains all four required files:
+   ●​ docs/assignment-and-rubric.md
+   ●​ docs/constitution.md
+   ●​ docs/spikes/001-environment-and-baseline.md
+   ●​ specs/001-bootstrap-median/spec.md
+1. Coverage Gaps
+CG-1: Component-level memory and processing benchmarks (Rubric
+[T])
+  ●​ Severity: High
+  ●​ Where: docs/assignment-and-rubric.md §"Rubric: five criteria, 20 points each" ("[T]
+     Testing and software metrics | Unit tests of critical components with synthetic data; logs
+     and profiles; memory and processing measured for components and the whole program;
+     Monte Carlo performance benchmark if the requirements call for one.") and
+     specs/001-bootstrap-median/spec.md §5 NFR-4 ("Peak memory of the whole process
+     from /usr/bin/time -l for both languages, reported with its spread (R's varies between
+     identical runs, spike §7); Go allocations per operation from benchmarks.") and §8 AC-10
+     ("Profiles and logs are produced on request; committed profiles exist").
+  ●​ Problem: Rubric [T] explicitly requires measuring memory and processing time for both
+     individual components and the whole program. While /usr/bin/time -l covers the whole
+     program (NFR-1, NFR-3, NFR-4) and FR-12 covers before/after optimization pairs, no
+     requirement or acceptance criterion mandates testing.B benchmarks with
+     b.ReportAllocs() for each core component (rstream random draw generation, stats
+     median/mean/SD, and bootstrap resampling engine) alongside the whole-program
+     benchmark.
+  ●​ Suggested change: Add a testable property to AC-10 and NFR-4 requiring saved go test
+     -bench=. -benchmem output that contains benchmark rows (ns/op, B/op, allocs/op) for at
+     least the PRNG component, the median statistic component, and the full bootstrap
+     engine, verified by scripts/acceptance.sh.
+CG-2: Timing only one distribution shape (Q10 vs. Assignment
+Example & FR-1)
+  ●​ Severity: Medium
+  ●​ Where: docs/assignment-and-rubric.md §"The assignment's own suggested example"
+     ("for distributions of various shapes (positively skewed, symmetric, negatively skewed)"),
+     specs/001-bootstrap-median/spec.md §1 ("for symmetric, positively skewed and
+     negatively skewed data"), §4 FR-1 ("The repository holds generated data sets for three
+     shapes (symmetric, positively skewed, negatively skewed) at the sizes in Q5"), and §10
+     Q10 ("(a) 200 whole-process runs per condition for n ≤ 10,000 and 30 for n = 100,000,
+     on the positively skewed data sets; 30 runs of the course program").
+  ●​ Problem: FR-1 generates 12 datasets across three shapes, and FR-7 compares R and Go
+     correctness on all 12 datasets, but Q10 restricts all timing runs exclusively to the
+    positively skewed datasets. A strict grader checking S6 ("Compare R and the final Go
+    implementation on the same input data; ensure results are comparable; report memory
+    requirements and processing times of both") can fault the study for never reporting
+    processing time or memory on the symmetric or negatively skewed datasets, and
+    sorting/selection branch behavior can depend on value distribution.
+ ●​ Suggested change: Require a testable property in AC-11 that results/ contains timing
+    and memory measurements across all three distribution shapes at a representative size
+    (such as 𝑛 = 10, 000, or in-process computation timings across all 12 datasets) in
+    addition to the full scaling curve across 𝑛.
+CG-3: R package loading time omitted from NFR-3 (G8 vs. NFR-3)
+ ●​ Severity: Medium
+ ●​ Where: docs/assignment-and-rubric.md §"Course guidance on benchmark studies" G8
+    ("Consider whether package loading is part of the measured time; very large ratios
+    usually reflect start-up and loading | Report start-up separately: an empty R script
+    against an empty Go program, and computation time measured inside each program")
+    and specs/001-bootstrap-median/spec.md §4 FR-2 ("A second R script does the same
+    with the CRAN boot package.") and §5 NFR-3 ("For each language: whole-process time;
+    start-up time (an empty R script, a Go binary that exits at once); computation time
+    measured inside the program.").
+ ●​ Problem: G8 specifically highlights package loading time (library(boot)), whereas NFR-3
+    only measures an empty R script (Rscript -e ""), which loads default packages (stats,
+    methods, etc.) but does not measure the cost of loading boot. When timing the boot
+    script in FR-2, the gap between whole-process time and computation time conflates R
+    interpreter start-up with library(boot) loading.
+ ●​ Suggested change: Add a testable property to NFR-3 and AC-11 that start-up
+    measurements record both an empty R invocation and an R invocation that executes
+    library(boot) and exits (or records package-load duration inside the boot script log).
+CG-4: Run counts at 𝑛 = 100, 000 vs. G6 ("hundreds or thousands of
+times")
+ ●​ Severity: Low
+ ●​ Where: docs/assignment-and-rubric.md §"Course guidance on benchmark studies" G6
+    ("Run each condition hundreds or thousands of times and average | Hundreds of
+    whole-process runs per condition.") and specs/001-bootstrap-median/spec.md §10 Q10
+    ("(a) 200 whole-process runs per condition for n ≤ 10,000 and 30 for n = 100,000, on the
+    positively skewed data sets; 30 runs of the course program").
+ ●​ Problem: Running 30 iterations at 𝑛 = 100, 000 and on the course program is pragmatic
+    for a 15-minute wall-clock budget, but strictly falls below the literal wording of G6
+    ("hundreds or thousands of times").
+ ●​ Suggested change: Require a testable property in AC-11 and AC-12 that the generated
+    timing table reports the sample count 𝑁 and the relative standard error of the mean
+    timing ($\text{SE}(\bar{t})/\bar{t} \le 2\%$) for every condition, and that README.md
+    explicitly states why 𝑁 = 30 was used for the multi-second R conditions.
+CG-5: Weak verification of S1, S2, S3, and M1 requirements in AC-14
+ ●​ Severity: Low
+ ●​ Where: docs/assignment-and-rubric.md §"Scenario" ("M1 How easy is it to use Go in
+    place of R?"), §"Required steps" S1 ("Read Gelman & Vehtari"), S2 ("name the method and
+    show its URLs"), S3 ("(look at Awesome Go and pkg.go.dev)"), and
+    specs/001-bootstrap-median/spec.md §8 AC-14 ("README contains: method and CRAN
+    URLs; package search (R and Go)... Checked by: acceptance script (headings) and review
+    R2").
+ ●​ Problem: Checking only section headings in scripts/acceptance.sh does not verify that
+    README.md actually includes the Gelman & Vehtari citation (S1), the concrete CRAN
+    URLs for boot and bootstrap (S2), references to pkg.go.dev and Awesome Go (S3), or the
+    quantitative developer-effort comparison (lines of code and components written)
+    promised for M1 in §9a ("M1 how easy | README: what had to be written in Go that R
+    provides (generator, median, bootstrap), measured in lines and effort; AC-14").
+ ●​ Suggested change: Extend the testable property in AC-14 so scripts/acceptance.sh
+    checks that README.md contains the exact CRAN URLs
+    ([https://cran.r-project.org/package=boot](https://cran.r-project.org/package=boot) and
+    [https://cran.r-project.org/package=bootstrap](https://cran.r-project.org/package=bootst
+    rap)), pkg.go.dev, Awesome Go, Gelman, and a generated line-count comparison table
+    for M1.
+2. Contradictions
+CON-1: Default flags in FR-6 and Q7 cause immediate validation
+failure in FR-8 and break FR-10
+ ●​ Severity: High
+ ●​ Where: specs/001-bootstrap-median/spec.md §4 FR-6 ("With the block stream, the Go
+    program can use several workers (-workers, default the number of CPUs)."), FR-8 ("Bad
+    input is rejected before any computation with a message naming the problem: ... workers
+    > 1 with the R stream."), FR-10 ("With no arguments the program analyses a built-in copy
+    of one committed data set and runs to completion"), and §10 Q7 ("Default stream of the
+    Go program | (a) R stream (auditable against R, one core) · (b) block stream (all cores) | (a)
+    as default, (b) with -stream block").
+ ●​ Problem: If -stream defaults to the R stream (r) per Q7, and -workers defaults to
+    runtime.NumCPU() (which is 10 on the Mac and 2 in the workspace) per FR-6, then
+    invoking the binary with no arguments (FR-10, AC-9) or with -stream r without explicitly
+    passing -workers 1 sets stream = r and workers > 1, which FR-8 immediately rejects with
+    exit code 2!
+ ●​ Suggested change: Resolve the contradiction in FR-6 and FR-8 by specifying the
+    testable property that when -workers is not explicitly set on the command line, it defaults
+    to 1 for -stream r and runtime.NumCPU() for -stream block ( while explicitly passing
+    -workers K with 𝐾 > 1 and -stream r exits with code 2).
+CON-2: Constitution 4.2 and 1.4 vs. Spec FR-5, FR-6, and FR-8 (Single
+code path and worker-independent results vs. two streams)
+ ●​ Severity: Medium
+ ●​ Where: docs/constitution.md Article 1.4 ("Concurrent code passes the race detector (go
+    test -race) and gives reproducible results for a given seed whatever the number of
+    workers."), Article 4.2 ("Sequential and concurrent runs use the same code path; only the
+    worker count differs."), and specs/001-bootstrap-median/spec.md §3 ("R stream... Block
+    stream"), §4 FR-6, and §4 FR-8.
+ ●​ Problem: Constitution 4.2 states that sequential and concurrent runs use the same code
+    path where only the worker count differs, and Constitution 1.4 requires reproducible
+    results for a given seed whatever the number of workers. In the spec, however,
+    single-core Go uses the R stream by default (Q7), multi-core Go uses the block stream
+    (FR-6), the R stream rejects workers > 1 (FR-8), and the two streams produce different
+    numerical answers (up to 10% apart in §6) for the same seed.
+ ●​ Suggested change: Clarify in Constitution 4.2 and Spec FR-6 the testable property that
+    the engine's execution path is unified (every run dispatches replicates through the same
+    worker pool with workers >= 1), that -stream block gives bit-for-bit identical output for
+    workers = 1, 2, ..., NumCPU, and that -stream r is a deterministic sequential stream
+    (workers = 1) whose difference from -stream block is explicitly reported per Constitution
+    1.2 ("A faster Go variant must give the same results as the plain Go variant for the same
+    seed, or its difference is stated").
+CON-3: Constitution 3.4 (medians of runs) vs. Assignment Summary
+G6 (average of runs) and Spec Q8 (cost formula)
+ ●​ Severity: Medium
+ ●​ Where: docs/constitution.md Article 3.4 ("Medians of repeated runs; printing outside
+    timed code."), docs/assignment-and-rubric.md §"Course guidance on benchmark
+    studies" G6 ("Run each condition hundreds or thousands of times and average | ... this
+    week reports mean and median over hundreds"), and
+    specs/001-bootstrap-median/spec.md §5 NFR-2 ("mean, median and spread are
+    reported") and §10 Q8 ("Cost per job = measured time × price").
+ ●​ Problem: Constitution 3.4 specifies medians of repeated runs, G6 requires averaging
+    over hundreds of runs, NFR-2 reports both mean and median, and Q8 defines Cost per
+    job = measured time × price without stating whether measured time is the mean or the
+                                                                                𝑁
+    median run time. Because cloud billing over a batch of 𝑁 jobs is additive ( ∑ 𝑡𝑖 = 𝑁𝑡‾),
+                                                                                𝑖=1
+    total cloud cost is a function of the mean, whereas outlier resistance favors the median.
+ ●​ Suggested change: Amend Constitution 3.4 or specify in Spec FR-13 and Q8 the
+    testable property that timing tables report both mean and median (plus interquartile
+    range / SD), and state explicitly which statistic (e.g., mean time, with median saving
+    shown alongside if skewness exceeds 5%) drives the headline cost figure in FR-13.
+CON-4: Stale "not yet in our hands" claims in
+docs/assignment-and-rubric.md and
+docs/spikes/001-environment-and-baseline.md
+ ●​ Severity: Low
+ ●​ Where: docs/assignment-and-rubric.md §"The assignment's own suggested example"
+    ("Jump-start material named on the page (Canvas login required, not yet in our hands): -
+    run-bootstrap-median.R ... - listing-from-100-run-bootstrap-median.txt") and
+    docs/spikes/001-environment-and-baseline.md §2 ("## 2. Inputs not yet in our hands |
+    run-bootstrap-median.R ... listing-from-100-run-bootstrap-median.txt ... Canvas page
+    Performance Comparisons of R, Python, and Go"), versus
+    docs/assignment-and-rubric.md §"Course guidance on benchmark studies" ("Read in full
+    on 2026-11-14") and docs/spikes/001-environment-and-baseline.md §4
+    ("r/original/run-bootstrap-median.R(T. W. Miller, revised May 23, 2024) and its listing
+    arrived in commit80060ad") and §7 ("run on the Mac at commit bf5b5ba").
+ ●​ Problem: Both documents simultaneously claim the three Canvas inputs are "not yet in
+    our hands" and document their contents and execution results from commits 80060ad
+    and bf5b5ba.
+ ●​ Suggested change: Update docs/assignment-and-rubric.md and
+    docs/spikes/001-environment-and-baseline.md §2 so that a file read confirms all three
+    inputs are recorded as received (citing commit 80060ad).
+3. Untestable Requirements
+UT-1: Manual background-process closure (G2)
+ ●​ Severity: Low
+ ●​ Where: docs/assignment-and-rubric.md §"Course guidance on benchmark studies" G2
+    ("Close other programs while measuring | A manual step before measure.sh, stated in the
+    hand-off") and specs/001-bootstrap-median/spec.md §9a ("hand-off step (G2)").
+ ●​ Problem: A manual step performed by the user before running measure.sh leaves no
+    verifiable artifact in the repository, so neither a script nor a reviewer reading results/ can
+    check whether background CPU contention occurred during the official run.
+ ●​ Suggested change: Add a testable property to NFR-6 and AC-11 that measure.sh
+    records the system load average (sysctl -n vm.loadavg on macOS) before and after each
+    condition in the metadata file, and emits a warning or fails if the 1-minute load average
+    before starting exceeds a stated quiet-machine threshold.
+UT-2: Unspecified content of default human-readable terminal output
+(FR-4, Constitution 6.4)
+ ●​ Severity: Medium
+ ●​ Where: docs/constitution.md Article 6.4 ("A finished run tells the user, in plain words,
+    what was estimated, from which data, and where any output file is.") and
+    specs/001-bootstrap-median/spec.md §4 FR-4 ("A human-readable summary is the
+    default on the terminal.") and §8 AC-9 ("No-argument run exits 0 and prints a result").
+ ●​ Problem: While FR-4 defines the exact 9 tab-separated fields of the machine-readable
+    record, neither FR-4 nor AC-9 specifies what fields must appear in the default
+    human-readable output, making Constitution 6.4 ("in plain words, what was estimated,
+    from which data, and where any output file is") untestable by an automated script.
+ ●​ Suggested change: Specify in FR-4 and AC-9 the testable property that default
+    standard output contains the dataset name/path, observation count 𝑛, replicate count 𝐵,
+    seed, stream name, sample median, bootstrap SE of the median, sample mean, and
+    bootstrap SE of the mean.
+UT-3: Subjective coding aesthetics and doc-comment rules
+(Constitution 2.2–2.6, Spec §9b [C])
+ ●​ Severity: Low
+ ●​ Where: docs/constitution.md Article 2 ("2.2 Meaningful, specific names... 2.3 No useless
+    temporary variables... 2.4 Functions do one thing... 2.6 Every exported identifier has a doc
+    comment") and specs/001-bootstrap-median/spec.md §5 NFR-8 ("gofmt, go vet, go test
+    -race ./... clean") and §9b ("[C] Coding | Constitution Art. 2; NFR-8").
+ ●​ Problem: gofmt and go vet do not check whether exported identifiers have doc
+    comments (Article 2.6) or whether functions stay small (Article 2.4).
+ ●​ Suggested change: Add a testable property to AC-16 (scripts/acceptance.sh) that
+    verifies every exported Go type, function, constant, and package has a preceding doc
+    comment and no function exceeds a stated line-count bound (e.g., 60 lines).
+4. Domain Risks (Statistical and Engineering)
+DR-1: Exact float64 identity for the Bootstrap SE of the Median (Spec
+§6) will fail on 4-decimal-place data
+ ●​ Severity: High
+ ●​ Where: specs/001-bootstrap-median/spec.md §3 ("Bootstrap standard error of a
+    statistic (the textbook definition, Efron and Tibshirani 1993): draw B resamples, compute
+    the statistic on each, and take the standard deviation of those B values, with denominator
+    B − 1."), §4 FR-1 ("values written with 4 decimal places"), §6 ("Bootstrap SE of the median |
+    identical (same double)" and "Why these numbers. Identity for the median: the same
+    indices select the same values, and a median is a selection (or one exact average), so no
+    rounding can differ; the spike observed identity."), and
+    docs/spikes/001-environment-and-baseline.md §7 ("Limits of what was tested
+    (conditions): ... Data that is exact in floating point (integers).").
+    Problem: Spec §6 conflates the sample median of a single resample with the
+    bootstrap standard error of the median across 𝐵 = 1, 000 resamples. While each
+                                   ~*(𝑏)
+    individual resample median θ         is either a single selected value (for odd 𝑛, bit-for-bit
+    identical) or the average of two middle values (a + b) / 2 (for even 𝑛, bit-for-bit identical in
+    IEEE-754), the bootstrap SE of the median is the sample standard deviation (sd) of
+    those 𝐵 = 1, 000 numbers:​
+
+                                                                      2
+
+                                                            (     )
+                                                      𝐵
+                                                 1      ~*(𝑏)     *
+                                    𝑆𝐸𝐵 =       𝐵−1
+                                                      ∑ θ     − θ‾
+                                                      𝑏=1
+ ●​ ​
+    In Spike §7 (docs/spikes/001-environment-and-baseline.md §7), bit-for-bit identity
+    occurred only because the spike used small integers (𝑥𝑖 ∈ 𝑍) and 𝐵 = 200, so every
+    resample median was an integer or half-integer (.0 or .5), which is an exact dyadic
+    fraction in binary floating point whose sum over 𝐵 = 200 incurs zero rounding error!
+    Under FR-1 ("values written with 4 decimal places"), values like 102.3419 are not dyadic
+    fractions in IEEE-754 binary64. Summing 𝐵 = 1, 000 non-dyadic float64 medians and
+    their squared deviations in R's C cov_complete1 (which uses a two-pass algorithm with a
+                                                                                            −15
+    LDOUBLE accumulator) versus Go's float64 summation can differ by 1–10 ULPs (∼ 10 ),
+    causing an identical (same double) check in FR-7 / AC-3 to fail on FR-1 datasets!
+ ●​ Suggested change: Change the comparability rule in Spec §6 so that the Sample
+    median and every individual resample median (tested in unit tests) are required to be
+    identical (same double), while the Bootstrap SE of the median (which is a standard
+    deviation over 𝐵 values) has a relative tolerance of ≤ 1e-12 (or ≤ 1e-14 when Go also uses
+    a two-pass standard deviation algorithm), matching the tolerance for the sample mean
+    and bootstrap SE of the mean.
+DR-2: Bootstrap definition divergence from the course's
+run-bootstrap-median.R (Spec §3, NFR-5)
+ ●​ Severity: Medium
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §4 item 1 ("100 iterations × 4
+    sample sizes (25, 100, 225, 400) × B = 100 resamples of a Normal(100, 10) sample. For
+    each sample it keeps the mean of the B bootstrap medians, and reports the standard
+    deviation of that mean across the 100 samples.") and
+    specs/001-bootstrap-median/spec.md §3 ("The course's R program reports a different
+    quantity... It is run unchanged and reported as the course's baseline; it is not the quantity
+    our R and Go programs compute, and the README says so.") and §5 NFR-5 ("The course's
+    unchanged R program is a third, separate comparison.").
+ ●​ Problem: The course's run-bootstrap-median.R computes the Monte Carlo standard
+                                          2
+    deviation across 100 fresh 𝑁(100, 10 ) samples of the mean of 𝐵 = 100 bootstrap
+    medians (40,000 resamples across 𝑛 ∈ {25, 100, 225, 400}, totaling 7, 500, 000 index
+    draws), whereas FR-2 and FR-3 compute the textbook Efron & Tibshirani (1993)
+    within-sample bootstrap SE of the median (𝐵 = 1, 000 resamples of one sample of size 𝑛
+    ). If NFR-5 compares the runtime of run-bootstrap-median.R (40,000 resamples across 4
+    sizes) directly against FR-3 (1,000 resamples on one CSV file), it violates Constitution 3.4
+    ("R and Go do the same work on the same data on the same machine") and leaves Spike
+    Prediction P4 ("Plain single-core Go does the study's resampling in under 0.2 s on the
+    Mac") unverified by any official script!
+ ●​ Suggested change: Add a testable property to NFR-5 and Spike P4 that (a) the primary
+    R-vs-Go comparison always compares FR-2 against FR-3 on identical (𝑛, 𝐵 = 1, 000),
+    and (b) to evaluate the course's run-bootstrap-median.R fairly and verify P4, a
+    benchmark or test runs the Go engine on the same resample volume (
+    100 × (25 + 100 + 225 + 400) × 100 resamples) and compares it against both
+    run-bootstrap-median.R and an idiomatic vectorised R equivalent of that study.
+DR-3: Justification of tolerances in Spec §6 (10% Monte Carlo
+tolerance and s / √n check)
+ ●​ Severity: Medium
+ ●​ Where: specs/001-bootstrap-median/spec.md §6 ("Bootstrap SE of the median | ... |
+    relative difference ≤ 10 % at B = 1,000" and "Why these numbers... two bootstrap runs
+    with different draws differ by Monte Carlo error, roughly SE ÷ √(2B) ≈ 2.2 % of the SE at B
+    = 1,000 for a near-normal statistic; 10 % is about four of those" and "A second,
+    independent check: for the symmetric (normal) data sets the bootstrap SE of the mean
+    must be within 10 % of s ÷ √n, where s is the sample standard deviation.").
+ ●​ Problem:
+                                                                                              γ2+2
+  1.​ The relative standard error between two independent bootstrap SE estimates is           2𝐵
+                                                                                                     ,
+     which equals $\frac{1}{\sqrt{2B}} \approx 2.24\%$ only when the bootstrap distribution
+     has zero excess kurtosis (γ2 = 0). Because the bootstrap distribution of the sample
+     median is concentrated on the discrete sample order statistics $X_{(1)}, \dots, X_{(n)}$
+     with Beta-Binomial weights, when gaps between middle order statistics are uneven
+     (especially at 𝑛 = 100 or on skewed samples), the bootstrap distribution of the median
+     can have high excess kurtosis γ2 > 2, doubling the Monte Carlo variance of 𝑆𝐸𝑚𝑒𝑑𝑖𝑎𝑛
+     across streams. Across 12 datasets × 2 comparisons (block and boot = 24 checks), a
+     single seed pair at 𝑛 = 100 can occasionally exceed 10% even when both
+     implementations are 100% bug-free.
+                                                                                    𝑛−1   𝑠
+  2.​ Conversely, the theoretical bootstrap SE of the sample mean as 𝐵 → ∞ is        𝑛
+                                                                                              for
+                                                                                          𝑛
+    every finite-variance distribution, not only for symmetric (normal) datasets!
+ ●​ Suggested change: Express two testable properties in Spec §6: (1) check the s / √n (or
+             𝑛−1   𝑠
+    exact     𝑛
+                       ) 10% tolerance for the bootstrap SE of the mean across all 12 datasets
+                   𝑛
+    (symmetric, positively skewed, and negatively skewed), and (2) state in §6 that the 10%
+    cross-stream tolerance for the median SE accounts for discrete order-statistic kurtosis at
+    𝐵 = 1, 000 and is verified on the committed seeds before measurement (FR-7).
+DR-4: Exact reproduction of R's random draws and its limits (Spec §3,
+FR-2, FR-3, FR-5)
+ ●​ Severity: High
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §6 ("re-implements from the R
+    sources the three steps between set.seed() and sample(): the seed scrambling,
+    unif_rand(), and the rejection sampling of an index") and
+    specs/001-bootstrap-median/spec.md §4 FR-2 ("reports the sample median, the
+    bootstrap SE of the median and the bootstrap SE of the mean, for given B and seed,
+    using a sample() loop") and FR-3 ("A Go program reads the same data file and reports the
+    same quantities for the same B and seed.").
+ ●​ Problem: Neither Spec §3 nor FR-2/FR-3 specifies whether R and Go compute the
+    bootstrap SE of the median and the bootstrap SE of the mean on the same 𝐵 resamples
+    (drawing 𝑛 indices per replicate $b = 1, \dots, B$ and computing both median and mean
+    on resample 𝑏, consuming 𝐵 × 𝑛 random draws total) or on two separate passes of 𝐵
+    resamples (consuming 2 × 𝐵 × 𝑛 draws total). Nor does it specify whether R draws
+    indices replicate-by-replicate (for (b in 1:B) idx <- sample.int(n, n, replace = TRUE)) or in
+    one vector (matrix(sample.int(n, n * B, replace = TRUE), nrow = n, ncol = B)). Note that in R,
+    R_unif_index(n) depends only on n, so drawing n indices 𝐵 times in a loop produces the
+    exact same sequence of indices as drawing n * B indices filled column-major into an
+    𝑛 × 𝐵 matrix, only if both median and mean are computed from that same sequence of
+    𝐵 resamples! If R computes median and mean in one loop (B * n draws) while Go calls
+    Engine.Run(data, Median, B, rng) followed by Engine.Run(data, Mean, B, rng) (or vice
+    versa), the second call will either use a different PRNG state or require re-seeding rng
+    with seed!
+ ●​ Suggested change: Specify the testable property in Spec §3 and FR-2/FR-3 that for a
+    given seed and B, both the bootstrap SE of the median and the bootstrap SE of the mean
+    are evaluated on the exact same 𝐵 resamples generated from set.seed(seed) (i.e.,
+    resample $b \in \{1, \dots, B\}$ consists of 𝑛 consecutive draws from sample.int(n, n,
+    replace = TRUE), and if the reusable engine is called once per statistic, the generator is
+    re-seeded with seed before each statistic so both statistics use replicates $1 \dots B$
+    from set.seed(seed)).
+DR-5: Floating-point parsing and summation order at 𝑛 = 100, 000
+(Spec §6, Risk R2)
+ ●​ Severity: Medium
+ ●​ Where: specs/001-bootstrap-median/spec.md §6 ("Sample mean | relative difference ≤
+    1e-12" and "Bootstrap SE of the mean | relative difference ≤ 1e-12") and §7 R2 ("R and Go
+    may parse the same decimal text to different doubles | Values are written with 4 decimals
+    (few significant digits parse exactly in both)").
+ ●​ Problem:
+ 1.​ Risk R2's explanation ("few significant digits parse exactly in both") is technically
+     inaccurate: 4-decimal numbers like 0.0001 are infinite repeating fractions in binary
+     (0.0001 is not a dyadic rational), so they do not represent exactly in float64. Rather, both
+     R's R_strtod and Go's strconv.ParseFloat guarantee correct rounding to the nearest
+     IEEE-754 binary64 value (0.5 ULP), which guarantees that both languages parse any
+     4-decimal string to the identical 64-bit IEEE-754 bit pattern.
+ 2.​ For 𝑛 = 100, 000, R's C real_mean and cov_complete1 use a two-pass algorithm (
+           1                  1
+     𝑥‾0 = 𝑛 ∑ 𝑥𝑖, 𝑥‾ = 𝑥‾0 + 𝑛 ∑(𝑥𝑖 − 𝑥‾0)) to cancel summation drift. If Go uses a naive
+
+     single-pass accumulator (sum += x[i]) over 100, 000 elements or a textbook one-pass
+                          2        2                                               −11
+     variance formula (∑ 𝑥𝑖 − 𝑛𝑥‾ ), floating-point cancellation error can reach 10    and
+
+     violate the 1e-12 tolerance in Spec §6!
+ ●​ Suggested change: Correct the wording of Risk R2 to state that both parsers round
+    identically to the nearest IEEE-754 float64, and express as a testable property in AC-3 /
+    AC-7 that stats.Mean and stats.SD agree with R and high-precision reference values
+                                                                                               6
+    within 1e-14 relative error even for 𝑛 = 100, 000 badly conditioned inputs (e.g., 𝑁(10 , 1)),
+    which a two-pass mean and two-pass variance algorithm satisfies effortlessly.
+DR-6: Parallel random streams (Spec §3, FR-6, Risk R5)
+ ●​ Severity: Medium
+ ●​ Where: specs/001-bootstrap-median/spec.md §3 ("Block stream: replicates split into
+    fixed-size blocks, each block with its own generator derived from the seed and the block
+    number, so blocks can run on different cores."), §4 FR-6 ("With the block stream, the Go
+    program can use several workers (-workers, default the number of CPUs). The result for a
+    given seed is identical for every worker count."), and §7 R5 ("Block streams seeded from
+    neighbouring numbers could be correlated").
+ ●​ Problem:
+ 1.​ Spec §3 says "replicates split into fixed-size blocks", but does not define the block size or
+     how (seed, blockNumber) maps to a generator state. If block size is > 1 (say 64) and a
+     caller passes 𝐵 = 100, the last block is partial; more importantly, if block size is simply 1
+     replicate per block (replicate $b \in \{0, \dots, B-1\}$ is seeded deterministically by
+     mixing (seed, b) via SplitMix64 before initializing the per-replicate generator, or using a
+     fixed block size like 16 or 32 replicates seeded via SplitMix64 of (uint64(seed),
+     uint64(blockIdx))), it is completely independent of -workers.
+ 2.​ Furthermore, the order in which worker goroutines finish is non-deterministic. If workers
+                                 ~*(𝑏)
+     push resample statistics θ        into a channel and the aggregator appends them in
+     completion order, then summing those 𝐵 statistics for the standard deviation (sd) will
+     happen in a non-deterministic order across runs, violating FR-6 ("The result for a given
+     seed is identical for every worker count") in the last bits of the float64 standard error!
+ ●​ Suggested change: State as a testable property in FR-6 and AC-5 that replicate $b \in
+    \{0, \dots, B-1\}$ is written into its fixed index results[b] in a preallocated slice of length 𝐵
+    (so reduction order is always $b = 0, 1, \dots, B-1$ regardless of goroutine scheduling),
+    and verify with go test -race -count=10 that workers = 1, 2, 4, 8 produce bit-for-bit
+    identical float64 outputs.
+DR-7: Fairness of R-versus-Go timing (Spec FR-2, NFR-3, Spike P5)
+ ●​ Severity: Medium
+ ●​ Where: docs/constitution.md Article 3.4 ("R and Go do the same work on the same data
+    on the same machine... times the whole process as well as the computation"),
+    docs/spikes/001-environment-and-baseline.md §8 P5 ("Against idiomatic R the
+    single-core gap shrinks to roughly 2–10× | R's sample, sort and median are compiled C"),
+    and specs/001-bootstrap-median/spec.md §4 FR-2 and §5 NFR-3 ("computation time
+    measured inside the program").
+ ●​ Problem:
+ 1.​ Ambiguous boundary of "computation time" in NFR-3: NFR-3 does not define
+     whether "computation time measured inside the program" includes CSV reading/parsing
+     or starts after the dataset vector is in memory and stops before formatting output.
+     Constitution 3.4 says "printing outside timed code", so CSV parsing should also be
+     logged separately from the resampling loop in both R and Go.
+ 2.​ Algorithmic fairness at large 𝑛: In R, median.default(x) uses C rPsort (a partial sort /
+     quickselect algorithm that runs in 𝑂(𝑛) average time, not a full 𝑂(𝑛 log 𝑛) sort!), whereas
+     in R a naive median(x) inside a loop pays per-call S3 dispatch and is.na(x) scanning.
+     Meanwhile, if the Go implementation uses sort.Float64s (𝑂(𝑛 log 𝑛)) and allocates a fresh
+     make([]float64, n) slice on every replicate, then at 𝑛 = 100, 000, Go is doing an 𝑂(𝑛 log 𝑛)
+     full sort + GC allocation while R is doing an 𝑂(𝑛) partial sort! This makes pre-allocating
+     the per-worker resample buffer and moving from full sort (𝑂(𝑛 log 𝑛)) to quickselect (
+     𝑂(𝑛)) the natural, measurable optimization steps for FR-12.
+ ●​ Suggested change: Specify in NFR-3 the testable property that in-program structured
+    logs report read_ms and compute_ms separately in both R and Go (where compute_ms
+    covers strictly the 𝐵-replicate bootstrap evaluations on the in-memory array), and ensure
+    the idiomatic base-R script in FR-2 uses sample.int(n, n, replace = TRUE) and preallocated
+    numeric(B) vectors without data frames.
+DR-8: Memory measurement interpretation (Spec NFR-4, Spike §7)
+ ●​ Severity: Medium
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §7 ("Run | Whole-process time |
+    User CPU | Maximum resident set | Peak memory footprint") and
+    specs/001-bootstrap-median/spec.md §5 NFR-4 ("Peak memory of the whole process
+    from /usr/bin/time -l for both languages, reported with its spread (R's varies between
+    identical runs, spike §7); Go allocations per operation from benchmarks.").
+ ●​ Problem:
+ 1.​ On macOS, /usr/bin/time -l prints both maximum resident set size and peak memory
+     footprint. Spike §7 showed these differ by ~20 MB (113.7 MB vs. 89.1 MB), yet NFR-4 does
+     not state which field measure.sh extracts (or whether both are recorded).
+ 2.​ More importantly, R's ~80–110 MB peak footprint is almost entirely the base R runtime
+     heap loaded at startup, not memory allocated by the bootstrap! Even at 𝑛 = 100, 000,
+     the dataset and one resample buffer occupy only 2 × 800𝐾𝐵 = 1. 6𝑀𝐵. Reporting that
+     R uses 90 MB while Go uses 3 MB for a bootstrap without reporting the empty-process
+     baseline memory from NFR-3 misleads management about how memory scales with
+     data size 𝑛.
+ ●​ Suggested change: Add a testable property to NFR-4 and AC-11 that measure.sh
+    records /usr/bin/time -l peak memory for the empty start-up scripts as well as the
+    benchmark runs, and specifies which /usr/bin/time -l field (maximum resident set size or
+    peak memory footprint, or both) is parsed into results/.
+DR-9: Soundness of turning local timings into a cloud-cost percentage
+(Spec FR-13, Q8)
+ ●​ Severity: High
+ ●​ Where: specs/001-bootstrap-median/spec.md §4 FR-13 ("A program computes, from
+    measured times and saved prices, the cost per job for R and Go and the percentage
+    saved; the README's figures come from it.") and §10 Q8 ("Cost per job = measured time
+    × price; saving = 1 − cost(Go) ÷ cost(R) on the same instance type, shown for one core
+    and for all cores").
+ ●​ Problem:
+     Algebraic cancellation of price: In Q8's formula on a single instance type with hourly
+     price 𝑃,​
+
+                                                𝑡 ×𝑃         𝑡
+                                 𝑠𝑎𝑣𝑖𝑛𝑔 = 1 − 𝑡𝐺𝑜×𝑃 = 1 − 𝑡𝐺𝑜
+                                                 𝑅               𝑅
+
+  1.​ ​
+      the cloud price 𝑃 cancels out completely! Thus the percentage saved is identical
+      whether $P = \$0.01/\text{hr}$ or $P = \$100/\text{hr}$.
+  2.​ Idle-core fallacy on multi-core VMs: Running single-core R on an 8-vCPU or 16-vCPU
+      EC2 instance leaves 𝑁𝐶𝑃𝑈 − 1 cores idle while paying for all cores. In production, a
+     consultancy running single-core R either provisions a 1-vCPU instance (c7g.medium) at
+     1/8 the price per hour, or runs 8 independent R jobs concurrently across the 8 vCPUs.
+     Conversely, R's ~90 MB per-process memory baseline (plus data copies per R worker)
+     requires a higher-memory instance tier when running 8 R processes in parallel than Go's
+     shared-memory goroutines.
+ 3.​ Engineering break-even (connecting M1 and M2): Saving 80% of $0.0001 per run only
+     saves money if the consultancy runs enough jobs to amortize the developer cost of
+     rewriting and validating R packages in Go (M1).
+ ●​ Suggested change: Strengthen FR-13 and Q8 with the testable property that the
+    cost-model script computes and outputs:
+ 1.​ Cost per 1,000 (or 1,000,000) jobs in USD (where the saved price 𝑃 does not cancel
+     out) as well as the percentage saved,
+ 2.​ Both the same-instance scenario (1-core R vs. 1-core Go on a 1-vCPU instance, and
+     1-core R vs. multi-core Go on a multi-vCPU instance) and a right-sized /
+     per-vCPU-hour comparison (showing pure single-core CPU efficiency vs. multi-core
+     wall-clock speedup), and
+ 3.​ The README's recommendation notes the AWS Graviton (arm64) alignment with the
+     Apple M1 Max (arm64) benchmark machine, the memory-tier advantage of Go's
+     shared-memory concurrency, and the engineering break-even point (connecting M1 and
+     M2).
+5. Evidence Check (Spike Findings and Predictions
+P1–P6)
+EC-1: Spike §7 over-generalizes bit-for-bit median SE equality from
+integer inputs to decimal inputs
+ ●​ Severity: High
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §7 ("Reference from R 4.4.2 | Go
+    spike ... Bootstrap SE of the median, n = 25 (odd), B = 200: 9.6785923952695132 |
+    9.6785923952695132 (identical) ... Conclusion. For the same data and seed, a Go program
+    gives R's bootstrap standard error of the median digit for digit; the mean agrees to the
+    last bits. The spec can require exact agreement for the median and a tight tolerance for
+    the mean." and "Limits of what was tested (conditions): ... Data that is exact in floating
+    point (integers).").
+ ●​ Problem: The evidence in §7 tests only integer inputs (1..n or integer draws) at 𝐵 = 200.
+    As analyzed in DR-1, while each resample's median is an order statistic (or average of
+    two), the standard error of those 𝐵 medians is computed via sd(), which sums 𝐵 values
+    and their squared deviations. For integer inputs, every resample median is an exact
+    integer or .5, so sums of values and squared deviations up to 𝐵 = 200 are exact
+    integers/quarters in IEEE-754 float64 (zero rounding error). On the 4-decimal-place floats
+    required by Spec FR-1, sd() on 𝐵 = 1, 000 resample medians suffers the exact same 1–5
+    ULP summation-order rounding difference as the mean (4.5e-16 in §7).
+ ●​ Suggested change: Update Spike §7's conclusion and Spec §6 so that exact float64
+    identity is claimed and tested for the sample median and individual resample medians,
+    while the bootstrap SE of the median (an sd over 𝐵 numbers) uses the 1e-12 relative
+    tolerance on non-integer data.
+EC-2: Prediction P1 and AC-2 ignore the 4-line header/footer
+difference in listing-from-100-run-bootstrap-median.txt
+ ●​ Severity: Medium
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §7 ("The three outputs are
+    byte-identical, and equal the course listing line for line. The only difference is four console
+    lines the listing file never contained (the 'Running study' header and the 'Run Complete'
+    footer). Check: diff r/original/listing-from-100-run-bootstrap-median.txt
+    docs/spikes/001-evidence/original-run-1.txt."), §8 ("P1 | The unchanged R program
+    reproduces the course listing exactly ... Outcome: Held. Listing reproduced exactly."), and
+    specs/001-bootstrap-median/spec.md §8 AC-2 ("The course's R program, unchanged,
+    reproduces its listing | acceptance script, where R is present").
+ ●​ Problem: Because Rscript r/original/run-bootstrap-median.R prints 4 extra console lines
+    (Running study header and Run Complete footer) that are absent from
+    listing-from-100-run-bootstrap-median.txt, an unfiltered diff returns a non-zero exit
+    code!
+ ●​ Suggested change: Specify in AC-2 the testable property that scripts/acceptance.sh
+    strips the 4 header/footer banner lines (or checks that
+    listing-from-100-run-bootstrap-median.txt is an exact contiguous substring of the
+    output) before asserting zero diff.
+EC-3: Predictions P4, P5, and P6 are missing required falsifiability
+conditions
+ ●​ Severity: Medium
+ ●​ Where: docs/spikes/001-environment-and-baseline.md §8:
+ ○​ "P4 | Plain single-core Go does the study's resampling in under 0.2 s on the Mac, so Go is
+     at least 15× faster than the unchanged R program | M1 Max about 4× the workspace
+     CPU; P2 holds"
+ ○​ "P5 | Against idiomatic R the single-core gap shrinks to roughly 2–10× | R's sample, sort
+     and median are compiled C; the remaining gap is interpreter overhead per resample,
+     largest for small n"
+ ○​ "P6 | For runs this short, whole-process time is dominated by R's start-up, so the cost
+     saving depends on job size | R start-up about 0.2 s against a few ms for Go"
+ ●​ Problem:
+ ○​ P4 predicts timing on "the study's resampling" (100 × (25 + 100 + 225 + 400) × 100
+     resamples), which Spec FR-3 / Q10 does not currently run on the Mac, and P4 does not
+     state whether < 0.2 s is whole-process time or in-process computation time.
+ ○​ P5 does not state which sample size 𝑛, which timing metric (in-process computation
+     vs. whole-process time), or which Go algorithm (slices.Sort vs. quickselect) it assumes.
+     At 𝑛 = 100, whole-process R vs. Go is ~30–50× because of R's 0.2 s startup; at
+     𝑛 = 100, 000, R's median.default calls C rPsort (𝑂(𝑛) partial sort), which can beat naive
+     𝑂(𝑛 log 𝑛) Go sort.Float64s unless Go also uses 𝑂(𝑛) quickselect or buffer reuse!
+ ○​ P6 does not define which 𝑛 qualifies as "runs this short" or what fraction of
+     whole-process time (> 50%) constitutes "dominated by R's start-up".
+ ●​ Suggested change: Amend Spike §8 so P4–P6 state explicit, script-checkable
+    conditions:
+ ○​ P4: Whole-process time of single-core Go on the 40,000-resample study workload (or
+     𝑛 = 1, 000, 𝐵 = 1, 000 scaled equivalently) is < 0. 20𝑠 on the M1 Max (≥ 15 × faster than
+     the 5.1 s unchanged R program).
+ ○​ P5: In-process single-core computation time (compute_ms) of optimized Go against
+     idiomatic base R (sample.int loop) at 𝐵 = 1, 000 falls in 2 × –10 × for
+     𝑛 ∈ {1, 000, 10, 000}.
+ ○​ P6: At 𝑛 = 100, 𝐵 = 1, 000, R start-up time is $> 50\%$ of R whole-process time,
+     whereas at 𝑛 = 100, 000, 𝐵 = 1, 000, R start-up time is $< 20\%$ of R whole-process
+     time.
+6. View on Open Decisions Q1–Q10
+
+ Decision                       Verdict                         Engineering & Grading
+                                                                Rationale
+
+ Q1 Method                      Agree with (a)                  Using the bootstrap SE of
+                                                                the median across
+                                                                symmetric, positively
+                                                    skewed, and negatively
+                                                    skewed distributions
+                                                    directly matches
+                                                    docs/assignment-and-rubri
+                                                    c.md §"The assignment's
+                                                    own suggested example",
+                                                    builds directly on
+                                                    run-bootstrap-median.R,
+                                                    and creates reusable
+                                                    packages for Week 9.
+
+Q2 Random generator in   Agree with (a), with       Weighing
+Go                       explicit README evidence   seehuhn/mt19937 vs.
+                         for seehuhn/mt19937        Spike §5–§6: The
+                                                    assignment (S5, G9)
+                                                    suggests considering
+                                                    [github.com/seehuhn/mt199
+                                                    37](https://github.com/seeh
+                                                    uhn/mt19937) on the belief
+                                                    that it is R's generator. Spike
+                                                    §5 proved from source that
+                                                    seehuhn/mt19937 is
+                                                    MT19937-64 (64-bit,
+                                                    312-word state, Knuth
+                                                    initialization, GPL-3.0
+                                                    license), whereas R uses
+                                                    MT19937-32 (32-bit,
+                                                    624-word state, 69069 LCG
+                                                    seed scrambling, and
+                                                    R_unif_index bit-mask
+                                                    rejection sampling).
+                                                    Importing
+                                                    seehuhn/mt19937 would
+                                                    taint the repository with
+                                                    GPL-3.0, require go.sum
+                                                    proxy resolution on the
+                                                    Mac, and fail to match R's
+                                                    random draws. Meanwhile,
+                                                    our 130-line
+                                                    standard-library 32-bit
+                                                    MT19937 + R_unif_index
+                                                    implementation (Spike
+                                   §6–§7) matches
+                                   14,000/14,000 R draws
+                                   identically with zero
+                                   external dependencies.
+                                   Choose (a) (our
+                                   R-compatible 32-bit
+                                   MT19937 as default + Go
+                                   stdlib math/rand/v2 as the
+                                   second FR-R2 source), and
+                                   include a table in the
+                                   README showing
+                                   seehuhn/mt19937 vs. R
+                                   4.4.2 vs. our rstream
+                                   package on seed 431 to
+                                   earn full credit on S5, S8,
+                                   and G9.
+
+Q3 R baselines    Agree with (b)   Reporting idiomatic base R
+                                   (sample.int with
+                                   preallocated vectors) and
+                                   boot as the primary
+                                   baselines, while reporting
+                                   the course's rbind-heavy
+                                   run-bootstrap-median.R
+                                   separately, is essential for
+                                   Constitution 3.4 and 9.4.
+                                   Comparing Go only against
+                                   a loop of 40,000 rbind calls
+                                   would measure R
+                                   data-frame copying rather
+                                   than statistical computing.
+
+Q4 Install CRAN   Agree with (a)   Do not install bootstrap.
+bootstrap                          boot (1.3.32) is already
+                                   installed on the Mac (Spike
+                                   §1.2) and is CRAN's
+                                   recommended core
+                                   package; citing both boot
+                                   and bootstrap with their
+                                   CRAN URLs in the README
+                                   fully satisfies S2.
+Q5 Data sizes and shapes   Agree with (a)               n = 100, 1,000, 10,000,
+                                                        100,000 × 3 shapes (12 CSV
+                                                        files, ~3 MB total). Including
+                                                        𝑛 = 100, 000 is vital so that
+                                                        computation time
+                                                        dominates R's ~0.2 s
+                                                        process start-up (Risk R3,
+                                                        Prediction P6) and
+                                                        addresses the
+                                                        consultancy's concern with
+                                                        large datasets.
+
+Q6 Replicates B            Agree with 1,000             𝐵 = 1, 000 exceeds Efron &
+                                                        Tibshirani's (1993)
+                                                        recommendation (
+                                                        𝐵 = 200–500) for standard
+                                                        error estimation while
+                                                        keeping 200
+                                                        whole-process R runs
+                                                        within the 15-minute
+                                                        measurement budget.
+
+Q7 Default stream of Go    Agree with (a), with         Defaulting -stream to r
+program                    CON-1 fix                    (auditable against R on one
+                                                        core) and offering -stream
+                                                        block for multi-core
+                                                        execution is the right
+                                                        design, provided -workers
+                                                        defaults to 1 when -stream r
+                                                        is active and defaults to
+                                                        runtime.NumCPU() when
+                                                        -stream block is active
+                                                        (fixing CON-1).
+
+Q8 Cloud provider and      Agree with (a), expanded     Use AWS EC2 On-Demand
+price basis                for Graviton & cost per 1M   Linux in us-east-1 with
+                           jobs                         saved provenance (URL,
+                                                        capture date, instance
+                                                        specs). Include an AWS
+                                                        Graviton (c7g) ARM64
+                                                        instance alongside x86 (c6i)
+                                                                   since the Mac is an ARM64
+                                                                   (M1 Max) machine, and
+                                                                   report both USD cost per
+                                                                   1,000 / 1,000,000 jobs
+                                                                   and percentage saved for
+                                                                   single-vCPU and
+                                                                   multi-vCPU instances
+                                                                   (fixing DR-9).
+
+ Q9 Application builds            Agree with (a)                   Provide scripts/build-all.sh
+                                                                   and clear README
+                                                                   instructions to build the
+                                                                   macOS binary, Windows
+                                                                   .exe, and macOS .app
+                                                                   bundle without committing
+                                                                   multi-megabyte binaries to
+                                                                   Git (matching Rubric [A]:
+                                                                   "Instructions for creating an
+                                                                   executable"). Have
+                                                                   scripts/acceptance.sh
+                                                                   test-build them into a
+                                                                   temporary directory and
+                                                                   verify they exist before
+                                                                   cleanup.
+
+ Q10 Runs per timed               Agree with (a), plus shape       200 whole-process runs for
+ condition                        check                            𝑛 ≤ 10, 000 and 30 runs for
+                                                                   𝑛 = 100, 000 and the
+                                                                   course program (~15
+                                                                   minutes on the Mac),
+                                                                   supplemented by timing all
+                                                                   three shapes at 𝑛 = 10, 000
+                                                                   (or in-process compute_ms
+                                                                   across all 12 files) to close
+                                                                   CG-2.
+
+7. Scope Cuts (Ordered if the Deadline is at Risk)
+If time becomes tight before the 2026-11-15, 11:59 PM ET deadline, cut scope in this order so
+no rubric criterion ([C], [T], [D], [Doc], [A]) or assignment step (S1–S12) is sacrificed:
+    1.​ Cut 1 (First to cut): Whole-process /usr/bin/time -l matrix breadth (Q10):
+    ○​ What to cut: Reduce whole-process /usr/bin/time -l runs from 200 across every
+        size/script combination to 200 runs at 𝑛 = 1, 000 (satisfying G6's "hundreds of times"),
+      50 runs at 𝑛 = 100 and 𝑛 = 10, 000, and 20 runs at 𝑛 = 100, 000 and the course
+      script.
+  ○​ Why safe: Saves ~60% of Mac wall-clock measurement time while keeping full 200-run
+      statistical power on the primary benchmark condition and keeping all 12 datasets in the
+      fast correctness verification (FR-7).
+  2.​ Cut 2: Number of optimization steps in FR-12 (Performance history):
+  ○​ What to cut: Limit FR-12 to two clean, high-impact measured steps in go test -bench:
+      (Step 1) Baseline slices.Sort with per-resample slice allocation → (Step 2) Preallocated
+      per-worker scratch slice + 𝑂(𝑛) quickselect (stats.MedianInPlace), plus the multi-core
+      worker speedup (-workers).
+  ○​ Why safe: Completely satisfies S4 ("What did you do to improve the performance…?")
+      and Constitution 3.5 ("benchmark before, change, benchmark after, both kept") without
+      spending hours micro-optimizing PRNG bit-twiddling.
+  3.​ Cut 3: Full multi-size whole-process timing of the second R script (boot package in
+      FR-2):
+  ○​ What to cut: Run the CRAN boot script for correctness (FR-7, AC-6) on all datasets and
+      time it at one size (𝑛 = 1, 000) rather than across all four sizes ($n = 100 \dots
+      100,000$).
+  ○​ Why safe: Base R (sample.int loop) and Go still cover the full scaling curve ($n = 100
+      \dots 100,000$), while boot is demonstrated, compared for accuracy, and timed at
+      𝑛 = 1, 000 to satisfy S2 and AC-6.
+  4.​ Cut 4: Drop 𝑛 = 100, 000 from 3 shapes to 1 shape (or fall back to Q5 option (b):
+      𝑛 = 100, 1, 000, 10, 000 × 3 shapes):
+  ○​ Why safe: S7 only requires n ≥ 100. Even at 𝑛 = 10, 000, 𝐵 = 1, 000, each run resamples
+        7
+      10 observations (~0.5–1.0 s in R), which is already 3 × –5 × larger than R's 0.2 s
+      start-up overhead.
+  5.​ Do NOT cut: R-stream parity tests (FR-5, AC-3, AC-4), race-clean deterministic parallel
+      block stream (FR-6, AC-5), CLI input validation & no-arg execution (FR-8–FR-10, AC-8,
+      AC-9), .exe/.app build scripts (FR-14), pprof profiles & structured logging (FR-11), scripted
+      README/cost generation (FR-13, AC-12, AC-13), or AI dialog logs (AC-17).
+Verdict
+Approve with changes. The spike (docs/spikes/001-environment-and-baseline.md) is an
+exemplary piece of engineering discovery—proving that Go can reproduce R 4.4.2's sample.int
+stream across 14,000 draws (§6–§7) and uncovering why
+[github.com/seehuhn/mt19937](https://github.com/seehuhn/mt19937) cannot (§5) turns a vague
+comparability requirement into a rigorous verification gate. Before moving to implementation,
+resolve the four High-severity issues:
+   1.​ Fix the default -workers / -stream flag contradiction between FR-6, FR-8, FR-10, and Q7
+       (CON-1).
+   2.​ Relax the comparability rule in Spec §6 for the Bootstrap SE of the median on
+       4-decimal-place data from identical (same double) to relative difference ≤ 1e-12 while
+       keeping identical (same double) for the sample median and individual resample medians
+    (DR-1, EC-1).
+3.​ Define the exact PRNG consumption order when computing both median SE and mean
+    SE in FR-2 and FR-3 (DR-4).
+4.​ Add component-level benchmark checks (CG-1) and expand the cloud cost model in
+    FR-13/Q8 so price does not algebraically cancel out (DR-9).
