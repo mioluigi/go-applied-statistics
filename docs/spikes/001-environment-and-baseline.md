@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phase 0 complete (both probes). Phase 1: workspace part done (§4–§6); **Mac part pending** (§7). |
+| Status | **Complete** (phase 1 gate met 2026-11-14). P4–P6 are checked by the official measurement. |
 | Date | 2026-11-14 |
 
 ## 1. Environment probe (SFEDD §5.7)
@@ -115,10 +115,49 @@ Workspace timing of a study-shaped workload in plain Go (same resampling volume 
 `sort.Float64s` for the median, 2 slow virtual CPUs): 0.65–0.72 s over three runs. The sort dominates, which
 names the first performance steps: a faster sort or a selection algorithm, and no per-draw logarithm.
 
-## 7. Mac part (pending): `scripts/spike-r-baseline.sh`
+## 7. Mac part: the R program run unchanged, and R's reference values
 
-Runs the R program unchanged three times with `/usr/bin/time -l`, then writes R reference values
-(`sample-indices.tsv`, `bootstrap-se.tsv`) into `docs/spikes/001-evidence/`.
+`scripts/spike-r-baseline.sh`, run on the Mac at commit `bf5b5ba`; raw evidence in `docs/spikes/001-evidence/`.
+
+**Inherited code, unchanged, three runs** (`/usr/bin/time -l Rscript r/original/run-bootstrap-median.R`):
+
+| Run | Whole-process time | User CPU | Maximum resident set | Peak memory footprint |
+|---|---|---|---|---|
+| 1 | 5.24 s | 5.01 s | 100.6 MB | 80.7 MB |
+| 2 | 5.12 s | 4.93 s | 113.7 MB | 89.1 MB |
+| 3 | 5.08 s | 4.92 s | 111.1 MB | 93.8 MB |
+
+- The three outputs are byte-identical, and equal the course listing line for line. The only difference is
+  four console lines the listing file never contained (the "Running study" header and the "Run Complete"
+  footer). Check: `diff r/original/listing-from-100-run-bootstrap-median.txt docs/spikes/001-evidence/original-run-1.txt`.
+- **Memory varies between identical runs** (81 to 94 MB footprint): R's garbage collection timing. Memory
+  needs repeated runs and a spread, like time.
+
+**Reference values reproduced by the Go spike** (`cd docs/spikes/001-rparity && go run . -verify ../001-evidence`):
+
+| Reference from R 4.4.2 | Go spike |
+|---|---|
+| 14,000 index draws: `sample.int(n, 2000, replace = TRUE)` for n = 10, 25, 100, 225, 400, 1,000, 100,000 | **14,000 of 14,000 identical** |
+| Bootstrap SE of the median, n = 25 (odd), B = 200: 9.6785923952695132 | 9.6785923952695132 (identical) |
+| Bootstrap SE of the median, n = 100 (even), B = 200: 5.0143412419232352 | 5.0143412419232352 (identical) |
+| Bootstrap SE of the mean, n = 25: 5.3149252669218976 | identical |
+| Bootstrap SE of the mean, n = 100: 2.9716934244711761 | 2.9716934244711748 (relative difference 4.5e-16: last bits, from summation order) |
+
+The verifier was mutation-checked: widening the rejection mask by one bit gives 13,665 mismatches of 14,000.
+
+**Conclusion.** For the same data and seed, a Go program gives **R's bootstrap standard error of the median
+digit for digit**; the mean agrees to the last bits. The spec can require exact agreement for the median and
+a tight tolerance for the mean.
+
+### Limits of what was tested (conditions)
+
+- R 4.4.2 with its default generator settings, on Apple silicon. An R older than 3.6.0, or
+  `RNGkind(sample.kind = "Rounding")`, draws indices differently.
+- n up to 100,000. For n ≥ 2^31 R switches to a different path; out of scope.
+- Data that is exact in floating point (integers). Real data read from text must parse to the same doubles
+  in both languages; see risk R2 in the spec.
+- The `boot` package draws all indices in one call and assigns them to replicates in a different order than
+  a `sample()` loop. Its result is expected to agree statistically, not digit for digit (untested).
 
 ## 8. Predictions, with the conditions they assume
 
@@ -130,3 +169,12 @@ Runs the R program unchanged three times with `/usr/bin/time -l`, then writes R 
 | P4 | Plain single-core Go does the study's resampling in under 0.2 s on the Mac, so **Go is at least 15× faster than the unchanged R program** | M1 Max about 4× the workspace CPU; P2 holds |
 | P5 | Against **idiomatic R** the single-core gap shrinks to roughly 2–10× | R's `sample`, `sort` and `median` are compiled C; the remaining gap is interpreter overhead per resample, largest for small n |
 | P6 | For runs this short, **whole-process** time is dominated by R's start-up, so the cost saving depends on job size | R start-up about 0.2 s against a few ms for Go |
+
+### Predictions checked so far (2026-11-14)
+
+| # | Outcome | Evidence |
+|---|---|---|
+| P1 | **Held.** Listing reproduced exactly. | §7 |
+| P2 | **Held.** 5.1–5.2 s per run (predicted 3–15 s). | §7 |
+| P3 | **Held, and stronger than predicted:** the median's SE is identical, not merely within 1e-12. | §7 |
+| P4–P6 | Open until the official measurement on the Mac. | |

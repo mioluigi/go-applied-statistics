@@ -14,6 +14,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 	"sort"
 	"time"
 )
@@ -105,6 +106,9 @@ func (twister *rMersenneTwister) unifIndex(n int) int {
 }
 
 func main() {
+	if len(os.Args) == 3 && os.Args[1] == "-verify" {
+		os.Exit(verifyAgainstR(os.Args[2]))
+	}
 	twister := newRMersenneTwister(431)
 	fmt.Printf("set.seed(431); runif(3): %.17f %.17f %.17f\n",
 		twister.unifRand(), twister.unifRand(), twister.unifRand())
