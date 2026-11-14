@@ -107,8 +107,8 @@ frames, so the comparison needs an idiomatic R baseline as well (spike §4).
 | Sample median | **identical** (same double) | identical |
 | Sample mean | relative difference ≤ 1e-12 | ≤ 1e-12 |
 | **Each of the B resample medians** | **identical** (same double), all B of them | not applicable (different draws) |
-| Bootstrap SE of the median | relative difference ≤ **1e-12** | relative difference ≤ **10 %** at B = 1,000 |
-| Bootstrap SE of the mean | relative difference ≤ 1e-12 | ≤ 10 % at B = 1,000 |
+| Bootstrap SE of the median | relative difference ≤ **1e-12** | relative difference ≤ **15 %** at B = 1,000 |
+| Bootstrap SE of the mean | relative difference ≤ 1e-12 | ≤ 15 % at B = 1,000 |
 
 Why these numbers.
 
@@ -118,15 +118,19 @@ Why these numbers.
   The sum can differ in the last bit with the width of the accumulator, which depends on the platform; the
   spike saw identity on Apple silicon, and a simulation with extended precision saw at most 1.4e-16 (review
   R1, DR-1). 1e-12 leaves a wide margin and still fails on any real difference.
-- **10 % between different random streams.** Two correct bootstraps with different draws differ by Monte
-  Carlo error: about SE ÷ √(2B) ≈ 2.2 % at B = 1,000 for a near-normal statistic, and more for the median,
-  whose bootstrap distribution sits on a few order statistics and can have heavy tails, most at n = 100.
-  10 % allows for that. The rule is **verified on the committed seeds before anything is timed** (FR-7); if a
-  correct implementation fails it, the rule is examined first (SFEDD principle 6) and any change is recorded.
+- **15 % between different random streams** *(changed from 10 % on 2026-11-14, before any official
+  comparison; `docs/spikes/002-tolerance.md`)*. Two correct bootstraps with different draws differ by Monte
+  Carlo error. Measured on six committed data sets with 200 seeds each at B = 1,000: the standard deviation
+  of the relative difference is 2.1 % to 2.6 %, close to the 2.2 % a normal approximation gives, and the
+  largest of 2,400 differences was 10.7 %, because the single reference run carries its own error. At 10 %
+  a correct implementation would fail about one comparison in several hundred, and the official run makes
+  48. 15 % is beyond everything observed and still fails on any gross error (a wrong statistic, sampling
+  without replacement, a variance reported as a standard deviation).
 - A wrong denominator (B instead of B − 1) hides inside any such tolerance, so it is covered by exact tests.
 
 A second, independent check, on **all 12 data sets** (it holds for any shape): the bootstrap SE of the
 **mean** must be within 10 % of √((n − 1) ÷ n) × s ÷ √n, where s is the sample standard deviation.
+This limit stays at 10 %: the theoretical value has no Monte Carlo error of its own.
 
 ## 7. Risks
 

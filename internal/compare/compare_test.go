@@ -56,14 +56,14 @@ func TestSameDraws(t *testing.T) {
 
 func TestDifferentDraws(t *testing.T) {
 	near := base
-	near.SEMedian, near.SEMean = base.SEMedian*1.09, base.SEMean*0.92
+	near.SEMedian, near.SEMean = base.SEMedian*1.14, base.SEMean*0.87
 	if checks, _ := Records(base, near, DifferentDraws); failed(checks) != "" {
-		t.Errorf("9 %% and 8 %% apart should pass; failed: %s", failed(checks))
+		t.Errorf("14 %% and 13 %% apart should pass; failed: %s", failed(checks))
 	}
 	far := base
-	far.SEMedian = base.SEMedian * 1.11
+	far.SEMedian = base.SEMedian * 1.16
 	if checks, _ := Records(base, far, DifferentDraws); failed(checks) != "SE of the median" {
-		t.Errorf("11 %% apart: failed %q, want the SE of the median", failed(checks))
+		t.Errorf("16 %% apart: failed %q, want the SE of the median", failed(checks))
 	}
 	// The data are the same, so the sample median must still be identical.
 	shifted := base

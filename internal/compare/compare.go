@@ -15,7 +15,8 @@ import (
 const (
 	Identical       = 0     // same float64
 	SummationLimit  = 1e-12 // quantities that are sums: they may differ in the last bits
-	MonteCarloLimit = 0.10  // standard errors from different random draws, at B = 1,000
+	MonteCarloLimit = 0.15  // standard errors from different random draws, at B = 1,000 (spike 002)
+	TheoryLimit     = 0.10  // a bootstrap SE of the mean against its exact theoretical value
 )
 
 // Rule says how two results are expected to relate.
@@ -120,5 +121,5 @@ func ResampleMedians(dataset string, reference, candidate []float64) Check {
 func MeanFormula(result record.Record, data []float64) Check {
 	count := float64(len(data))
 	theory := math.Sqrt((count-1)/count) * stats.StandardDeviation(data) / math.Sqrt(count)
-	return quantity(result.Dataset, "SE of the mean against sqrt((n-1)/n)*s/sqrt(n)", theory, result.SEMean, MonteCarloLimit)
+	return quantity(result.Dataset, "SE of the mean against sqrt((n-1)/n)*s/sqrt(n)", theory, result.SEMean, TheoryLimit)
 }

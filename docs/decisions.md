@@ -1,5 +1,11 @@
 # Decisions log (newest first)
 
+## 2026-11-14 · T10: Monte Carlo limit in spec §6 raised from 10 % to 15 %, before the official comparison
+- **Evidence:** `docs/spikes/002-tolerance.md`: 2,400 comparisons of correct block-stream runs (200 seeds × 6 data sets × 2 statistics) against the R-stream reference at B = 1,000. Standard deviation of the relative difference 2.1–2.6 %; largest 10.7 %; 3 of 2,400 above 10 % (all on one data set, whose reference run sits far from the centre).
+- **Why it matters:** the official run makes 48 such comparisons (block stream and `boot`, 12 data sets, 2 statistics). At 10 % a correct implementation could fail, stop the measurement, and cost a round trip on deadline day. Review R1 (DR-3) had warned that a correct implementation could exceed 10 %.
+- **Decision:** 15 % for standard errors from different draws. The check against exact theory stays at 10 %. The rule is still written before measuring: no official comparison has run.
+- **Documents updated:** spec §6; `internal/compare` constants and tests.
+
 ## 2026-11-14 · T03: accuracy bound for the standard deviation relaxed from 1e-14 to 1e-12
 - **Evidence:** On 100,000 values near 1e6, the two-pass standard deviation differs from exact rational arithmetic by 1.9e-14 relative (`stats` test, first run). Review R1 (DR-5) said a two-pass algorithm would meet 1e-14 "effortlessly"; for a sum of 100,000 squared deviations in double precision it does not (rounding grows with the number of terms). The mean does meet 1e-14.
 - **Decision:** Spec NFR-8 and AC-7 now require 1e-14 for the mean and 1e-12 for the standard deviation, the tolerance the R comparison (§6) actually uses. Compensated summation was considered and not adopted: R does not use it, and the bootstrap takes standard deviations of only B = 1,000 values.

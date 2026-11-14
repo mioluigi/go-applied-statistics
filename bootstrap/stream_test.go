@@ -42,7 +42,7 @@ func TestBlockStreamGivesTheSameResultForAnyWorkerCount(t *testing.T) {
 }
 
 // TestBlockStreamAgreesWithRStream is risk R5 and spec §6: different draws, same answer up
-// to Monte Carlo error (10 % at B = 1,000), on every shape. The two larger sizes are left to
+// to Monte Carlo error (15 % at B = 1,000, spike 002), on every shape. The two larger sizes are left to
 // the official comparison on the Mac, which runs all twelve data sets.
 func TestBlockStreamAgreesWithRStream(t *testing.T) {
 	for _, shape := range []string{"normal", "lognormal", "mirrored-lognormal"} {
@@ -58,7 +58,7 @@ func TestBlockStreamAgreesWithRStream(t *testing.T) {
 				t.Fatal(err)
 			}
 			for s, statistic := range []string{"mean", "median"} {
-				if difference := relativeDifference(fromBlocks[s], fromR[s]); difference > 0.10 {
+				if difference := relativeDifference(fromBlocks[s], fromR[s]); difference > 0.15 {
 					t.Errorf("%s, SE of the %s: block stream %v, R stream %v (%.1f %% apart)",
 						name, statistic, fromBlocks[s], fromR[s], 100*difference)
 				}
