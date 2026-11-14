@@ -27,6 +27,7 @@ r_package() {
   echo "cpus: $(sysctl -n hw.ncpu) (performance cores: $(sysctl -n hw.perflevel0.physicalcpu 2>/dev/null || echo n/a))"
   echo "go: $(have go version)"
   echo "git: $(have git --version)"
+  echo "gh (GitHub CLI): $(have gh --version)"
   echo "R: $(have R --version)"
   echo "Rscript: $(command -v Rscript >/dev/null 2>&1 && echo present || echo MISSING)"
   if command -v Rscript >/dev/null 2>&1; then
