@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -82,10 +84,18 @@ func TestRecordEqualsRsRecord(t *testing.T) {
 	if len(gotFields) != len(wantFields) {
 		t.Fatalf("got %d fields, want %d", len(gotFields), len(wantFields))
 	}
-	// Identical text for everything except the two summed quantities, where the last digit
-	// may differ between platforms (spec §6); those are compared in the bootstrap package.
-	for _, field := range []int{0, 1, 2, 3, 4, 5} {
+	// Identical text for the first six fields (through the sample median). The summed
+	// quantities may differ in the last digit between platforms (spec §6), so they are
+	// compared as numbers: this also catches the two standard errors being swapped.
+	for field := 0; field <= 5; field++ {
 		if gotFields[field] != wantFields[field] {
+			t.Errorf("field %d: got %q, R wrote %q", field, gotFields[field], wantFields[field])
+		}
+	}
+	for field := 6; field <= 8; field++ {
+		got, _ := strconv.ParseFloat(gotFields[field], 64)
+		want, _ := strconv.ParseFloat(wantFields[field], 64)
+		if math.Abs(got-want) > 1e-12*math.Abs(want) {
 			t.Errorf("field %d: got %q, R wrote %q", field, gotFields[field], wantFields[field])
 		}
 	}

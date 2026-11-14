@@ -41,12 +41,17 @@ bootstrap | each worker leaves a goroutine behind | caught
 bootstrap | block stream draws only the first half of the data | caught
 
 ## T09 command-line program (tests run the built binary)
-main | invalid input exits 1 instead of 2 | SURVIVED
-main | R stream with several workers not rejected by the command | SURVIVED
-main | default workers = CPUs for the R stream (the R1 CON-1 defect) | SURVIVED
-main | missing file exits 1 | SURVIVED
-main | -quiet ignored | SURVIVED
-main | median and mean swapped in the output | SURVIVED
+main | invalid input exits 1 instead of 2 | caught
+main | R stream with several workers not rejected by the command | caught
+main | default workers = CPUs for the R stream (the R1 CON-1 defect) | caught
+main | missing file exits 1 | caught
+main | -quiet ignored | caught
+main | median and mean swapped in the output | caught (after the record test was extended to compare the standard errors; it had survived)
 
-Note: for T09 the program was written before its tests (a lapse from test-first); the mutation
-checks above are the evidence that the tests would have failed without the behaviour.
+Notes on T09:
+- The program was written before its tests (a lapse from test-first); the mutation checks are the evidence
+  that the tests fail without the behaviour.
+- **The mutation check itself was wrong at first.** Every mutant "survived" because `go test` answered from
+  its result cache. Re-run with `-count=1`, five were caught and one really survived (now closed). All
+  mutation runs use `-count=1` from here on. Earlier "caught" results are unaffected: Go never caches a
+  failing run, so the cache can only produce a false "survived".
