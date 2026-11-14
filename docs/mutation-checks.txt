@@ -25,3 +25,10 @@ stats | correction not divided by n | caught
 stats | standard deviation of one value not NaN | caught
 stats | one-pass variance shortcut | caught
 stats | no correction pass in the mean | caught
+
+## T07 bootstrap (R stream)
+bootstrap | a fresh resample for each statistic | caught
+bootstrap | never draws the last observation | caught
+bootstrap | results stored in reverse order | caught
+bootstrap | R stream accepted with several workers | caught
+bootstrap | one replicate accepted | caught
