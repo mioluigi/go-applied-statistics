@@ -39,3 +39,14 @@ bootstrap | block stream ignores the seed | caught
 bootstrap | each worker skips its last replicate | caught
 bootstrap | each worker leaves a goroutine behind | caught
 bootstrap | block stream draws only the first half of the data | caught
+
+## T09 command-line program (tests run the built binary)
+main | invalid input exits 1 instead of 2 | SURVIVED
+main | R stream with several workers not rejected by the command | SURVIVED
+main | default workers = CPUs for the R stream (the R1 CON-1 defect) | SURVIVED
+main | missing file exits 1 | SURVIVED
+main | -quiet ignored | SURVIVED
+main | median and mean swapped in the output | SURVIVED
+
+Note: for T09 the program was written before its tests (a lapse from test-first); the mutation
+checks above are the evidence that the tests would have failed without the behaviour.
