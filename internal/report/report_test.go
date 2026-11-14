@@ -1,9 +1,11 @@
 package report
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -160,6 +162,131 @@ func TestReadPrices(t *testing.T) {
 	} {
 		if _, err := ReadPrices(writeFile(t, "prices.tsv", header+row)); err == nil {
 			t.Errorf("%s: a price without provenance was accepted", name)
+		}
+	}
+}
+
+// TestBlocksFromRealShapedResults generates every block from files with the layout
+// measure.sh writes (testdata/fixture; the numbers there are from a stand-in run).
+func TestBlocksFromRealShapedResults(t *testing.T) {
+	inputs, err := Load("testdata/fixture")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputs.Root = "../.." // line counts come from the real source files
+	blocks, err := inputs.Blocks()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bodies := map[string]string{}
+	for _, block := range blocks {
+		bodies[block.Name] = block.Body
+		if strings.Contains(block.Body, "NaN") || strings.Contains(block.Body, "Inf") {
+			t.Errorf("block %s contains NaN or Inf:\n%s", block.Name, block.Body)
+		}
+	}
+	for name, want := range map[string]string{
+		"headline":    "264 of 264 comparison checks passed; 12,000 of 12,000 resample medians are identical",
+		"correctness": "| Go (R stream) against R (sample loop): same draws | 72 of 72 |",
+		"startup":     "| R, empty script | 2 | 0.120 |",
+		"scaling":     "| 100,000 | Go, block stream (2 workers) | 1 |",
+		"cost":        "| AWS EC2 `c7g.medium` | 1 | 2 | us-east-1 (N. Virginia) | $0.0363 |",
+		"effort":      "| R: `r/bootstrap-se.R` (base R) |",
+		"predictions": "| P7 | Every different-draws check passes at 15 %",
+		"machine":     "- parallel workers: 2",
+		"benchmarks":  "| 1. Median by selection instead of sorting (n = 10,000) |",
+	} {
+		if !strings.Contains(bodies[name], want) {
+			t.Errorf("block %s lacks %q:\n%s", name, want, bodies[name])
+		}
+	}
+}
+
+// syntheticInputs builds results in which R takes 3.6 s and Go 0.36 s at every size, so the
+// cost figures can be checked by hand: $36.30 and $3.63 per million jobs on the 1-vCPU
+// instance, a saving of 90 %.
+func syntheticInputs() *Inputs {
+	inputs := &Inputs{
+		Prices: []Price{
+			{Provider: "AWS EC2", Instance: "c7g.medium", VCPUs: 1, USDPerHour: 0.0363, Source: "s", Captured: "d"},
+			{Provider: "AWS EC2", Instance: "c7g.2xlarge", VCPUs: 8, USDPerHour: 0.29, Source: "s", Captured: "d"},
+		},
+		Machine: []string{"parallel workers: 8"},
+	}
+	for _, n := range Sizes {
+		dataset := fmt.Sprintf("%s-%d.csv", ScalingShape, n)
+		add := func(implementation string, time float64) {
+			inputs.Summaries = append(inputs.Summaries, Summary{
+				Condition: Condition{"scaling", implementation, dataset}, Observations: n, Count: 200,
+				Mean: time, Median: time / 2, MeanComputeMs: time * 900, MeanFootprint: 1e6,
+			})
+		}
+		add("r-loop", 3.6)
+		add("go-r", 0.36)
+		add("go-block-multi", 0.09) // four times faster than one core, on eight workers
+	}
+	return inputs
+}
+
+func TestCostTablesAgainstHandComputedAnswers(t *testing.T) {
+	body, err := syntheticInputs().costTables()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		// Scenario A: $36.30 against $3.63; 90 % from means; medians are half of both, so also 90 %;
+		// $32.67 saved per million jobs, so 30,609 jobs save one dollar.
+		"| 100 | $36.30 | $3.63 | **90.0 %** | 90.0 % | 30,609 |",
+		// Scenario B on the 8-vCPU instance at $0.29: R 8 at once 125 h = $36.25; Go one-core $3.625,
+		// shown as $3.62 or $3.63 by rounding; parallel Go 0.09 s x 1e6 / 3600 = 25 h = $7.25.
+		"| $36.25 |", "| $7.25 | 90.0 % | 80.0 % |",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("cost tables lack %q:\n%s", want, body)
+		}
+	}
+}
+
+// TestNoSavingIsSaidPlainly: when Go costs as much as R or more, "jobs to save one dollar"
+// has no value; the table must say so and not print a meaningless number.
+func TestNoSavingIsSaidPlainly(t *testing.T) {
+	inputs := syntheticInputs()
+	for i := range inputs.Summaries {
+		if inputs.Summaries[i].Implementation == "go-r" {
+			inputs.Summaries[i].Mean, inputs.Summaries[i].Median = 3.6, 1.8 // as slow as R
+		}
+	}
+	body, err := inputs.costTables()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(body, "| **0.0 %** | 0.0 % | no saving |") {
+		t.Errorf("a zero saving is not reported plainly:\n%s", body)
+	}
+}
+
+func TestInsertBlocks(t *testing.T) {
+	blocks := []Block{{"alpha", "A1\n"}, {"beta", "B1\nB2\n"}}
+	document := "intro\n<!-- generated:alpha:start -->\nold\n<!-- generated:alpha:end -->\nmiddle\n" +
+		"<!-- generated:beta:start -->\n<!-- generated:beta:end -->\nend\n"
+	want := "intro\n<!-- generated:alpha:start -->\nA1\n<!-- generated:alpha:end -->\nmiddle\n" +
+		"<!-- generated:beta:start -->\nB1\nB2\n<!-- generated:beta:end -->\nend\n"
+	got, err := InsertBlocks(document, blocks)
+	if err != nil || got != want {
+		t.Fatalf("got %q, %v\nwant %q", got, err, want)
+	}
+	if again, _ := InsertBlocks(got, blocks); again != got {
+		t.Error("inserting twice changed the document")
+	}
+	for name, broken := range map[string]string{
+		"missing block":   "<!-- generated:alpha:start -->\n<!-- generated:alpha:end -->\n",
+		"duplicate start": document + "<!-- generated:alpha:start -->\n",
+		"end before start": "<!-- generated:alpha:end -->\n<!-- generated:alpha:start -->\n" +
+			"<!-- generated:beta:start -->\n<!-- generated:beta:end -->\n",
+		"unknown marker": document + "<!-- generated:gamma:start -->\n<!-- generated:gamma:end -->\n",
+	} {
+		if _, err := InsertBlocks(broken, blocks); err == nil {
+			t.Errorf("%s: accepted", name)
 		}
 	}
 }

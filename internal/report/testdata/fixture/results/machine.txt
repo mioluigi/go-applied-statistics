@@ -1,0 +1,12 @@
+machine: stub · stub · 16 GB · macOS 15.0
+cpus: 2
+parallel workers: 2
+go: go1.24.7
+r: R stand-in (test only)
+r package boot: 0.0
+commit: 156ba7b
+measured: 2026-11-14 17:26 EST
+runs per condition: 2 (large conditions: 1); B = 1000; seed = 431
+time tool: /tmp/stub/faketime
+load average (1 minute) before: 
+load average (1 minute) after: 
