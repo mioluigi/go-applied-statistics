@@ -32,3 +32,10 @@ bootstrap | never draws the last observation | caught
 bootstrap | results stored in reverse order | caught
 bootstrap | R stream accepted with several workers | caught
 bootstrap | one replicate accepted | caught
+
+## T08 bootstrap (block stream, workers)
+bootstrap | block stream ignores the replicate number | caught
+bootstrap | block stream ignores the seed | caught
+bootstrap | each worker skips its last replicate | caught
+bootstrap | each worker leaves a goroutine behind | caught
+bootstrap | block stream draws only the first half of the data | caught
