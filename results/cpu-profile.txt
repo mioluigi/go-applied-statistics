@@ -1,0 +1,24 @@
+# go tool pprof -top: bootse -data data/lognormal-100000.csv (B = 1,000, R stream)
+File: bootse
+Type: cpu
+Time: 2026-11-14 18:22:50 EST
+Duration: 3.33s, Total samples = 2890ms (86.73%)
+Showing nodes accounting for 2870ms, 99.31% of 2890ms total
+Dropped 4 nodes (cum <= 14.45ms)
+Showing top 15 nodes out of 20
+      flat  flat%   sum%        cum   cum%
+     830ms 28.72% 28.72%      860ms 29.76%  github.com/mioluigi/go-applied-statistics/stats.selectPosition
+     730ms 25.26% 53.98%     1700ms 58.82%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).Index
+     480ms 16.61% 70.59%      480ms 16.61%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).refill (inline)
+     310ms 10.73% 81.31%      800ms 27.68%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).uint32
+     170ms  5.88% 87.20%      970ms 33.56%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).Float64 (inline)
+     140ms  4.84% 92.04%      150ms  5.19%  github.com/mioluigi/go-applied-statistics/stats.Mean
+      80ms  2.77% 94.81%     1780ms 61.59%  github.com/mioluigi/go-applied-statistics/bootstrap.fillResample (inline)
+      60ms  2.08% 96.89%       60ms  2.08%  runtime.pthread_cond_signal
+      40ms  1.38% 98.27%       40ms  1.38%  runtime.asyncPreempt
+      30ms  1.04% 99.31%       30ms  1.04%  slices.Max[go.shape.[]float64,go.shape.float64] (inline)
+         0     0% 99.31%     2820ms 97.58%  github.com/mioluigi/go-applied-statistics/bootstrap.Replicates.func1
+         0     0% 99.31%      890ms 30.80%  github.com/mioluigi/go-applied-statistics/stats.MedianInPlace
+         0     0% 99.31%       80ms  2.77%  runtime.gopreempt_m (inline)
+         0     0% 99.31%       80ms  2.77%  runtime.goschedImpl
+         0     0% 99.31%       70ms  2.42%  runtime.morestack

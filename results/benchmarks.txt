@@ -1,0 +1,99 @@
+# go test -run '^$' -bench . -benchmem -count 5 ./rrand ./stats ./bootstrap
+goos: darwin
+goarch: arm64
+pkg: github.com/mioluigi/go-applied-statistics/rrand
+cpu: Apple M1 Max
+BenchmarkFloat64-10       	253119944	         4.625 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64-10       	265127112	         4.520 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64-10       	264852841	         4.517 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64-10       	264896470	         4.542 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64-10       	265245906	         4.524 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100-10         	50242839	        24.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100-10         	49606590	        24.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100-10         	49524870	        24.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100-10         	50028400	        24.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100-10         	49378226	        24.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100-10          	91095422	        13.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100-10          	90930900	        13.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100-10          	90148740	        13.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100-10          	90481251	        13.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100-10          	90466183	        13.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100000-10      	36844050	        31.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100000-10      	38671887	        31.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100000-10      	38922968	        31.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100000-10      	38364856	        31.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/before=logarithm/n=100000-10      	38377485	        31.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100000-10       	56618127	        21.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100000-10       	57068689	        21.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100000-10       	56876080	        21.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100000-10       	57299065	        21.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep3Index/after=bitlength/n=100000-10       	56771811	        21.13 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/mioluigi/go-applied-statistics/rrand	30.639s
+goos: darwin
+goarch: arm64
+pkg: github.com/mioluigi/go-applied-statistics/stats
+cpu: Apple M1 Max
+BenchmarkStep1Median/before=sort-10         	    2125	    562875 ns/op	   81922 B/op	       1 allocs/op
+BenchmarkStep1Median/before=sort-10         	    2118	    563685 ns/op	   81920 B/op	       1 allocs/op
+BenchmarkStep1Median/before=sort-10         	    2155	    562336 ns/op	   81920 B/op	       1 allocs/op
+BenchmarkStep1Median/before=sort-10         	    2148	    559105 ns/op	   81920 B/op	       1 allocs/op
+BenchmarkStep1Median/before=sort-10         	    2154	    562189 ns/op	   81920 B/op	       1 allocs/op
+BenchmarkStep1Median/after=select-10        	   27907	     39295 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep1Median/after=select-10        	   35428	     32407 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep1Median/after=select-10        	   41788	     29984 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep1Median/after=select-10        	   40090	     32092 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStep1Median/after=select-10        	   35671	     32664 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/mioluigi/go-applied-statistics/stats	12.124s
+goos: darwin
+goarch: arm64
+pkg: github.com/mioluigi/go-applied-statistics/bootstrap
+cpu: Apple M1 Max
+BenchmarkStep2Resample/before=allocate-10         	      33	  35529062 ns/op	 8196545 B/op	     104 allocs/op
+BenchmarkStep2Resample/before=allocate-10         	      33	  35085730 ns/op	 8196548 B/op	     104 allocs/op
+BenchmarkStep2Resample/before=allocate-10         	      33	  35138069 ns/op	 8196541 B/op	     104 allocs/op
+BenchmarkStep2Resample/before=allocate-10         	      33	  35153821 ns/op	 8196561 B/op	     104 allocs/op
+BenchmarkStep2Resample/before=allocate-10         	      33	  35192175 ns/op	 8196712 B/op	     104 allocs/op
+BenchmarkStep2Resample/after=reuse-10             	      33	  34780220 ns/op	   86622 B/op	       7 allocs/op
+BenchmarkStep2Resample/after=reuse-10             	      33	  34729360 ns/op	   86608 B/op	       7 allocs/op
+BenchmarkStep2Resample/after=reuse-10             	      33	  34805768 ns/op	   86608 B/op	       7 allocs/op
+BenchmarkStep2Resample/after=reuse-10             	      33	  34793347 ns/op	   86622 B/op	       7 allocs/op
+BenchmarkStep2Resample/after=reuse-10             	      33	  34809768 ns/op	   86608 B/op	       7 allocs/op
+BenchmarkEngine/before/n=1000-10                  	     223	   5392282 ns/op	 1642934 B/op	     204 allocs/op
+BenchmarkEngine/before/n=1000-10                  	     220	   5400249 ns/op	 1642933 B/op	     204 allocs/op
+BenchmarkEngine/before/n=1000-10                  	     222	   5405726 ns/op	 1642931 B/op	     204 allocs/op
+BenchmarkEngine/before/n=1000-10                  	     222	   5400988 ns/op	 1642934 B/op	     204 allocs/op
+BenchmarkEngine/before/n=1000-10                  	     219	   5430482 ns/op	 1642933 B/op	     204 allocs/op
+BenchmarkEngine/after/n=1000-10                   	     667	   1793706 ns/op	   12896 B/op	       8 allocs/op
+BenchmarkEngine/after/n=1000-10                   	     670	   1791086 ns/op	   12896 B/op	       8 allocs/op
+BenchmarkEngine/after/n=1000-10                   	     668	   1792896 ns/op	   12896 B/op	       8 allocs/op
+BenchmarkEngine/after/n=1000-10                   	     668	   1799037 ns/op	   12896 B/op	       8 allocs/op
+BenchmarkEngine/after/n=1000-10                   	     667	   1791280 ns/op	   12896 B/op	       8 allocs/op
+BenchmarkEngine/before/n=100000-10                	       2	 957402021 ns/op	160568008 B/op	     206 allocs/op
+BenchmarkEngine/before/n=100000-10                	       2	 957972833 ns/op	160568120 B/op	     207 allocs/op
+BenchmarkEngine/before/n=100000-10                	       2	 971205770 ns/op	160568232 B/op	     208 allocs/op
+BenchmarkEngine/before/n=100000-10                	       2	 961067188 ns/op	160567840 B/op	     205 allocs/op
+BenchmarkEngine/before/n=100000-10                	       2	 954425584 ns/op	160567784 B/op	     204 allocs/op
+BenchmarkEngine/after/n=100000-10                 	       4	 313710260 ns/op	  807640 B/op	       8 allocs/op
+BenchmarkEngine/after/n=100000-10                 	       4	 335187938 ns/op	  807640 B/op	       8 allocs/op
+BenchmarkEngine/after/n=100000-10                 	       4	 322646552 ns/op	  807640 B/op	       8 allocs/op
+BenchmarkEngine/after/n=100000-10                 	       4	 315323823 ns/op	  807640 B/op	       8 allocs/op
+BenchmarkEngine/after/n=100000-10                 	       4	 313851198 ns/op	  807520 B/op	       8 allocs/op
+BenchmarkWorkers/workers=1-10                     	       7	 153510054 ns/op	  130518 B/op	    2007 allocs/op
+BenchmarkWorkers/workers=1-10                     	       7	 154547917 ns/op	  130516 B/op	    2007 allocs/op
+BenchmarkWorkers/workers=1-10                     	       7	 153844214 ns/op	  130585 B/op	    2007 allocs/op
+BenchmarkWorkers/workers=1-10                     	       7	 153527214 ns/op	  130516 B/op	    2007 allocs/op
+BenchmarkWorkers/workers=1-10                     	       7	 153516595 ns/op	  130516 B/op	    2007 allocs/op
+BenchmarkWorkers/workers=10-10                    	      40	  28165189 ns/op	  871364 B/op	    2029 allocs/op
+BenchmarkWorkers/workers=10-10                    	      40	  28472695 ns/op	  869763 B/op	    2026 allocs/op
+BenchmarkWorkers/workers=10-10                    	      55	  27194644 ns/op	  869712 B/op	    2026 allocs/op
+BenchmarkWorkers/workers=10-10                    	      42	  28394832 ns/op	  869645 B/op	    2026 allocs/op
+BenchmarkWorkers/workers=10-10                    	      40	  27741257 ns/op	  869484 B/op	    2025 allocs/op
+BenchmarkCourseStudyVolume-10                     	       6	 181402583 ns/op	 1437888 B/op	    2401 allocs/op
+BenchmarkCourseStudyVolume-10                     	       6	 185981028 ns/op	 1437888 B/op	    2401 allocs/op
+BenchmarkCourseStudyVolume-10                     	       6	 179907056 ns/op	 1437888 B/op	    2401 allocs/op
+BenchmarkCourseStudyVolume-10                     	       6	 179818056 ns/op	 1437888 B/op	    2401 allocs/op
+BenchmarkCourseStudyVolume-10                     	       6	 179371368 ns/op	 1437888 B/op	    2401 allocs/op
+PASS
+ok  	github.com/mioluigi/go-applied-statistics/bootstrap	56.600s

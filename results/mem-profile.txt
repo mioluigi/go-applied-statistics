@@ -1,0 +1,17 @@
+# go tool pprof -sample_index=alloc_space -top: same run
+File: bootse
+Type: alloc_space
+Time: 2026-11-14 18:22:54 EST
+Showing nodes accounting for 12556.79kB, 100% of 12556.79kB total
+Showing top 10 nodes out of 34
+      flat  flat%   sum%        cum   cum%
+ 4690.70kB 37.36% 37.36%  6226.72kB 49.59%  github.com/mioluigi/go-applied-statistics/dataset.Read
+ 1762.94kB 14.04% 51.40%  1762.94kB 14.04%  runtime/pprof.StartCPUProfile
+ 1536.02kB 12.23% 63.63%  1536.02kB 12.23%  bufio.(*Scanner).Text (inline)
+ 1025.05kB  8.16% 71.79%  1025.05kB  8.16%  runtime.mallocgc
+ 1000.34kB  7.97% 79.76%  1000.34kB  7.97%  github.com/mioluigi/go-applied-statistics/bootstrap.Replicates.func1
+ 1000.34kB  7.97% 87.72%  1000.34kB  7.97%  slices.Clone[go.shape.[]float64,go.shape.float64]
+  516.01kB  4.11% 91.83%   516.01kB  4.11%  runtime/pprof.(*profMap).lookup
+  513.31kB  4.09% 95.92%   513.31kB  4.09%  github.com/mioluigi/go-applied-statistics/rrand.New (inline)
+  512.08kB  4.08%   100%   512.08kB  4.08%  compress/gzip.NewWriterLevel
+         0     0%   100%   513.31kB  4.09%  github.com/mioluigi/go-applied-statistics/bootstrap.RStream

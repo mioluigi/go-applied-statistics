@@ -1,0 +1,265 @@
+comparison	dataset	quantity	reference	candidate	difference	limit	result
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	n	100	100	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	sample median	80.507249999999999	80.507249999999999	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	sample mean	98.070451000000006	98.070451000000006	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	SE of the median	4.0772074066026125	4.0772074066026125	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	SE of the mean	4.8625914743888847	4.8625914743888847	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	sample median	86.648300000000006	86.648300000000006	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	sample mean	97.8793036	97.8793036	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	SE of the median	1.503050518008813	1.503050518008813	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	SE of the mean	1.7145995070818436	1.7145995070818436	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-1000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	sample median	87.711999999999989	87.711999999999989	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	sample mean	99.816511149999997	99.816511149999997	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	SE of the median	0.5438321120338423	0.5438321120338423	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	SE of the mean	0.53524474366037311	0.53524474366037311	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-10000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	sample median	88.196650000000005	88.196650000000005	0	0	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	sample mean	99.992234879999998	99.992234879999998	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	SE of the median	0.16103386274491507	0.16103386274491507	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	SE of the mean	0.16687788969802841	0.16687788969802844	1.66e-16	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	lognormal-100000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	n	100	100	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	sample median	118.12325	118.12325	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	sample mean	101.73259299999999	101.73259299999999	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	SE of the median	5.7334590566317019	5.7334590566317019	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	SE of the mean	5.9193362901572817	5.9193362901572817	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	sample median	111.94655	111.94655	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	sample mean	99.466055699999998	99.466055699999998	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	SE of the median	1.6111128853642838	1.6111128853642835	1.38e-16	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	SE of the mean	1.7677389414214255	1.7677389414214255	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-1000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	sample median	111.94839999999999	111.94839999999999	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	sample mean	100.30829634	100.30829634	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	SE of the median	0.5151176070190171	0.5151176070190171	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	SE of the mean	0.52326663409114393	0.52326663409114393	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-10000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	sample median	111.81999999999999	111.81999999999999	0	0	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	sample mean	100.09574339300001	100.09574339300001	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	SE of the median	0.18426418878122966	0.18426418878122966	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	SE of the mean	0.16291773799333317	0.1629177379933332	1.7e-16	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	mirrored-lognormal-100000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	n	100	100	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	sample median	100.51249999999999	100.51249999999999	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	sample mean	101.748766	101.748766	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	SE of the median	1.0960029158152258	1.096002915815226	2.03e-16	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	SE of the mean	0.98043117428606086	0.98043117428606086	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	n	1000	1000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	sample median	99.735050000000001	99.735050000000001	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	sample mean	99.575656100000003	99.575656100000003	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	SE of the median	0.4867195965652924	0.4867195965652924	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	SE of the mean	0.32148662782338172	0.32148662782338172	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-1000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	n	10000	10000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	sample median	99.919550000000001	99.919550000000001	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	sample mean	99.952609179999996	99.952609179999996	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	SE of the median	0.11934593452010248	0.11934593452010248	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	SE of the mean	0.1026532157917141	0.1026532157917141	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-10000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	n	100000	100000	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	sample median	99.996700000000004	99.996700000000004	0	0	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	sample mean	99.998219122999998	99.998219122999998	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	SE of the median	0.04006430372202005	0.04006430372202005	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	SE of the mean	0.031663517903663889	0.031663517903663889	0	1e-12	PASS
+Go (R stream) against R (sample loop): same draws	normal-100000.csv	resample medians differing (of 1000)	0	0	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100.csv	n	100	100	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100.csv	sample median	80.507249999999999	80.507249999999999	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100.csv	sample mean	98.070451000000006	98.070451000000006	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100.csv	SE of the median	4.0772074066026125	4.2046259837744531	0.0313	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100.csv	SE of the mean	4.8625914743888847	4.9902767254449572	0.0263	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-1000.csv	sample median	86.648300000000006	86.648300000000006	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-1000.csv	sample mean	97.8793036	97.8793036	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-1000.csv	SE of the median	1.503050518008813	1.5390110210425931	0.0239	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-1000.csv	SE of the mean	1.7145995070818436	1.7159476269489826	0.000786	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-10000.csv	sample median	87.711999999999989	87.711999999999989	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-10000.csv	sample mean	99.816511149999997	99.816511149999997	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-10000.csv	SE of the median	0.5438321120338423	0.56521267174968381	0.0393	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-10000.csv	SE of the mean	0.53524474366037311	0.5348448397894533	0.000747	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100000.csv	sample median	88.196650000000005	88.196650000000005	0	0	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100000.csv	sample mean	99.992234879999998	99.992234879999998	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100000.csv	SE of the median	0.16103386274491507	0.16082860626073092	0.00127	0.15	PASS
+Go (block stream) against R (sample loop): different draws	lognormal-100000.csv	SE of the mean	0.16687788969802841	0.16225254971198058	0.0277	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100.csv	n	100	100	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100.csv	sample median	118.12325	118.12325	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100.csv	sample mean	101.73259299999999	101.73259299999999	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100.csv	SE of the median	5.7334590566317019	5.9349671310512493	0.0351	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100.csv	SE of the mean	5.9193362901572817	5.9212564149365097	0.000324	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-1000.csv	sample median	111.94655	111.94655	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-1000.csv	sample mean	99.466055699999998	99.466055699999998	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-1000.csv	SE of the median	1.6111128853642838	1.5916647364894327	0.0121	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-1000.csv	SE of the mean	1.7677389414214255	1.7838879585356389	0.00914	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-10000.csv	sample median	111.94839999999999	111.94839999999999	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-10000.csv	sample mean	100.30829634	100.30829634	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-10000.csv	SE of the median	0.5151176070190171	0.53872602687991133	0.0458	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-10000.csv	SE of the mean	0.52326663409114393	0.54212569417928314	0.036	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100000.csv	sample median	111.81999999999999	111.81999999999999	0	0	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100000.csv	sample mean	100.09574339300001	100.09574339300001	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100000.csv	SE of the median	0.18426418878122966	0.19150453241878349	0.0393	0.15	PASS
+Go (block stream) against R (sample loop): different draws	mirrored-lognormal-100000.csv	SE of the mean	0.16291773799333317	0.1684641759678531	0.034	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-100.csv	n	100	100	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-100.csv	sample median	100.51249999999999	100.51249999999999	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-100.csv	sample mean	101.748766	101.748766	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	normal-100.csv	SE of the median	1.0960029158152258	1.0533446218477458	0.0389	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-100.csv	SE of the mean	0.98043117428606086	0.96450970027251237	0.0162	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-1000.csv	sample median	99.735050000000001	99.735050000000001	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-1000.csv	sample mean	99.575656100000003	99.575656100000003	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	normal-1000.csv	SE of the median	0.4867195965652924	0.45527284329100798	0.0646	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-1000.csv	SE of the mean	0.32148662782338172	0.3132044429105843	0.0258	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-10000.csv	sample median	99.919550000000001	99.919550000000001	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-10000.csv	sample mean	99.952609179999996	99.952609179999996	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	normal-10000.csv	SE of the median	0.11934593452010248	0.11716893637030129	0.0182	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-10000.csv	SE of the mean	0.1026532157917141	0.10205549168436577	0.00582	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-100000.csv	sample median	99.996700000000004	99.996700000000004	0	0	PASS
+Go (block stream) against R (sample loop): different draws	normal-100000.csv	sample mean	99.998219122999998	99.998219122999998	0	1e-12	PASS
+Go (block stream) against R (sample loop): different draws	normal-100000.csv	SE of the median	0.04006430372202005	0.039003303021976653	0.0265	0.15	PASS
+Go (block stream) against R (sample loop): different draws	normal-100000.csv	SE of the mean	0.031663517903663889	0.030845616505051264	0.0258	0.15	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100.csv	n	100	100	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100.csv	sample median	80.507249999999999	80.507249999999999	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100.csv	sample mean	98.070451000000006	98.070451000000006	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100.csv	SE of the median	4.2046259837744531	4.2046259837744531	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100.csv	SE of the mean	4.9902767254449572	4.9902767254449572	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-1000.csv	sample median	86.648300000000006	86.648300000000006	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-1000.csv	sample mean	97.8793036	97.8793036	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-1000.csv	SE of the median	1.5390110210425931	1.5390110210425931	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-1000.csv	SE of the mean	1.7159476269489826	1.7159476269489826	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-10000.csv	sample median	87.711999999999989	87.711999999999989	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-10000.csv	sample mean	99.816511149999997	99.816511149999997	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-10000.csv	SE of the median	0.56521267174968381	0.56521267174968381	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-10000.csv	SE of the mean	0.5348448397894533	0.5348448397894533	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100000.csv	sample median	88.196650000000005	88.196650000000005	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100000.csv	sample mean	99.992234879999998	99.992234879999998	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100000.csv	SE of the median	0.16082860626073092	0.16082860626073092	0	0	PASS
+Go (block stream), 10 workers against 1 worker	lognormal-100000.csv	SE of the mean	0.16225254971198058	0.16225254971198058	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100.csv	n	100	100	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100.csv	sample median	118.12325	118.12325	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100.csv	sample mean	101.73259299999999	101.73259299999999	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100.csv	SE of the median	5.9349671310512493	5.9349671310512493	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100.csv	SE of the mean	5.9212564149365097	5.9212564149365097	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-1000.csv	sample median	111.94655	111.94655	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-1000.csv	sample mean	99.466055699999998	99.466055699999998	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-1000.csv	SE of the median	1.5916647364894327	1.5916647364894327	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-1000.csv	SE of the mean	1.7838879585356389	1.7838879585356389	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-10000.csv	sample median	111.94839999999999	111.94839999999999	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-10000.csv	sample mean	100.30829634	100.30829634	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-10000.csv	SE of the median	0.53872602687991133	0.53872602687991133	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-10000.csv	SE of the mean	0.54212569417928314	0.54212569417928314	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100000.csv	sample median	111.81999999999999	111.81999999999999	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100000.csv	sample mean	100.09574339300001	100.09574339300001	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100000.csv	SE of the median	0.19150453241878349	0.19150453241878349	0	0	PASS
+Go (block stream), 10 workers against 1 worker	mirrored-lognormal-100000.csv	SE of the mean	0.1684641759678531	0.1684641759678531	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100.csv	n	100	100	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100.csv	sample median	100.51249999999999	100.51249999999999	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100.csv	sample mean	101.748766	101.748766	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100.csv	SE of the median	1.0533446218477458	1.0533446218477458	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100.csv	SE of the mean	0.96450970027251237	0.96450970027251237	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-1000.csv	n	1000	1000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-1000.csv	sample median	99.735050000000001	99.735050000000001	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-1000.csv	sample mean	99.575656100000003	99.575656100000003	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-1000.csv	SE of the median	0.45527284329100798	0.45527284329100798	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-1000.csv	SE of the mean	0.3132044429105843	0.3132044429105843	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-10000.csv	n	10000	10000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-10000.csv	sample median	99.919550000000001	99.919550000000001	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-10000.csv	sample mean	99.952609179999996	99.952609179999996	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-10000.csv	SE of the median	0.11716893637030129	0.11716893637030129	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-10000.csv	SE of the mean	0.10205549168436577	0.10205549168436577	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100000.csv	n	100000	100000	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100000.csv	sample median	99.996700000000004	99.996700000000004	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100000.csv	sample mean	99.998219122999998	99.998219122999998	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100000.csv	SE of the median	0.039003303021976653	0.039003303021976653	0	0	PASS
+Go (block stream), 10 workers against 1 worker	normal-100000.csv	SE of the mean	0.030845616505051264	0.030845616505051264	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100.csv	n	100	100	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100.csv	sample median	80.507249999999999	80.507249999999999	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100.csv	sample mean	98.070451000000006	98.070451000000006	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100.csv	SE of the median	4.0772074066026125	4.1340774197074452	0.0139	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100.csv	SE of the mean	4.8625914743888847	5.0517835553294947	0.0389	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-1000.csv	n	1000	1000	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-1000.csv	sample median	86.648300000000006	86.648300000000006	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-1000.csv	sample mean	97.8793036	97.8793036	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	lognormal-1000.csv	SE of the median	1.503050518008813	1.5442582547127548	0.0274	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-1000.csv	SE of the mean	1.7145995070818436	1.7239710285052126	0.00547	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-10000.csv	n	10000	10000	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-10000.csv	sample median	87.711999999999989	87.711999999999989	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-10000.csv	sample mean	99.816511149999997	99.816511149999997	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	lognormal-10000.csv	SE of the median	0.5438321120338423	0.55184695757825719	0.0147	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-10000.csv	SE of the mean	0.53524474366037311	0.53198948452547878	0.00608	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100000.csv	n	100000	100000	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100000.csv	sample median	88.196650000000005	88.196650000000005	0	0	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100000.csv	sample mean	99.992234879999998	99.992234879999998	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100000.csv	SE of the median	0.16103386274491507	0.16658770333341505	0.0345	0.15	PASS
+R (boot package) against R (sample loop): different draws	lognormal-100000.csv	SE of the mean	0.16687788969802841	0.16667589386589488	0.00121	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100.csv	n	100	100	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100.csv	sample median	118.12325	118.12325	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100.csv	sample mean	101.73259299999999	101.73259299999999	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100.csv	SE of the median	5.7334590566317019	5.7925595575154327	0.0103	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100.csv	SE of the mean	5.9193362901572817	5.6927448906651259	0.0383	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-1000.csv	n	1000	1000	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-1000.csv	sample median	111.94655	111.94655	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-1000.csv	sample mean	99.466055699999998	99.466055699999998	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-1000.csv	SE of the median	1.6111128853642838	1.5804344982199536	0.019	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-1000.csv	SE of the mean	1.7677389414214255	1.7308446038424057	0.0209	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-10000.csv	n	10000	10000	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-10000.csv	sample median	111.94839999999999	111.94839999999999	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-10000.csv	sample mean	100.30829634	100.30829634	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-10000.csv	SE of the median	0.5151176070190171	0.51953001959691658	0.00857	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-10000.csv	SE of the mean	0.52326663409114393	0.53840578471110356	0.0289	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100000.csv	n	100000	100000	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100000.csv	sample median	111.81999999999999	111.81999999999999	0	0	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100000.csv	sample mean	100.09574339300001	100.09574339300001	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100000.csv	SE of the median	0.18426418878122966	0.18078871760484166	0.0189	0.15	PASS
+R (boot package) against R (sample loop): different draws	mirrored-lognormal-100000.csv	SE of the mean	0.16291773799333317	0.16709454127130799	0.0256	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-100.csv	n	100	100	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-100.csv	sample median	100.51249999999999	100.51249999999999	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-100.csv	sample mean	101.748766	101.748766	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	normal-100.csv	SE of the median	1.0960029158152258	1.1016518643559785	0.00515	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-100.csv	SE of the mean	0.98043117428606086	0.97394254260954793	0.00662	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-1000.csv	n	1000	1000	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-1000.csv	sample median	99.735050000000001	99.735050000000001	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-1000.csv	sample mean	99.575656100000003	99.575656100000003	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	normal-1000.csv	SE of the median	0.4867195965652924	0.45506844039793221	0.065	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-1000.csv	SE of the mean	0.32148662782338172	0.30818792881632057	0.0414	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-10000.csv	n	10000	10000	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-10000.csv	sample median	99.919550000000001	99.919550000000001	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-10000.csv	sample mean	99.952609179999996	99.952609179999996	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	normal-10000.csv	SE of the median	0.11934593452010248	0.11479551262656909	0.0381	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-10000.csv	SE of the mean	0.1026532157917141	0.097868191365109033	0.0466	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-100000.csv	n	100000	100000	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-100000.csv	sample median	99.996700000000004	99.996700000000004	0	0	PASS
+R (boot package) against R (sample loop): different draws	normal-100000.csv	sample mean	99.998219122999998	99.998219122999998	0	1e-12	PASS
+R (boot package) against R (sample loop): different draws	normal-100000.csv	SE of the median	0.04006430372202005	0.039965562819150396	0.00246	0.15	PASS
+R (boot package) against R (sample loop): different draws	normal-100000.csv	SE of the mean	0.031663517903663889	0.031741966927144261	0.00248	0.15	PASS
+Go (R stream) against theory	lognormal-100.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	5.0358568686636627	4.8625914743888847	0.0344	0.1	PASS
+Go (R stream) against theory	lognormal-1000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	1.6963945850127173	1.7145995070818436	0.0107	0.1	PASS
+Go (R stream) against theory	lognormal-10000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.52788134514690876	0.53524474366037311	0.0139	0.1	PASS
+Go (R stream) against theory	lognormal-100000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.16770033181860994	0.16687788969802844	0.0049	0.1	PASS
+Go (R stream) against theory	mirrored-lognormal-100.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	5.8200174204932171	5.9193362901572817	0.0171	0.1	PASS
+Go (R stream) against theory	mirrored-lognormal-1000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	1.743174485884327	1.7677389414214255	0.0141	0.1	PASS
+Go (R stream) against theory	mirrored-lognormal-10000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.53378574755684727	0.52326663409114393	0.0197	0.1	PASS
+Go (R stream) against theory	mirrored-lognormal-100000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.16797033532225575	0.1629177379933332	0.0301	0.1	PASS
+Go (R stream) against theory	normal-100.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.96673380775290985	0.98043117428606086	0.0142	0.1	PASS
+Go (R stream) against theory	normal-1000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.31010430352325463	0.32148662782338172	0.0367	0.1	PASS
+Go (R stream) against theory	normal-10000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.099357609112855433	0.1026532157917141	0.0332	0.1	PASS
+Go (R stream) against theory	normal-100000.csv	SE of the mean against sqrt((n-1)/n)*s/sqrt(n)	0.031678555585852988	0.031663517903663889	0.000475	0.1	PASS
