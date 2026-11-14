@@ -1,0 +1,19 @@
+# Mutation checks
+
+Each line: package | mutation applied to the code | outcome when the tests were run against it.
+A mutation that only breaks compilation does not count as caught (SFEDD §5.5). Run in Claude's workspace, 2026-11-14.
+
+## T02 rrand
+rrand | 49 scramble rounds instead of 50 | caught
+rrand | do not discard the position-counter draw | caught
+rrand | one uniform too few when bits is a multiple of 16 | SURVIVED
+rrand | wrong tempering shift | caught
+rrand | accept candidate equal to n | caught
+rrand | no nudge away from 0 | caught
+rrand | modulo instead of rejection | caught
+
+Open: "one uniform too few when bits is a multiple of 16" survived because the R reference has no size
+needing exactly 16 bits (32,769 to 65,536) and no n = 1 case. A reference for those sizes is requested
+from the Mac in T05; the mutation is re-run when it arrives.
+Closed by a new test: "no nudge away from 0" first survived (the generator returns 0 once in 2^32 draws);
+TestFloat64IsNeverZeroOrOne now sets the state directly.

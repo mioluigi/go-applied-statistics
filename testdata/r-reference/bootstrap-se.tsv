@@ -1,0 +1,4 @@
+# R version 4.4.2 (2024-10-31); RNGkind: Mersenne-Twister / Inversion / Rejection; x = (37 * i) mod 101; sample(x, n, replace = TRUE)
+n	replicates	seed	se_median	se_mean	sample_median
+25	200	431	9.6785923952695132	5.3149252669218976	47
+100	200	431	5.0143412419232352	2.9716934244711761	50.5
