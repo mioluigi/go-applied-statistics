@@ -8,6 +8,8 @@ generator settings and the call that produced it.
 |---|---|---|
 | `sample-indices.tsv` | `r/spike/parity-reference.R` via `scripts/spike-r-baseline.sh` | `bf5b5ba` |
 | `bootstrap-se.tsv` | same | `bf5b5ba` |
+| `sample-indices-edge.tsv` | `r/reference/edge-indices.R` via `scripts/make-data.sh` | `9e1685f` |
+| `lognormal-1000-record.tsv`, `lognormal-1000-medians.tsv` | `r/bootstrap-se.R data/lognormal-1000.csv 1000 431` via `scripts/make-data.sh` | `9e1685f` |
 | `runif.tsv` | `scripts/env-probe.sh` (values copied from `docs/spikes/env-mac.txt`) | `80060ad` |
 
 Do not edit by hand. To regenerate, run the producing script on the Mac.

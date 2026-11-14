@@ -82,6 +82,32 @@ func TestIndexMatchesSampleInt(t *testing.T) {
 	}
 }
 
+// TestIndexMatchesSampleIntAtBitBoundaries covers the sizes where R's 16-bits-per-uniform loop
+// changes behaviour: n = 1 and 2, exactly 16 bits (40,000 and 65,536) and 17 bits (65,537).
+// The uniform number R drew after the indices proves the same count of numbers was consumed.
+func TestIndexMatchesSampleIntAtBitBoundaries(t *testing.T) {
+	for _, row := range referenceRows(t, "sample-indices-edge.tsv") {
+		n := atoi(t, row[0])
+		generator := New(431)
+		mismatches := 0
+		for _, field := range strings.Fields(row[1]) {
+			if generator.Index(n)+1 != atoi(t, field) {
+				mismatches++
+			}
+		}
+		if mismatches > 0 {
+			t.Errorf("n = %d: %d draws differ from R", n, mismatches)
+		}
+		wantNext, err := strconv.ParseFloat(row[2], 64)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := generator.Float64(); got != wantNext {
+			t.Errorf("n = %d: next uniform %.17g, R gave %.17g (a different number of draws was consumed)", n, got, wantNext)
+		}
+	}
+}
+
 // TestIndexStaysInRange covers sizes the reference file does not, including n = 1 and
 // exact powers of two, where the rejection mask is tightest.
 func TestIndexStaysInRange(t *testing.T) {

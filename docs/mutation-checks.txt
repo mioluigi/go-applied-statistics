@@ -12,9 +12,7 @@ rrand | accept candidate equal to n | caught
 rrand | no nudge away from 0 | caught
 rrand | modulo instead of rejection | caught
 
-Open: "one uniform too few when bits is a multiple of 16" survived because the R reference has no size
-needing exactly 16 bits (32,769 to 65,536) and no n = 1 case. A reference for those sizes is requested
-from the Mac in T05; the mutation is re-run when it arrives.
+rrand | one uniform too few when bits is a multiple of 16 | caught (after the R reference for sizes 1, 2, 40,000, 65,536 and 65,537 arrived in commit 9e1685f; it had survived before, because no reference size needed exactly 16 bits)
 Closed by a new test: "no nudge away from 0" first survived (the generator returns 0 once in 2^32 draws);
 TestFloat64IsNeverZeroOrOne now sets the state directly.
 
