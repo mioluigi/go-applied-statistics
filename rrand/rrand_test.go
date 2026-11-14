@@ -2,6 +2,7 @@ package rrand
 
 import (
 	"bufio"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -154,6 +155,43 @@ func TestFloat64IsNeverZeroOrOne(t *testing.T) {
 	}
 }
 
+// indexWithLogarithm is Index as first written (task T02), kept only to measure and to check
+// the performance step "bit count without a logarithm". It follows R's source literally.
+func (generator *Generator) indexWithLogarithm(n int) int {
+	bitCount := int(math.Ceil(math.Log2(float64(n))))
+	mask := uint64(1)<<bitCount - 1
+	for {
+		var candidate uint64
+		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
+			candidate = valuesPerDraw*candidate + uint64(generator.Float64()*valuesPerDraw)
+		}
+		candidate &= mask
+		if candidate < uint64(n) {
+			return int(candidate)
+		}
+	}
+}
+
+// TestIndexEqualsTheLogarithmVersion: the faster bit count must draw the same indices for
+// every size up to 5,000 and around each power of two up to 2^30 (constitution 1.2).
+func TestIndexEqualsTheLogarithmVersion(t *testing.T) {
+	sizes := []int{}
+	for n := 1; n <= 5000; n++ {
+		sizes = append(sizes, n)
+	}
+	for power := 13; power <= 30; power++ {
+		sizes = append(sizes, 1<<power-1, 1<<power, 1<<power+1)
+	}
+	for _, n := range sizes {
+		faster, literal := New(431), New(431)
+		for draw := 0; draw < 20; draw++ {
+			if got, want := faster.Index(n), literal.indexWithLogarithm(n); got != want {
+				t.Fatalf("n = %d, draw %d: Index = %d, logarithm version = %d", n, draw, got, want)
+			}
+		}
+	}
+}
+
 func BenchmarkFloat64(b *testing.B) {
 	generator := New(431)
 	b.ReportAllocs()
@@ -162,9 +200,17 @@ func BenchmarkFloat64(b *testing.B) {
 	}
 }
 
-func BenchmarkIndex(b *testing.B) {
+// Performance step "bit count without a logarithm" (spec FR-12): before and after.
+func BenchmarkStep3Index(b *testing.B) {
 	for _, n := range []int{100, 100000} {
-		b.Run("n="+strconv.Itoa(n), func(b *testing.B) {
+		b.Run("before=logarithm/n="+strconv.Itoa(n), func(b *testing.B) {
+			generator := New(431)
+			b.ReportAllocs()
+			for b.Loop() {
+				generator.indexWithLogarithm(n)
+			}
+		})
+		b.Run("after=bitlength/n="+strconv.Itoa(n), func(b *testing.B) {
 			generator := New(431)
 			b.ReportAllocs()
 			for b.Loop() {

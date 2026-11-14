@@ -10,7 +10,7 @@
 // A Generator is not safe for concurrent use: give each goroutine its own.
 package rrand
 
-import "math"
+import "math/bits"
 
 const (
 	stateSize  = 624        // words of state in the 32-bit Mersenne Twister
@@ -94,11 +94,13 @@ func (generator *Generator) Float64() float64 {
 // R builds a candidate from just enough random bits to cover n, 16 bits per uniform number,
 // and draws again while the candidate is n or more.
 func (generator *Generator) Index(n int) int {
-	bits := int(math.Ceil(math.Log2(float64(n))))
-	mask := uint64(1)<<bits - 1
+	// The number of bits needed to write n-1 equals ceil(log2(n)), R's bit count, and
+	// costs no logarithm.
+	bitCount := bits.Len(uint(n - 1))
+	mask := uint64(1)<<bitCount - 1
 	for {
 		var candidate uint64
-		for filled := 0; filled <= bits; filled += bitsPerDraw {
+		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
 			candidate = valuesPerDraw*candidate + uint64(generator.Float64()*valuesPerDraw)
 		}
 		candidate &= mask

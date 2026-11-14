@@ -60,3 +60,4 @@ Notes on T09:
 stats | MedianInPlace: lower middle taken from the neighbouring position, not the largest of the lower part | caught
 stats | selection narrows one position too far | caught
 stats | MedianInPlace: even count returns the upper middle only | caught
+rrand | bit count of n instead of n - 1 (one bit too many at powers of two) | caught
