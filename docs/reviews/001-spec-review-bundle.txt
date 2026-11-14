@@ -1,0 +1,626 @@
+REVIEW BUNDLE: 4 files, from commit 3fe1156
+  - docs/assignment-and-rubric.md
+  - docs/constitution.md
+  - docs/spikes/001-environment-and-baseline.md
+  - specs/001-bootstrap-median/spec.md
+
+===== FILE: docs/assignment-and-rubric.md =====
+# Assignment Requirements and Rubric (summary)
+
+> Summary of the Week 8 assignment, *Modern Applied Statistics with Go* (100 points, due
+> **2026-11-15, 11:59 PM ET**; assignment page revised July 3, 2025), in our own words, so every tool and
+> reviewer can check the spec against it. The Canvas page is the authoritative source.
+
+## Scenario
+
+A **research consultancy** has used **R** for years, relying on CRAN for modelling techniques, many of them
+computer-intensive. Worried about **cloud computing costs** on large data sets, and having heard that Go is
+fast and uses multicore processors well, it is considering moving much of its programming from R to Go. It
+wants an **independent data scientist** to answer two questions:
+
+- **M1** How easy is it to use Go in place of R?
+- **M2** How much money will the firm save in cloud computing costs?
+
+## Required steps (numbered for traceability)
+
+| # | Step | Source wording, condensed |
+|---|---|---|
+| S1 | Read Gelman & Vehtari and **select one computer-intensive method** from its list, one that is **fully implemented in R** | list: counterfactual causal inference; bootstrapping and simulation-based inference; overparameterized models; regularization; Bayesian multilevel models; generic algorithms; adaptive decision analysis |
+| S2 | From **CRAN**, identify the **R package(s)** for the method; **name the method and show its URLs**; **demonstrate an analysis in R** | "identify the R package(s) … demonstrate an analysis in R. Name the method and show its web addresses" |
+| S3 | **Implement the method in Go**, with a third-party package or our own program (look at Awesome Go and pkg.go.dev) | "either by drawing on a third-party Go package or developing your own" |
+| S4 | Employ Go **testing, benchmarking, profiling and logging**; say **what was done to improve the Go implementation's performance** | "What did you do to improve the performance…?" |
+| S5 | *(Consider)* the **Mersenne Twister** in Go for random test data, the generator R and Python use | `github.com/seehuhn/mt19937` |
+| S6 | **Compare R and the final Go implementation on the same input data**; **ensure results are comparable**; report **memory requirements and processing times** of both | also: read the Canvas page *Performance Comparisons of R, Python, and Go* |
+| S7 | Repository holds **complete data and code for R and Go**; data sets of **at least 100 observations** | deliverables |
+| S8 | README: **efforts in finding R and Go packages**; **process of building** the Go implementation; **experiences** with testing, benchmarking, profiling, logging | "describe your efforts … Review your process … Review your experiences" |
+| S9 | README **recommendation**: when Go should replace R for this method; **select a cloud IaaS provider**; **note its VM costs**; **what percentage of cloud cost might be saved** | "Under what circumstances … What percentage…?" |
+| S10 | README is **complete documentation**, with **instructions for running and testing**, and for **creating an executable** | deliverables; rubric [A] |
+| S11 | **GenAI Tools** section + conversation logs | deliverables |
+| S12 | Submit the cloneable **`.git` URL** in the Canvas comments | deliverables |
+
+### The assignment's own suggested example (not mandatory)
+
+Bootstrap sampling for a **robust, distribution-free estimate of the standard error of the median**, for
+distributions of **various shapes (positively skewed, symmetric, negatively skewed)**: "Start by implementing
+in R and then refactor into Go." It adds that bootstrap-median code **may be reusable in the Week 9
+assignment**. Jump-start material named on the page (Canvas login required, **not yet in our hands**):
+
+- `run-bootstrap-median.R`: R code for the standard error of the median from a normal distribution.
+- `listing-from-100-run-bootstrap-median.txt`: its sample output.
+- CRAN packages mentioned: **bootstrap** (Efron & Tibshirani 1993), **boot** (Davison & Hinkley 1997).
+
+## Deliverables
+
+- Cloneable GitHub URL ending in `.git`, in the Canvas comments.
+- `README.md` as complete documentation (roles of programs and data, how to run and test).
+- Complete **data and code for R and Go**; R and Go run on the **same data sets** (≥ 100 observations),
+  comparing **run times and memory**.
+- **GenAI Tools** section and conversation logs (plain text or links).
+
+## Rubric: five criteria, 20 points each
+
+Ratings per criterion: Outstanding 20 (all criteria) · Meets 15 (most) · Needs Improvement 10 · Partially
+Acceptable 5 · Unacceptable 0.
+
+| Criterion | What earns full marks |
+|---|---|
+| **[C] Coding rules, organization, aesthetics** | Go modules, idiomatic Go; meaningful names; no useless temporaries; clean blocks; one task per block; simple control flow; distribute the NOT; self-documenting code (McConnell 2004, 777–817). |
+| **[T] Testing and software metrics** | Unit tests of critical components with synthetic data; logs and profiles; memory and processing measured for components and the whole program; **Monte Carlo performance benchmark if the requirements call for one**. We treat it as called for: the method is itself a Monte Carlo procedure and S4/S6 require benchmarks. |
+| **[D] Design and development** | Clean, efficient design meeting every requirement; **general-purpose modules reusable in other projects**. |
+| **[Doc] Documentation** | Effective Git/GitHub use; README with roles of programs and data, how to test and use. |
+| **[A] Application** | **Instructions for creating** an executable (`.exe` or `.app`); *changed from Week 7, which asked for delivery of one*. Runs to completion; validates user input and explains mistakes; clean UX/UI. |
+
+## Course guidance on benchmark studies (Canvas page *Performance Comparisons of R, Python, and Go*)
+
+Read in full on 2026-11-14 (two pages, supplied by Luis; not committed, it is course material). S6 points to
+it, so its advice is treated as requirements, numbered for traceability:
+
+| # | Guidance, in our words | How we will meet it |
+|---|---|---|
+| G1 | Same computer for every condition | Everything official runs on the Mac |
+| G2 | Close other programs while measuring | A manual step before `measure.sh`, stated in the hand-off |
+| G3 | **Batch execution for all** conditions (no RStudio against a command-line Go) | `Rscript` and the built Go binary, both from the same shell script |
+| G4 | **Same tasks** in every condition (if one plots, all plot) | Same data, replicates, statistic and output; neither side plots |
+| G5 | Same measurement method, preferably command-line utilities | `/usr/bin/time -l` for both (whole-process time and peak memory) |
+| G6 | **Run each condition hundreds or thousands of times** and average | Hundreds of whole-process runs per condition. *Changes our habit:* Weeks 6–7 used medians of a handful of runs; this week reports mean and median over hundreds |
+| G7 | Keep a log or listing of the results in the repository | Raw per-run results committed under `results/` |
+| G8 | Consider whether **package loading** is part of the measured time; very large ratios usually reflect start-up and loading | Report start-up separately: an empty R script against an empty Go program, and computation time measured inside each program |
+| G9 | Same random number algorithm across languages; the Go Mersenne Twister package is suggested | Spike 001 §5–§6: the suggested package is the 64-bit variant, R uses the 32-bit one; Go can reproduce R's stream exactly |
+
+The page also shows a table from a past class: R measured from about 2× to about 1,900× slower than Go
+across students, on a different, earlier assignment. The spread itself is the lesson: the ratio depends on
+what is timed (G8). Our README must say what each ratio includes.
+
+## Differences from Week 7 that matter
+
+1. **Two languages.** R code is a deliverable and the baseline; it runs only on the Mac (the workspace has no R).
+2. **Results must be comparable**, not only timed: the comparison is a correctness question before a speed one.
+3. **A business answer is required** (S9): a cloud provider, its prices, and a percentage. Prices are
+   third-party facts and need provenance (source URL, date).
+4. No external system is called at run time; the outside world enters through **R's behaviour** (random
+   numbers, quantile definition) and **cloud price lists**.
+
+## Owner's emphasis (Luis, 2026-11-14)
+
+Enhance the methodology, reuse what works, speed with quality first, learn to industrialize and keep improving.
+
+## Who runs what
+
+| Work | Where | Why |
+|---|---|---|
+| Documents, Go code, Go tests, scripts, review bundles | **Claude** (workspace) | Go 1.24.7 available; `mt19937` fetched directly from GitHub |
+| Anything that runs **R** (baseline, R↔Go comparison, R timing and memory) | **Mac** | No R in the workspace, and none installable |
+| `go mod tidy` to produce `go.sum` | **Mac** | Workspace cannot reach `proxy.golang.org` (L-W7-06) |
+| Official measurements, profiles, builds (`.app`, `.exe`) | **Mac** | Official machine (SFEDD §5.3) |
+| Downloading the Canvas jump-start files and the Canvas performance page | **Mac** (Luis, by hand) | Course login |
+| Cloud price capture | **Claude** by web lookup, **confirmed by Luis** | Third-party fact with provenance |
+| Gemini reviews R1 and R2; submission | **Luis** | Roles |
+
+===== FILE: docs/constitution.md =====
+# Project Constitution: Modern Applied Statistics with Go (R versus Go)
+
+> **Purpose.** The non-negotiable rules for this project. Every spec, plan, task and line of code is checked
+> against them. A conflicting decision either changes or amends this file deliberately, with a note in
+> `docs/decisions.md`.
+>
+> **Source of authority.** The Week 8 assignment and rubric (`docs/assignment-and-rubric.md`), carried forward
+> from Week 7 (SFEDD v2.1, Articles 1–9) with changes for a project whose baseline is **a program in another
+> language** and whose conclusion is **a cost recommendation**.
+> Tags: **[C]** Coding · **[T]** Testing & metrics · **[D]** Design · **[Doc]** Documentation ·
+> **[A]** Application. *New or changed this week* is marked **(W8)**.
+
+---
+
+## Article 1: Correctness before speed
+
+1.1 **(W8)** The Go implementation is trusted only when its results are **comparable with R's on the same
+input data**, by a rule written in the spec **before** measuring: exact agreement where the computation is
+deterministic (for example the sample median), and agreement within a stated, justified tolerance where it is
+random (for example a bootstrap standard error). A program makes the comparison. **[T]**
+1.2 Speed and memory are reported only for an implementation that has passed 1.1. A faster Go variant must
+give **the same results as the plain Go variant** for the same seed, or its difference is stated. **[T]**
+1.3 Every number in the README (tables, headline figures, **and the cost-saving percentage**) is generated by
+script from saved results and saved prices; prose that cites them is re-checked whenever results change. **[Doc]**
+1.4 Concurrent code passes the race detector (`go test -race`) and gives **reproducible results for a given
+seed whatever the number of workers**. **(W8)** **[T]**
+1.5 **(W8)** Statistical code is tested against **answers known independently of the code**: closed-form
+values, hand-computed small cases, and R's saved output. **[T]**
+
+## Article 2: Idiomatic, readable Go (McConnell 2004, ch. 32) **[C]**
+
+2.1 Go modules; `gofmt` and `go vet` clean.
+2.2 Meaningful, specific names; not abstract, not overly long.
+2.3 No useless temporary variables or intermediate results.
+2.4 Functions do one thing; large blocks become small, named functions.
+2.5 Plain `if/else` and `for`; distribute the NOT in complex Boolean expressions.
+2.6 Every exported identifier has a doc comment; comments explain *why*.
+2.7 Errors are returned and handled; **no `panic`** for bad input (empty data, non-numeric values, zero
+replicates).
+2.8 Every goroutine has an owner and an end; no goroutine outlives a call.
+2.9 **(W8)** The R code is a deliverable too: readable, commented, runnable with one command, and
+`set.seed`-reproducible.
+
+## Article 3: Test-first, measured **[T]**
+
+3.1 Failing test before implementation of every critical component; **mutation check** important tests (a
+mutation that only breaks compilation does not count).
+3.2 Standard `testing`; table-driven; tests need neither the internet nor R: R's results enter the Go tests
+as **saved files with provenance**.
+3.3 Benchmarks with `testing.B` and allocation reporting; CPU and memory profiles kept; the program logs what
+it did (structured, to standard error).
+3.4 **(W8) Fair comparison.** R and Go do **the same work on the same data on the same machine**: same
+observations, same number of replicates, same statistic definition. The comparison states each side's
+defaults (R is single-threaded unless told otherwise), **times the whole process as well as the computation**,
+and reports single-core Go separately from multi-core Go. Medians of repeated runs; printing outside timed code.
+3.5 **(W8)** Each performance improvement is **one measured step**: benchmark before, change, benchmark after,
+both kept, so the README can say what improved the program and by how much.
+3.6 Guards, scripts and acceptance checks are themselves tested on a passing and a failing case; exit codes
+are tested on the **built binary**.
+
+## Article 4: Clean, reusable design **[D]**
+
+4.1 The statistical method lives in a **reusable package** with no printing and no `os.Exit`. The statistic
+(median, mean, …) and the random source are **replaceable parts**, so the same resampling code serves another
+statistic, another generator, and next week's assignment. The command-line program is a thin layer.
+4.2 Sequential and concurrent runs use **the same code path**; only the worker count differs.
+4.3 Pin every dependency version (`go.mod`, `go.sum`); `go.sum` is generated on Luis's Mac. R package
+versions are recorded with the results. **(W8)**
+
+## Article 5: Documentation and Git hygiene **[Doc]**
+
+5.1 One `README.md` is the complete documentation: purpose, roles of programs and data, the package search
+(R and Go), build, run, test, benchmark, results, experiences, recommendation.
+5.2 One task per commit, message starts with the task ID; specs, plan, tasks, reviews, decisions in the repo.
+5.3 README **GenAI Tools** section; AI dialogs in `docs/ai-dialogs/` with a `README.md` index.
+5.4 `scripts/acceptance.sh` is committed and passes on a **fresh clone** before submission. Checks that need
+R say so and are skipped with a clear message where R is absent, never silently. **(W8)**
+
+## Article 6: A finished, friendly application **[A]**
+
+6.1 The README gives **instructions for creating** a macOS binary, a Windows `.exe` and a macOS `.app`, and
+the scripts that do it.
+6.2 The program **runs to completion with no arguments** on the committed data.
+6.3 User input (data file, replicates, seed, workers) is validated; bad input yields a clear message and a
+non-zero exit code.
+6.4 A finished run tells the user, in plain words, what was estimated, from which data, and where any output
+file is. Logs go to standard error.
+
+## Article 7: How we work with AI tools
+
+7.1 Claude Code is the only tool that writes files in this repository during a task.
+7.2 Gemini (web) reviews the spec and the finished repository; it confirms the files it **received**, then
+must cite file and section for every claim.
+7.3 Luis approves spec, plan and tasks, and reads every diff before it is committed.
+7.4 If implementation shows the spec is wrong, update the spec first.
+7.5 Every review finding gets a recorded decision with a reason; testable claims are tested first.
+7.6 Spike before planning; inherited code is run unchanged; predictions state their conditions and are
+checked and corrected in writing.
+7.7 Claude verifies every hand-off and push landed before building on it.
+
+## Article 8: Data and privacy
+
+8.1 Inputs and fixtures pass the data gate (`scripts/check-inputs.sh`) before their first commit.
+8.2 No personal data in committed files: no e-mail address, no user name, no host name, no home-directory
+path in saved results or machine descriptions. (Commit metadata follows Luis's usual Git identity.)
+8.3 **(W8)** Data sets are **generated by a committed, seeded script** and committed with a manifest (size,
+SHA-256, generator, seed), so R and Go provably read the same bytes. Third-party files (the course's
+jump-start R code and listing) keep their source and are credited.
+8.4 Luis decides any history rewrite; it touches only our own commits.
+
+## Article 9: Respect for external systems and their facts **(W8, adapted)**
+
+9.1 The program calls **no external system at run time**.
+9.2 **Cloud prices are third-party facts**: each price is saved with its source URL, region, instance type
+and capture date; the cost calculation reads the saved file. A price is never typed into the README.
+9.3 **R is the reference, not the opponent**: its behaviour (random number generation, `sample`, the default
+`median` and quantile definitions) is learned by **running it**, not from memory or documentation alone.
+9.4 A premise in the assignment about the baseline ("Go is faster", "Go will save cloud cost") is a
+hypothesis; the README reports what was measured, including where R wins or the saving is small.
+
+===== FILE: docs/spikes/001-environment-and-baseline.md =====
+# Spike 001: environment, R baseline and R↔Go comparability
+
+| Field | Value |
+|---|---|
+| Status | **Complete** (phase 1 gate met 2026-11-14). P4–P6 are checked by the official measurement. |
+| Date | 2026-11-14 |
+
+## 1. Environment probe (SFEDD §5.7)
+
+### 1.1 Claude's workspace (measured 2026-11-14)
+
+| Check | Result | Consequence |
+|---|---|---|
+| Go toolchain | go 1.24.7 linux/amd64 | Go code and tests can be developed here |
+| R | **absent**; `apt-get install r-base-core` has no candidate | Everything that runs R is a **Mac** task |
+| Python | 3.13 with numpy 2.5.3, scipy 1.18.1 | An independent source of known answers for tests |
+| `proxy.golang.org` | **unreachable** (name does not resolve) | `go.sum` is generated on the Mac (L-W7-06) |
+| `github.com/seehuhn/mt19937` | v1.0.0 fetched with `GOPROXY=direct` | The suggested generator can be used and tested here |
+| GitHub read | works (`git ls-remote`) | |
+| GitHub push | CLI token invalid; push works only for repositories attached to the session | The repository must exist and be attached before the first push |
+| Canvas (jump-start R code, performance page) | course login required | Luis downloads them |
+
+### 1.2 Luis's Mac
+
+Measured 2026-11-14 by `scripts/env-probe.sh`; raw output in `docs/spikes/env-mac.txt` (commit `80060ad`).
+
+| Check | Result | Consequence |
+|---|---|---|
+| Machine | MacBook Pro, Apple M1 Max, 10 CPUs (8 performance), 64 GB | Official machine; multi-core runs are meaningful |
+| Go | go 1.27.2 darwin/arm64 (workspace: 1.24.7) | `go.mod` declares `go 1.24`, so both build it; the Mac is the official build |
+| R | 4.4.2; RNG `Mersenne-Twister / Inversion / Rejection` | The defaults assumed in §3 are the ones in use |
+| R packages | `boot` 1.3.32, `bench` 1.1.4, `microbenchmark` 1.5.0 present; **`bootstrap` missing** | Installing `bootstrap` is an owner decision (Q in the spec); `boot` alone covers the method |
+| `median(c(1, 2, 3, 4))` | 2.5 | R averages the two middle values (assumption 2 confirmed for R) |
+| `/usr/bin/time -l` | present | Whole-process time and peak memory for R and Go, same tool |
+| Go module proxy | ok | `go.sum` can be generated there |
+| GitHub CLI | missing | Mac steps use `git` and the browser only |
+
+**Phase 0 gate: met.** Steps and rubric written down, push access verified by a fresh clone, work tagged
+Claude or Mac.
+
+## 2. Inputs not yet in our hands
+
+| Input | Needed for | Owner |
+|---|---|---|
+| `run-bootstrap-median.R` (Canvas) | "Run inherited code unchanged" (phase 1 gate) | Luis |
+| `listing-from-100-run-bootstrap-median.txt` (Canvas) | Expected output of the inherited code | Luis |
+| Canvas page *Performance Comparisons of R, Python, and Go* | S6 says to check it; it may set the expected measuring method | Luis |
+
+Week 7's baseline code never arrived (L-W7-05). This week the baseline is a required deliverable, so these
+files are requested at intake.
+
+## 3. Riskiest assumptions to test in phase 1 (recorded now, tested next)
+
+1. **"Same seed gives the same random draws in R and Go."** Both can use the Mersenne Twister, but R
+   scrambles the seed in `set.seed`, turns generator output into a uniform number its own way, and since R
+   3.6.0 draws `sample` indices by rejection sampling. If draws differ, results are comparable
+   **statistically, not bit for bit**, and the spec's comparison rule must say so.
+2. **"Median means the same thing on both sides."** For an even number of observations R averages the two
+   middle values; a Go library may not.
+3. **"Go is faster and saves cloud cost."** The assignment's premise. R's `sample` and `median` run in
+   compiled C; the gap may be smaller than assumed, and whole-process time includes R's start-up.
+
+## 4. Inherited code, read before it is run
+
+`r/original/run-bootstrap-median.R` (T. W. Miller, revised May 23, 2024) and its listing arrived in commit
+`80060ad`. Reading it (running it is the Mac part, §7):
+
+1. **What it computes.** 100 iterations × 4 sample sizes (25, 100, 225, 400) × B = 100 resamples of a
+   Normal(100, 10) sample. For each sample it keeps the **mean of the B bootstrap medians**, and reports the
+   **standard deviation of that mean across the 100 samples**. That is a Monte Carlo estimate of how the
+   median varies from sample to sample. The textbook bootstrap standard error is different: the standard
+   deviation of the B bootstrap medians **within one sample**. Both are legitimate; the spec must say which
+   one each number is, and the R and Go programs must compute the same one.
+2. **Its cost is mostly not statistics.** Each of the 40,000 resamples builds a one-row data frame and
+   `rbind`s it onto a growing one. That is R's slowest idiom. A comparison of Go against this program measures
+   data-frame handling more than resampling. A fair comparison (constitution 3.4) also needs an **idiomatic R**
+   version (preallocated vectors, or the `boot` package).
+3. **Only the symmetric case.** It draws from a normal distribution; the assignment's example asks for
+   positively skewed, symmetric and negatively skewed shapes.
+4. **Seed 9999, R's default generator.** The listing should be reproduced exactly on R 4.4.2 (prediction P1).
+
+## 5. Dependency audit: `github.com/seehuhn/mt19937` v1.0.0 (the assignment's suggestion)
+
+| Property | Finding (from its source) | Consequence |
+|---|---|---|
+| Algorithm | **64-bit** Mersenne Twister (MT19937-64: 312 words of 64 bits) | **Not R's generator.** R uses the 32-bit MT19937 (624 words). The same seed cannot give the same stream. |
+| Seeding | `Seed(int64)` (Knuth-style initialisation), `SeedFromSlice` | R scrambles the seed with a linear congruential generator instead |
+| Default | An unseeded generator uses a fixed default seed | Reproducible, but silently identical across runs |
+| Concurrency | Not safe for concurrent use (documented) | One generator per worker |
+| Licence | **GPL-3.0** | Importing it puts our program under GPL terms; an owner decision |
+| Interface | `math/rand` `Source64` | Works with `math/rand` version 1 |
+
+The assignment says the Mersenne Twister "is the random number generator algorithm used in R and Python".
+True of the family; this package is a different member of it. Using it would give *a* Mersenne Twister, not
+*R's* numbers.
+
+## 6. Riskiest assumption tested: can Go draw R's bootstrap samples?
+
+`docs/spikes/001-rparity/main.go` (standard library only, 130 lines) re-implements from the R sources the
+three steps between `set.seed()` and `sample()`: the seed scrambling, `unif_rand()`, and the rejection
+sampling of an index.
+
+| Probe (seed 431) | R 4.4.2 on the Mac | Go spike in the workspace |
+|---|---|---|
+| `runif(3)` | 0.75096705253235996 0.58476094505749643 0.80907909828238189 | identical, all 17 digits |
+| `sample(10, 5, replace = TRUE)` | 3 6 10 6 8 | identical |
+
+Reproduce: `go run docs/spikes/001-rparity/main.go` and compare with `docs/spikes/env-mac.txt`.
+
+**Result: assumption 1 of §3 is overturned in the favourable direction.** A Go program can draw exactly R's
+resamples, so the bootstrap can be compared **number for number**, not only statistically. This rests on
+eight draws so far; §7 extends it to 14,000 index draws and two whole bootstraps before the spec relies on it.
+
+Workspace timing of a study-shaped workload in plain Go (same resampling volume as the R program,
+`sort.Float64s` for the median, 2 slow virtual CPUs): 0.65–0.72 s over three runs. The sort dominates, which
+names the first performance steps: a faster sort or a selection algorithm, and no per-draw logarithm.
+
+## 7. Mac part: the R program run unchanged, and R's reference values
+
+`scripts/spike-r-baseline.sh`, run on the Mac at commit `bf5b5ba`; raw evidence in `docs/spikes/001-evidence/`.
+
+**Inherited code, unchanged, three runs** (`/usr/bin/time -l Rscript r/original/run-bootstrap-median.R`):
+
+| Run | Whole-process time | User CPU | Maximum resident set | Peak memory footprint |
+|---|---|---|---|---|
+| 1 | 5.24 s | 5.01 s | 100.6 MB | 80.7 MB |
+| 2 | 5.12 s | 4.93 s | 113.7 MB | 89.1 MB |
+| 3 | 5.08 s | 4.92 s | 111.1 MB | 93.8 MB |
+
+- The three outputs are byte-identical, and equal the course listing line for line. The only difference is
+  four console lines the listing file never contained (the "Running study" header and the "Run Complete"
+  footer). Check: `diff r/original/listing-from-100-run-bootstrap-median.txt docs/spikes/001-evidence/original-run-1.txt`.
+- **Memory varies between identical runs** (81 to 94 MB footprint): R's garbage collection timing. Memory
+  needs repeated runs and a spread, like time.
+
+**Reference values reproduced by the Go spike** (`cd docs/spikes/001-rparity && go run . -verify ../001-evidence`):
+
+| Reference from R 4.4.2 | Go spike |
+|---|---|
+| 14,000 index draws: `sample.int(n, 2000, replace = TRUE)` for n = 10, 25, 100, 225, 400, 1,000, 100,000 | **14,000 of 14,000 identical** |
+| Bootstrap SE of the median, n = 25 (odd), B = 200: 9.6785923952695132 | 9.6785923952695132 (identical) |
+| Bootstrap SE of the median, n = 100 (even), B = 200: 5.0143412419232352 | 5.0143412419232352 (identical) |
+| Bootstrap SE of the mean, n = 25: 5.3149252669218976 | identical |
+| Bootstrap SE of the mean, n = 100: 2.9716934244711761 | 2.9716934244711748 (relative difference 4.5e-16: last bits, from summation order) |
+
+The verifier was mutation-checked: widening the rejection mask by one bit gives 13,665 mismatches of 14,000.
+
+**Conclusion.** For the same data and seed, a Go program gives **R's bootstrap standard error of the median
+digit for digit**; the mean agrees to the last bits. The spec can require exact agreement for the median and
+a tight tolerance for the mean.
+
+### Limits of what was tested (conditions)
+
+- R 4.4.2 with its default generator settings, on Apple silicon. An R older than 3.6.0, or
+  `RNGkind(sample.kind = "Rounding")`, draws indices differently.
+- n up to 100,000. For n ≥ 2^31 R switches to a different path; out of scope.
+- Data that is exact in floating point (integers). Real data read from text must parse to the same doubles
+  in both languages; see risk R2 in the spec.
+- The `boot` package draws all indices in one call and assigns them to replicates in a different order than
+  a `sample()` loop. Its result is expected to agree statistically, not digit for digit (untested).
+
+## 8. Predictions, with the conditions they assume
+
+| # | Prediction | Assumes |
+|---|---|---|
+| P1 | The unchanged R program reproduces the course listing exactly | R ≥ 3.6 produced the listing (same `sample` method); seed 9999 |
+| P2 | The unchanged R program takes 3–15 s per run | 40,000 data-frame `rbind`s at roughly 0.1–0.3 ms each on an M1 Max; R start-up about 0.2 s |
+| P3 | The Go spike reproduces all 14,000 reference index draws and both bootstrap standard errors (to 1e-12 relative) | R 4.4.2 defaults as probed; `sd` differs from Go at most in the last bits |
+| P4 | Plain single-core Go does the study's resampling in under 0.2 s on the Mac, so **Go is at least 15× faster than the unchanged R program** | M1 Max about 4× the workspace CPU; P2 holds |
+| P5 | Against **idiomatic R** the single-core gap shrinks to roughly 2–10× | R's `sample`, `sort` and `median` are compiled C; the remaining gap is interpreter overhead per resample, largest for small n |
+| P6 | For runs this short, **whole-process** time is dominated by R's start-up, so the cost saving depends on job size | R start-up about 0.2 s against a few ms for Go |
+
+### Predictions checked so far (2026-11-14)
+
+| # | Outcome | Evidence |
+|---|---|---|
+| P1 | **Held.** Listing reproduced exactly. | §7 |
+| P2 | **Held.** 5.1–5.2 s per run (predicted 3–15 s). | §7 |
+| P3 | **Held, and stronger than predicted:** the median's SE is identical, not merely within 1e-12. | §7 |
+| P4–P6 | Open until the official measurement on the Mac. | |
+
+===== FILE: specs/001-bootstrap-median/spec.md =====
+# Spec 001: Bootstrap standard error of the median, in R and in Go
+
+| Field | Value |
+|---|---|
+| Status | **DRAFT v1, 2026-11-14**, for Gemini spec review (R1) and owner decisions Q1–Q10 |
+| Inputs | `docs/assignment-and-rubric.md` (S1–S12, M1–M2, G1–G9) · `docs/constitution.md` · `docs/spikes/001-environment-and-baseline.md` |
+| Deadline | 2026-11-15, 11:59 PM ET. Nothing is built before approval. |
+
+## 1. Problem
+
+A research consultancy runs computer-intensive statistics in R and pays for the cloud time. It asks an
+independent data scientist two questions: **how easy is it to use Go in place of R (M1)**, and **how much
+cloud cost would that save (M2)**. We answer for one method from Gelman and Vehtari's list, *bootstrapping
+and simulation-based inference*, in the form the assignment suggests: a **distribution-free estimate of the
+standard error of the median** by bootstrap resampling, for symmetric, positively skewed and negatively
+skewed data.
+
+The answer has three parts, and each must be reproducible by a command:
+
+1. **The same analysis in R and in Go, on the same data, with comparable results.**
+2. **Time and memory of both**, measured the same way, with start-up separated from computation.
+3. **A recommendation with a cost figure** derived from the measurements and from a cloud provider's saved prices.
+
+The spike changed what "comparable" can mean: Go can reproduce R's random draws exactly, so for the same data
+and seed the two programs can be required to give **the same standard error of the median, digit for digit**
+(spike §6–§7). The spike also showed the course's jump-start R program spends most of its 5 seconds on data
+frames, so the comparison needs an idiomatic R baseline as well (spike §4).
+
+## 2. Users and use
+
+| User | Needs |
+|---|---|
+| The consultancy's managers | A recommendation they can act on: when Go pays off, when it does not, and a percentage with its assumptions. |
+| An analyst at the consultancy | Run one command on a data file and get the median, its standard error, and the mean's as a check; trust that it matches R. |
+| A Go developer (and Week 9) | Reuse the resampling engine with another statistic or another random source. |
+| Grader | Build, run and test from the README; R and Go code and data in the repository; evidence for every claim. |
+
+## 3. Definitions (so R and Go compute the same thing)
+
+- **Data set**: n observations x₁…xₙ, n ≥ 2, read from a one-column CSV file.
+- **Median**: for odd n the middle value; for even n **the mean of the two middle values** (R's `median`).
+- **Bootstrap resample**: n values drawn from the data set with replacement.
+- **Bootstrap standard error of a statistic** (the textbook definition, Efron and Tibshirani 1993): draw B
+  resamples, compute the statistic on each, and take the **standard deviation of those B values, with
+  denominator B − 1**.
+- The course's R program reports a different quantity (the spread, across 100 fresh samples, of the average
+  bootstrap median; spike §4). It is run unchanged and reported as the course's baseline; it is **not** the
+  quantity our R and Go programs compute, and the README says so.
+- **R stream**: resample indices drawn exactly as R 4.4.2 draws them after `set.seed(seed)` with default
+  settings. **Block stream**: replicates split into fixed-size blocks, each block with its own generator
+  derived from the seed and the block number, so blocks can run on different cores.
+
+## 4. Functional requirements
+
+| ID | Requirement |
+|---|---|
+| **FR-1 Data sets** | The repository holds generated data sets for three shapes (symmetric, positively skewed, negatively skewed) at the sizes in **Q5**, each a one-column CSV with a header, values written with **4 decimal places**. A committed, seeded R script generates them; a manifest records file, shape, n, generator call, seed, size and SHA-256. |
+| **FR-2 R analysis** | An R script, run with `Rscript`, reads a data file and reports the sample median, the bootstrap SE of the median and the bootstrap SE of the mean, for given B and seed, using a `sample()` loop with preallocated vectors (idiomatic base R). A second R script does the same with the CRAN **boot** package. The course's `run-bootstrap-median.R` stays unchanged in `r/original/`. |
+| **FR-3 Go analysis** | A Go program reads the same data file and reports the same quantities for the same B and seed. |
+| **FR-4 Same output format** | R and Go write the same machine-readable record (tab-separated: data set, n, B, seed, stream, sample median, SE median, SE mean, sample mean), numbers with 17 significant digits, so a program can compare them. A human-readable summary is the default on the terminal. |
+| **FR-5 R-compatible random draws** | With the R stream, the Go program draws the same resample indices as R for the same seed (**Q2**). |
+| **FR-6 Parallel resampling** | With the block stream, the Go program can use several workers (`-workers`, default the number of CPUs). **The result for a given seed is identical for every worker count.** |
+| **FR-7 Comparison** | A committed program compares the R and Go records for every data set by the rule in §6 and writes a pass/fail table to `results/`. The official measurement refuses to time anything until this passes. |
+| **FR-8 Input validation** | Bad input is rejected before any computation with a message naming the problem: missing or unreadable file, non-numeric value (file, line), fewer than 2 observations, B < 2, workers < 1, unknown statistic or stream, workers > 1 with the R stream. NaN and infinite values are rejected. |
+| **FR-9 Exit codes** | **0** success · **2** invalid input or usage · **1** any other failure. Tested on the built binary. |
+| **FR-10 No-argument run** | With no arguments the program analyses a built-in copy of one committed data set and runs to completion (so a double-clicked `.app` works). |
+| **FR-11 Logging and profiles** | Structured log lines on standard error (what was read, settings, time per phase); `-cpuprofile` and `-memprofile` write pprof files; `-quiet` silences the log. Results go to standard output. |
+| **FR-12 Performance history** | Each performance step is kept as a benchmark pair (before, after) with allocation counts, so the README's account of what improved the program is generated from saved benchmark output (constitution 3.5). |
+| **FR-13 Cost model** | Cloud prices for the provider in **Q8** are saved in a file with source URL, region, instance type, price and capture date. A program computes, from measured times and saved prices, the cost per job for R and Go and the percentage saved; the README's figures come from it. |
+| **FR-14 Builds** | Scripts and README instructions create a macOS binary, a Windows `.exe` and a macOS `.app` (**Q9**). |
+
+### Reuse requirements
+
+| ID | Requirement | Shown by |
+|---|---|---|
+| **FR-R1** | The resampling engine is a Go package with no printing and no `os.Exit`. It takes data, **any statistic** (a function from a sample to a number), B, and a random source. | A test that bootstraps a statistic the package does not define (a trimmed mean) |
+| **FR-R2** | The **random source is replaceable**: the R-compatible generator is one implementation of a small interface; a standard-library generator is another. | A test with each source; README example |
+| **FR-R3** | The R-compatible generator is its own package with no dependency on the rest, usable by any Go program that must reproduce R's `runif` or `sample`. | Its tests use only R's saved reference files |
+| **FR-R4** | Statistics (median, mean, standard deviation) are their own small package. | Used by engine and by `cmd` programs |
+
+## 5. Non-functional requirements
+
+| ID | Requirement |
+|---|---|
+| **NFR-1 Fair comparison (G1–G5)** | Same Mac, same data file, same B, same seed, batch execution (`Rscript`, built Go binary) from one shell script, both measured with `/usr/bin/time -l`. Neither side plots. |
+| **NFR-2 Enough runs (G6, G7)** | Each timed condition is run the number of times in **Q10**; mean, median and spread are reported; the raw per-run log is committed. |
+| **NFR-3 Three kinds of time (G8)** | For each language: **whole-process** time; **start-up** time (an empty R script, a Go binary that exits at once); **computation** time measured inside the program. Every ratio in the README says which kind it is. |
+| **NFR-4 Memory** | Peak memory of the whole process from `/usr/bin/time -l` for both languages, reported with its spread (R's varies between identical runs, spike §7); Go allocations per operation from benchmarks. |
+| **NFR-5 Reported separately** | Go on one core against R (like for like), and Go on all cores (what Go adds). The course's unchanged R program is a third, separate comparison. |
+| **NFR-6 Freshness** | The measurement script refuses a stale or modified copy and records machine, CPU count, Go and R versions, R package versions and the commit. No user name, host name or home path. |
+| **NFR-7 Generated numbers** | All README tables, headline figures and the saving percentage are generated from `results/` and the price file. |
+| **NFR-8 Quality gates** | `gofmt`, `go vet`, `go test -race ./...` clean; tests need neither R nor the internet; critical tests mutation-checked. |
+| **NFR-9 Dependencies** | Per **Q2**. `go.sum`, if any, is generated on the Mac. |
+| **NFR-10 Privacy and provenance** | Constitution Article 8; the course's files are credited to their author. |
+
+## 6. Comparability rule (written before measuring; constitution 1.1)
+
+| Quantity | R (`sample()` loop) against Go (R stream) | Against the block stream or `boot` |
+|---|---|---|
+| n | equal | equal |
+| Sample median | **identical** (same double) | identical |
+| Sample mean | relative difference ≤ 1e-12 | ≤ 1e-12 |
+| Bootstrap SE of the median | **identical** (same double) | relative difference ≤ **10 %** at B = 1,000 |
+| Bootstrap SE of the mean | relative difference ≤ 1e-12 | ≤ 10 % at B = 1,000 |
+
+Why these numbers. Identity for the median: the same indices select the same values, and a median is a
+selection (or one exact average), so no rounding can differ; the spike observed identity. 1e-12 for means:
+summation order differs; the spike observed 4.5e-16. 10 % between different random streams: two bootstrap
+runs with different draws differ by Monte Carlo error, roughly SE ÷ √(2B) ≈ 2.2 % of the SE at B = 1,000 for
+a near-normal statistic; 10 % is about four of those and still catches a wrong formula (a denominator of B
+instead of B − 1 is invisible at any tolerance, so that is covered by exact tests instead).
+
+A second, independent check: for the symmetric (normal) data sets the bootstrap SE of the **mean** must be
+within 10 % of s ÷ √n, where s is the sample standard deviation.
+
+## 7. Risks
+
+| # | Risk | Handling |
+|---|---|---|
+| R1 | Exact R parity depends on R's version and settings (spike §7 limits) | The R scripts record `R.version.string` and `RNGkind()` in their output; the comparison reports them; the README states the conditions |
+| R2 | R and Go may parse the same decimal text to different doubles | Values are written with 4 decimals (few significant digits parse exactly in both); the sample median and mean comparison in §6 detects any difference on every data set |
+| R3 | Whole-process timing of sub-second jobs mostly measures start-up | NFR-3 separates the three kinds of time; sizes in Q5 include jobs long enough for computation to dominate |
+| R4 | A parallel run that is fast but not reproducible | FR-6 is a tested property: same result for 1, 2 and all workers |
+| R5 | Block streams seeded from neighbouring numbers could be correlated | Property to test: block-stream SEs agree with R-stream SEs within the §6 tolerance on all data sets; the README states the block stream is for speed, the R stream for audit |
+| R6 | The cost percentage could be read as general | The README states it holds for this method, these sizes, this instance type, at the capture date |
+| R7 | Time: hundreds of runs per condition | Q10 fixes a budget of about 15 minutes of machine time |
+
+## 8. Acceptance criteria
+
+| ID | Criterion | Checked by |
+|---|---|---|
+| AC-1 | Every data set in the manifest exists with the recorded hash and has n ≥ 100 | `scripts/check-inputs.sh` |
+| AC-2 | The course's R program, unchanged, reproduces its listing | acceptance script, where R is present |
+| AC-3 | R (`sample()` loop) and Go (R stream) agree by §6 on every data set | `results/comparison` table, all rows pass |
+| AC-4 | Go reproduces R's saved reference draws and bootstraps (spike evidence) without R installed | `go test ./...` |
+| AC-5 | Block-stream results are identical for 1, 2 and all workers, under the race detector | `go test -race` |
+| AC-6 | Block stream and `boot` agree with the R stream by §6 | comparison table |
+| AC-7 | Median, mean and standard deviation match independently known answers, including even n, odd n, ties, n = 2 | unit tests; mutation-checked |
+| AC-8 | Each invalid input of FR-8 gives its message and exit code 2 on the built binary | acceptance script |
+| AC-9 | No-argument run exits 0 and prints a result | acceptance script |
+| AC-10 | Profiles and logs are produced on request; committed profiles exist | acceptance script |
+| AC-11 | `results/` holds the raw per-run log with the run counts of Q10, and machine details without personal data | acceptance script |
+| AC-12 | README tables, headline and saving percentage equal the generated ones | `scripts/readme.sh --check` |
+| AC-13 | The price file has source URL, region, instance type, price and date for each price used | acceptance script |
+| AC-14 | README contains: method and CRAN URLs; package search (R and Go); build process; experiences with testing, benchmarking, profiling, logging; what improved performance; R against Go results; recommendation with provider, prices and percentage; run, test and build instructions; GenAI Tools | acceptance script (headings) and review R2 |
+| AC-15 | A statistic defined outside the package and a second random source both work with the engine | unit tests (FR-R1, FR-R2) |
+| AC-16 | `gofmt`, `go vet`, `go test -race ./...` clean on a fresh clone | acceptance script |
+| AC-17 | AI dialogs are in `docs/ai-dialogs/` with an index | acceptance script |
+
+## 9. Traceability
+
+### 9a. Assignment steps
+
+| Step | Covered by |
+|---|---|
+| S1 select a method from Gelman and Vehtari | §1; README method section (AC-14) |
+| S2 CRAN packages, URLs, analysis in R | FR-2 (base R and `boot`); AC-14; Q4 |
+| S3 implement in Go | FR-3, FR-5, FR-6, FR-R1–R4 |
+| S4 testing, benchmarking, profiling, logging; performance improvement | FR-11, FR-12, NFR-8; AC-7, AC-10 |
+| S5 Mersenne Twister | FR-5, Q2; spike §5–§6 |
+| S6 compare on the same data; comparable results; memory and time | FR-4, FR-7, §6, NFR-1–NFR-5; AC-3, AC-6, AC-11 |
+| S7 complete data and code, n ≥ 100 | FR-1, FR-2, FR-3; AC-1 |
+| S8 README: package search, build process, experiences | AC-14 |
+| S9 recommendation, provider, prices, percentage | FR-13; AC-12, AC-13, AC-14 |
+| S10 complete README, run, test and build instructions | FR-14; AC-14 |
+| S11 GenAI Tools and logs | AC-14, AC-17 |
+| S12 `.git` URL | Owner, at submission |
+| M1 how easy | README: what had to be written in Go that R provides (generator, median, bootstrap), measured in lines and effort; AC-14 |
+| M2 how much saved | FR-13 |
+| G1–G9 benchmarking guidance | NFR-1 (G1, G3, G4, G5); hand-off step (G2); NFR-2 (G6, G7); NFR-3 (G8); FR-5 (G9) |
+
+### 9b. Rubric
+
+| Criterion | Covered by |
+|---|---|
+| [C] Coding | Constitution Art. 2; NFR-8; small packages (FR-R1–R4); readable R (constitution 2.9) |
+| [T] Testing and metrics | AC-3–AC-7, AC-10, AC-11; FR-11, FR-12; NFR-2–NFR-4; the bootstrap itself is the Monte Carlo benchmark |
+| [D] Design | FR-R1–R4, FR-6; same code path for 1 and many workers |
+| [Doc] Documentation | AC-12, AC-14, AC-17; one task per commit |
+| [A] Application | FR-8–FR-10, FR-14; AC-8, AC-9 |
+
+## 10. Open decisions (owner)
+
+| # | Decision | Options | Recommendation |
+|---|---|---|---|
+| **Q1** | Method | (a) bootstrap SE of the median, three shapes · (b) another method from the list | **(a)**: the assignment's own example, fully in R, and reusable in Week 9 |
+| **Q2** | Random generator in Go | (a) our own R-compatible 32-bit Mersenne Twister, standard library only · (b) `seehuhn/mt19937` as the assignment suggests (64-bit variant, GPL-3.0; results comparable only statistically) · (c) both: (a) as default, (b) as an optional source | **(a)**, with a standard-library generator as the second source for FR-R2, and the README explaining why the suggested package cannot match R. (c) honours the suggestion literally but puts the program under GPL terms |
+| **Q3** | R baselines | (a) course program only · (b) idiomatic base R + `boot`, with the course program reported separately | **(b)**: the headline saving rests on idiomatic R; comparing only with the course program would overstate it |
+| **Q4** | Install the CRAN `bootstrap` package | (a) no: cite it with its URL, use base R and `boot` (already installed) · (b) install and add a third R script | **(a)** |
+| **Q5** | Data sizes and shapes | (a) n = 100, 1,000, 10,000, 100,000 × three shapes (12 files, about 3 MB): Normal(100, 10); lognormal (positive skew); 200 − lognormal (negative skew) · (b) stop at 10,000 (9 files, 0.3 MB) | **(a)**: the firm's concern is large data sets, and at 100,000 computation dominates start-up |
+| **Q6** | Replicates B | 1,000 (usual for a standard error) · 10,000 | **1,000** for comparison and timing |
+| **Q7** | Default stream of the Go program | (a) R stream (auditable against R, one core) · (b) block stream (all cores) | **(a)** as default, (b) with `-stream block` |
+| **Q8** | Cloud provider and price basis | (a) AWS EC2, on-demand, Linux, US East, a compute-optimised instance · (b) Google Compute Engine · (c) Azure | **(a)**, prices captured with source and date. Cost per job = measured time × price; saving = 1 − cost(Go) ÷ cost(R) on the same instance type, shown for one core and for all cores |
+| **Q9** | Application builds | (a) scripts and instructions for binary, `.exe`, `.app`; binaries not committed · (b) also commit built binaries | **(a)**: the rubric now asks for instructions |
+| **Q10** | Runs per timed condition | (a) **200** whole-process runs per condition for n ≤ 10,000 and **30** for n = 100,000, on the positively skewed data sets; 30 runs of the course program; about 15 minutes · (b) 1,000 runs per condition; over an hour | **(a)** |
+
+## 11. Out of scope
+
+- Reproducing R's `rnorm` in Go (data is generated once, by R, and read by both).
+- Confidence intervals, BCa, other bootstrap variants; other statistics beyond median and mean in the command-line program (the engine accepts any).
+- Python. The course guidance mentions it; the assignment compares R and Go.
+- Running anything in the cloud. Costs are computed from local measurements and published prices, and the README says so.
+
+===== END OF BUNDLE (4 files) =====
