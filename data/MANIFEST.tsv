@@ -1,0 +1,14 @@
+# R version 4.4.2 (2024-10-31); values rounded to 4 decimals
+file	shape	n	generator	seed	bytes	sha256
+normal-100.csv	normal	100	rnorm(n, mean = 100, sd = 10)	8001	859	7dcafdde699c7266a804c72d6fdf37eac30e15f1e548a697248b0eea81ec4937
+normal-1000.csv	normal	1000	rnorm(n, mean = 100, sd = 10)	8002	8497	6bb146f5fd1109e57cd6c4421db341b61e8a9647c0fbb67a8a978a9df19c9e3c
+normal-10000.csv	normal	10000	rnorm(n, mean = 100, sd = 10)	8003	84971	36bf1b71b1f7d4508e860d31c01085acea8f84272431218bbdbd1fbc71a7191e
+normal-100000.csv	normal	100000	rnorm(n, mean = 100, sd = 10)	8004	849993	7bf5db58ccfd36e6c566fec07d8228753763714b54c45ca4f6a8c133f47eea9f
+lognormal-100.csv	lognormal	100	rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8005	837	bb50dc0797aa5694b462e49f13ada568e23fdd063d23ad6ffa19b627644075b7
+lognormal-1000.csv	lognormal	1000	rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8006	8384	ff8f6d7b1a1e12fb9ee2b59a250750902fbf6e60000dd6c81f9dec50bebc21ce
+lognormal-10000.csv	lognormal	10000	rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8007	83973	db2de89011ff3dd288c99f5a21fdd2a8d70b7a5bcbd84df503716e6b7d84db02
+lognormal-100000.csv	lognormal	100000	rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8008	840032	9796e092e9e396c9a33aecc353173e74d937af63e88517aa739989b2690fdbc3
+mirrored-lognormal-100.csv	mirrored-lognormal	100	200 - rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8009	875	6e5f5497ea031b6b4e63be2b34aa1c40394436f7b8455ecdb1ddaaf070407c29
+mirrored-lognormal-1000.csv	mirrored-lognormal	1000	200 - rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8010	8652	4e324bc942e39881acfea244172571e3ef49872089e307ae4b2daa7e94ef2c81
+mirrored-lognormal-10000.csv	mirrored-lognormal	10000	200 - rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8011	86375	4fdd470f36b668e774df4b87554c095404ac41338cd6e3caee00ab27151db64e
+mirrored-lognormal-100000.csv	mirrored-lognormal	100000	200 - rlnorm(n, meanlog = log(100) - 0.125, sdlog = 0.5)	8012	863630	1cac901d6c10ca135064bb63a0f014911fdc71fc5de3fde78a3182c4e664c7c4
