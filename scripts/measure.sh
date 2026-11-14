@@ -67,11 +67,21 @@ time_run() {
     tail -n 15 "$log" >&2
     fail "$implementation failed on $dataset (run $run)."
   fi
-  local field
   field() { sed -n "s/.*$1=\([0-9.eE+-]*\).*/\1/p" "$log" | tail -n 1; }
+  local real footprint
+  real="$(awk '/ real /{print $1}' "$log")"
+  footprint="$(awk '/peak memory footprint/{print $1}' "$log")"
+  # Fail on the first run, not after half an hour, if the time tool's output is not understood.
+  if [ -z "$real" ] || [ -z "$footprint" ]; then
+    cat "$log" >&2
+    fail "could not read the time or memory of $implementation from the time tool's output (above)."
+  fi
+  case "$implementation" in r-loop|r-boot|go-r|go-block-1|go-block-multi)
+    [ -n "$(field compute_ms)" ] || { cat "$log" >&2; fail "$implementation logged no compute_ms."; } ;;
+  esac
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$group" "$implementation" "$dataset" "$n" "$run" \
-    "$(awk '/ real /{print $1}' "$log")" "$(awk '/ real /{print $3}' "$log")" "$(awk '/ real /{print $5}' "$log")" \
-    "$(awk '/maximum resident set size/{print $1}' "$log")" "$(awk '/peak memory footprint/{print $1}' "$log")" \
+    "$real" "$(awk '/ real /{print $3}' "$log")" "$(awk '/ real /{print $5}' "$log")" \
+    "$(awk '/maximum resident set size/{print $1}' "$log")" "$footprint" \
     "$(field read_ms)" "$(field compute_ms)" >> "$runs_file"
 }
 
@@ -94,6 +104,10 @@ for run in $(seq 1 "$runs"); do
   time_run startup r-boot-load - 0 "$run" Rscript r/startup-boot.R
   time_run startup go-help - 0 "$run" "$work/bootse" -h
 done
+echo "measure:   the course's R program, unchanged ($runs_large runs)"
+for run in $(seq 1 "$runs_large"); do
+  time_run course r-course-program - 0 "$run" Rscript r/original/run-bootstrap-median.R
+done
 for n in 100 1000 10000 100000; do
   count="$runs"; [ "$n" = "100000" ] && count="$runs_large"
   echo "measure:   scaling, n = $n ($count runs of each implementation)"
@@ -110,10 +124,6 @@ for run in $(seq 1 "$runs"); do
       run_implementation shapes "$implementation" "$shape-10000.csv" 10000 "$run"
     done
   done
-done
-echo "measure:   the course's R program, unchanged ($runs_large runs)"
-for run in $(seq 1 "$runs_large"); do
-  time_run course r-course-program - 0 "$run" Rscript r/original/run-bootstrap-median.R
 done
 
 echo "measure: step 3 of 5: Go benchmarks"
