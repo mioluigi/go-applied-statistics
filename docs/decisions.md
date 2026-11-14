@@ -1,5 +1,11 @@
 # Decisions log (newest first)
 
+## 2026-11-14 · T03: accuracy bound for the standard deviation relaxed from 1e-14 to 1e-12
+- **Evidence:** On 100,000 values near 1e6, the two-pass standard deviation differs from exact rational arithmetic by 1.9e-14 relative (`stats` test, first run). Review R1 (DR-5) said a two-pass algorithm would meet 1e-14 "effortlessly"; for a sum of 100,000 squared deviations in double precision it does not (rounding grows with the number of terms). The mean does meet 1e-14.
+- **Decision:** Spec NFR-8 and AC-7 now require 1e-14 for the mean and 1e-12 for the standard deviation, the tolerance the R comparison (§6) actually uses. Compensated summation was considered and not adopted: R does not use it, and the bootstrap takes standard deviations of only B = 1,000 values.
+- **The test still catches** the one-pass variance shortcut (error about 4e-6).
+- **Documents updated:** spec NFR-8, AC-7.
+
 ## 2026-11-14 · Approval: spec v2, plan, tasks; Q1–Q10 as recommended
 - **Decision (Luis):** "approved, all recommended". Q1 bootstrap SE of the median; Q2 own R-compatible generator, standard library only; Q3 base R and `boot`, course program separate; Q4 `bootstrap` package cited, not installed; Q5 n = 100 to 100,000 × three shapes; Q6 B = 1,000; Q7 R stream by default; Q8 AWS EC2 on-demand, US East, arm64, 1-vCPU and 8-vCPU; Q9 build scripts and instructions; Q10 200 runs per condition (30 for the largest and the course program).
 - **Q8 clarified before approval:** only published prices are used; nothing runs in the cloud and no account is needed. The README states that costs are computed from local timings and published prices.

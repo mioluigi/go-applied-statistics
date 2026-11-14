@@ -17,3 +17,13 @@ needing exactly 16 bits (32,769 to 65,536) and no n = 1 case. A reference for th
 from the Mac in T05; the mutation is re-run when it arrives.
 Closed by a new test: "no nudge away from 0" first survived (the generator returns 0 once in 2^32 draws);
 TestFloat64IsNeverZeroOrOne now sets the state directly.
+
+## T03 stats
+stats | denominator n instead of n - 1 | caught
+stats | even count: upper middle only | caught
+stats | median without sorting | caught
+stats | median sorts its argument in place | caught
+stats | correction not divided by n | caught
+stats | standard deviation of one value not NaN | caught
+stats | one-pass variance shortcut | caught
+stats | no correction pass in the mean | caught

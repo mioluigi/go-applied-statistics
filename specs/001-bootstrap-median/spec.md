@@ -95,7 +95,7 @@ frames, so the comparison needs an idiomatic R baseline as well (spike §4).
 | **NFR-5 Reported separately** | Go on one core against R (like for like), and Go on all cores (what Go adds). The course's unchanged R program is a third, separate comparison. |
 | **NFR-6 Freshness** | The measurement script refuses a stale or modified copy and records machine, CPU count, Go and R versions, R package versions and the commit. No user name, host name or home path. It records the **load average before and after** the run and warns when the machine is busy at the start (G2). |
 | **NFR-7 Generated numbers** | All README tables, headline figures and the saving percentage are generated from `results/` and the price file. |
-| **NFR-8 Quality gates** | `gofmt`, `go vet`, `go test -race ./...` clean; tests need neither R nor the internet; critical tests mutation-checked. A test requires a **doc comment on every exported identifier** and **no function longer than 60 lines**. Mean and standard deviation use a two-pass form and are accurate to 1e-14 relative on badly conditioned data (n = 100,000, values near 1e6). |
+| **NFR-8 Quality gates** | `gofmt`, `go vet`, `go test -race ./...` clean; tests need neither R nor the internet; critical tests mutation-checked. A test requires a **doc comment on every exported identifier** and **no function longer than 60 lines**. Mean and standard deviation use a two-pass form; on badly conditioned data (n = 100,000, values near 1e6) the mean is accurate to 1e-14 relative and the standard deviation to 1e-12 *(changed 2026-11-14, see `docs/decisions.md`: 1e-14 for the standard deviation was measured not to hold)*. |
 | **NFR-9 Dependencies** | Per **Q2**. `go.sum`, if any, is generated on the Mac. |
 | **NFR-10 Privacy and provenance** | Constitution Article 8; the course's files are credited to their author. |
 
@@ -151,7 +151,7 @@ A second, independent check, on **all 12 data sets** (it holds for any shape): t
 | AC-4 | Go reproduces R's saved reference draws and bootstraps (spike evidence) without R installed | `go test ./...` |
 | AC-5 | Block-stream results are bit-for-bit identical for 1, 2, 4 and 8 workers, repeated 10 times, under the race detector | `go test -race -count=10` |
 | AC-6 | Block stream and `boot` agree with the R stream by §6; the bootstrap SE of the mean passes the √((n−1)/n)·s/√n check on all 12 data sets | comparison table |
-| AC-7 | Median, mean and standard deviation match independently known answers, including even n, odd n, ties, n = 2, and badly conditioned data to 1e-14 | unit tests; mutation-checked |
+| AC-7 | Median, mean and standard deviation match independently known answers, including even n, odd n, ties, n = 2, and badly conditioned data (mean 1e-14, standard deviation 1e-12) | unit tests; mutation-checked |
 | AC-8 | Each invalid input of FR-8 gives its message and exit code 2 on the built binary | acceptance script |
 | AC-9 | No-argument run exits 0 and its output names every field listed in FR-4 | acceptance script |
 | AC-10 | Profiles and logs are produced on request; committed profiles exist; saved benchmark output has `-benchmem` rows for the generator, the median and the engine, and the before/after pairs of FR-12 | acceptance script |
