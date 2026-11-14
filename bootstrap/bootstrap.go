@@ -86,8 +86,11 @@ func Replicates(data []float64, statistics []Statistic, config Config) ([][]floa
 		workers.Add(1)
 		go func() {
 			defer workers.Done()
+			// One scratch buffer per worker, refilled for every replicate: no allocation
+			// inside the loop.
+			resample := make([]float64, len(data))
 			for replicate := first; replicate < last; replicate++ {
-				resample := drawResample(data, config.Stream.Source(replicate))
+				fillResample(resample, data, config.Stream.Source(replicate))
 				for s, statistic := range statistics {
 					values[s][replicate] = statistic(resample)
 				}
@@ -98,13 +101,11 @@ func Replicates(data []float64, statistics []Statistic, config Config) ([][]floa
 	return values, nil
 }
 
-// drawResample returns len(data) values drawn from data with replacement.
-func drawResample(data []float64, source IndexSource) []float64 {
-	resample := make([]float64, len(data))
+// fillResample overwrites resample with len(resample) values drawn from data with replacement.
+func fillResample(resample, data []float64, source IndexSource) {
 	for i := range resample {
 		resample[i] = data[source.Index(len(data))]
 	}
-	return resample
 }
 
 // StandardErrors returns the bootstrap standard error of each statistic: the standard
