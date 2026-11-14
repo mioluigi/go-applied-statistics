@@ -55,3 +55,8 @@ Notes on T09:
   its result cache. Re-run with `-count=1`, five were caught and one really survived (now closed). All
   mutation runs use `-count=1` from here on. Earlier "caught" results are unaffected: Go never caches a
   failing run, so the cache can only produce a false "survived".
+
+## T11 performance steps (each faster variant must equal the plain one)
+stats | MedianInPlace: lower middle taken from the neighbouring position, not the largest of the lower part | caught
+stats | selection narrows one position too far | caught
+stats | MedianInPlace: even count returns the upper middle only | caught

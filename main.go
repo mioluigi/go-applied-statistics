@@ -157,8 +157,8 @@ func analyse(settings options, stdout, stderr io.Writer) error {
 	}
 	computeStart := time.Now()
 	config := bootstrap.Config{Replicates: settings.replicates, Stream: newStream(settings), Workers: settings.workers}
-	// The mean is listed first: the median may reorder the resample it is given.
-	values, err := bootstrap.Replicates(data, []bootstrap.Statistic{stats.Mean, stats.Median}, config)
+	// The mean is listed first: the median reorders the resample it is given.
+	values, err := bootstrap.Replicates(data, []bootstrap.Statistic{stats.Mean, stats.MedianInPlace}, config)
 	stopProfile()
 	if err != nil {
 		return err

@@ -3,6 +3,7 @@ package stats
 import (
 	"math"
 	"math/big"
+	"slices"
 	"testing"
 
 	"github.com/mioluigi/go-applied-statistics/rrand"
@@ -104,14 +105,63 @@ func TestAccuracyOnBadlyConditionedData(t *testing.T) {
 	}
 }
 
-func BenchmarkMedian(b *testing.B) {
+// TestMedianInPlaceEqualsMedian: the faster median must return exactly the plain median's
+// value (constitution 1.2), on the known answers and on thousands of generated cases of
+// every small size, with many ties, sorted, reversed and constant inputs.
+func TestMedianInPlaceEqualsMedian(t *testing.T) {
+	check := func(description string, values []float64) {
+		t.Helper()
+		want := Median(values)
+		if got := MedianInPlace(slices.Clone(values)); got != want {
+			t.Fatalf("%s (n = %d): MedianInPlace = %v, Median = %v", description, len(values), got, want)
+		}
+	}
+	generator := rrand.New(431)
+	for size := 1; size <= 200; size++ {
+		continuous, tied, sorted := make([]float64, size), make([]float64, size), make([]float64, size)
+		for i := range continuous {
+			continuous[i] = generator.Float64()
+			tied[i] = float64(generator.Index(5))
+			sorted[i] = float64(i)
+		}
+		check("continuous", continuous)
+		check("heavily tied", tied)
+		check("already sorted", sorted)
+		slices.Reverse(sorted)
+		check("reverse sorted", sorted)
+		check("constant", make([]float64, size))
+	}
+	for trial := 0; trial < 200; trial++ {
+		values := make([]float64, 1000+trial)
+		for i := range values {
+			values[i] = math.Round(generator.Float64()*1e6) / 1e4 // 4 decimals, like the data
+		}
+		check("data-like", values)
+	}
+	if !math.IsNaN(MedianInPlace(nil)) {
+		t.Error("MedianInPlace of no values should be NaN")
+	}
+}
+
+// The performance step "selection instead of sorting" (spec FR-12): before and after.
+func BenchmarkStep1Median(b *testing.B) {
 	generator := rrand.New(431)
 	values := make([]float64, 10000)
 	for i := range values {
 		values[i] = generator.Float64()
 	}
-	b.ReportAllocs()
-	for b.Loop() {
-		Median(values)
-	}
+	scratch := make([]float64, len(values))
+	b.Run("before=sort", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			Median(values)
+		}
+	})
+	b.Run("after=select", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			copy(scratch, values)
+			MedianInPlace(scratch)
+		}
+	})
 }

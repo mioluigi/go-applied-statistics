@@ -1,0 +1,29 @@
+# Profile of the plain implementation (before any performance step)
+# Claude's workspace (2 virtual CPUs), 2026-11-14, commit 215d4ae; bootse -data data/lognormal-10000.csv (B = 1,000, R stream)
+# Not an official measurement: it only decides what to improve first. Official profiles are in results/.
+
+## CPU (go tool pprof -top)
+Duration: 1.41s, Total samples = 1.23s (87.50%)
+Showing nodes accounting for 1.18s, 95.93% of 1.23s total
+Showing top 12 nodes out of 26
+      flat  flat%   sum%        cum   cum%
+     0.61s 49.59% 49.59%      0.66s 53.66%  slices.partitionOrdered[go.shape.float64]
+     0.12s  9.76% 59.35%      0.37s 30.08%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).Index
+     0.11s  8.94% 68.29%      0.11s  8.94%  math.archLog
+     0.07s  5.69% 73.98%      0.10s  8.13%  slices.insertionSortOrdered[go.shape.float64]
+     0.06s  4.88% 78.86%      0.08s  6.50%  cmp.Less[go.shape.float64] (inline)
+     0.05s  4.07% 82.93%      0.43s 34.96%  github.com/mioluigi/go-applied-statistics/bootstrap.drawResample
+     0.05s  4.07% 86.99%      0.05s  4.07%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).refill (inline)
+     0.03s  2.44% 89.43%      0.11s  8.94%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).Float64 (inline)
+     0.03s  2.44% 91.87%      0.08s  6.50%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).uint32
+     0.02s  1.63% 93.50%      0.02s  1.63%  cmp.isNaN[go.shape.float64] (inline)
+     0.02s  1.63% 95.12%      0.80s 65.04%  slices.pdqsortOrdered[go.shape.float64]
+     0.01s  0.81% 95.93%      0.14s 11.38%  math.Log2 (inline)
+
+## Allocated memory (go tool pprof -sample_index=alloc_space -top)
+Showing nodes accounting for 151.10MB, 99.00% of 152.63MB total
+Dropped 6 nodes (cum <= 0.76MB)
+Showing top 4 nodes out of 14
+      flat  flat%   sum%        cum   cum%
+   82.09MB 53.78% 53.78%    82.09MB 53.78%  github.com/mioluigi/go-applied-statistics/bootstrap.drawResample
+   66.97MB 43.88% 97.66%    66.97MB 43.88%  slices.Clone[go.shape.[]float64,go.shape.float64]
