@@ -6,7 +6,8 @@
 #   1. runs the correctness comparison (scripts/compare.sh); nothing is timed unless it passes;
 #   2. times whole processes with /usr/bin/time -l, conditions interleaved:
 #        start-up     empty R script, R loading boot, the Go program printing its help
-#        scaling      5 implementations x 4 sizes, lognormal data
+#        scaling      5 implementations x 4 sizes, lognormal data (the parallel one uses
+#                     8 workers, the vCPU count of the larger cloud instance in prices/)
 #        shapes       normal and mirrored-lognormal data at n = 10,000
 #        course       the course's R program, unchanged
 #      one line per run in results/runs.tsv;
@@ -46,6 +47,10 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 go build -o "$work/bootse" .
 cpus="$(getconf _NPROCESSORS_ONLN)"
+# The parallel condition uses as many workers as the larger priced instance has vCPUs (8), so
+# its timing can be costed on that instance; fewer if this machine has fewer CPUs.
+workers=8
+[ "$cpus" -lt "$workers" ] && workers="$cpus"
 
 echo "measure: step 1 of 5: correctness comparison"
 scripts/compare.sh
@@ -78,7 +83,7 @@ run_implementation() {
     r-boot)       time_run "$group" "$implementation" "$file" "$n" "$run" Rscript r/bootstrap-se-boot.R "data/$file" "$replicates" "$seed" ;;
     go-r)         time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" ;;
     go-block-1)   time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" -stream block -workers 1 ;;
-    go-block-all) time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" -stream block -workers "$cpus" ;;
+    go-block-multi) time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" -stream block -workers "$workers" ;;
     *) fail "unknown implementation $implementation" ;;
   esac
 }
@@ -93,7 +98,7 @@ for n in 100 1000 10000 100000; do
   count="$runs"; [ "$n" = "100000" ] && count="$runs_large"
   echo "measure:   scaling, n = $n ($count runs of each implementation)"
   for run in $(seq 1 "$count"); do
-    for implementation in r-loop r-boot go-r go-block-1 go-block-all; do
+    for implementation in r-loop r-boot go-r go-block-1 go-block-multi; do
       run_implementation scaling "$implementation" "lognormal-$n.csv" "$n" "$run"
     done
   done
@@ -101,7 +106,7 @@ done
 echo "measure:   shapes at n = 10000"
 for run in $(seq 1 "$runs"); do
   for shape in normal mirrored-lognormal; do
-    for implementation in r-loop go-r go-block-all; do
+    for implementation in r-loop go-r go-block-multi; do
       run_implementation shapes "$implementation" "$shape-10000.csv" 10000 "$run"
     done
   done
@@ -126,6 +131,7 @@ echo "measure: step 5 of 5: machine record"
 {
   echo "machine: $(sysctl -n hw.model) · $(sysctl -n machdep.cpu.brand_string) · $(( $(sysctl -n hw.memsize) / 1073741824 )) GB · macOS $(sw_vers -productVersion)"
   echo "cpus: $cpus"
+  echo "parallel workers: $workers"
   echo "go: $(go version | awk '{print $3}')"
   echo "r: $(Rscript -e 'cat(R.version.string)')"
   echo "r package boot: $(Rscript -e 'cat(as.character(packageVersion("boot")))')"
