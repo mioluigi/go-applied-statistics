@@ -1,0 +1,985 @@
+The review bundle from commit 94a7609 (REVIEW BUNDLE: 18 files, from commit 94a7609 on
+line 1 of 002-repository-review-bundle.txt) contains all 18 required files:
+●​ docs/assignment-and-rubric.md
+●​ README.md
+●​ results/tables.md
+●​ results/machine.txt
+●​ prices/aws-ec2.tsv
+●​ specs/001-bootstrap-median/spec.md
+●​ docs/decisions.md
+●​ docs/mutation-checks.txt
+●​ main.go
+●​ rrand/rrand.go
+●​ stats/stats.go
+●​ bootstrap/bootstrap.go
+●​ bootstrap/stream.go
+●​ dataset/dataset.go
+●​ r/bootstrap-se.R
+●​ r/bootstrap-se-boot.R
+●​ scripts/measure.sh
+●​ scripts/acceptance.sh
+1. Rubric Criterion Scores
+
+Criterion Score Evidence in the What Specifically
+Bundle Keeps It from 20
+
+[C] Coding rules, 19 / 20 Idiomatic package 1. In main.go
+organization, decomposition (writeMemoryProfil
+aesthetics (rrand, stats, e, lines 244–245),
+bootstrap, dataset, runtime.GC() has
+record); no panic on the comment // so
+user input; clean the profile shows
+control flow (switch what is still in use,
+blocks in main.go not garbage right
+checkOptions and before calling
+dataset/dataset.go pprof.Lookup("alloc
+Read); automated s").WriteTo(file, 0),
+check for exported which
+doc comments and scripts/measure.sh
+< 60-line functions (line 139) reads with
+(specs/001-bootstr -sample_index=allo
+ap-median/spec.m c_space
+ d §5 NFR-8, (cumulative
+scripts/acceptance. allocations since
+sh AC-16); clean, start, unaffected by
+vector-preallocated runtime.GC()).
+R scripts
+(r/bootstrap-se.R, 2. In rrand/rrand.go
+r/bootstrap-se-boo (Index, line 99), for
+t.R). filled := 0; filled <=
+bitCount; filled +=
+bitsPerDraw runs
+once when n == 1
+(bitCount == 0),
+advancing the
+PRNG state when
+R's R_unif_index(1)
+does not, and loops
+forever if n == 0.
+
+[T] Testing and 19 / 20 Independent 1.
+software metrics ground-truth results/machine.txt
+testing against R records load
+reference files average (1 minute)
+(scripts/acceptance before: 6.25, which
+.sh AC-4) and exact exceeds
+rational arithmetic scripts/measure.sh'
+(docs/decisions.md s own
+T03); mutation quiet-machine
+checks run with threshold
+-count=1 busy_load=2.0
+(docs/mutation-che ("WARNING: the
+cks.txt); 264/264 1-minute load
+automated average is
+comparison checks $load_before
+and 12,000/12,000 (above
+bit-identical $busy_load)", lines
+resample medians 31, 41–43).
+(results/tables.md
+## correctness); 4 2. In
+profiled results/tables.md
+optimization steps ## startup, Go,
+with -benchmem printing its help has
+(results/tables.md Mean (s) = 0.003
+ ## benchmarks); and SD (s) = 0.019
+structured slog (Std. error of mean
+timing (read_ms, = 40.1 % ⚠), which
+compute_ms); 200 is caused by a
+runs per condition ( first-run
+𝑁 = 30 at cold-execution
+𝑛 = 100, 000). spike (~0.26 s on
+run 1 when macOS
+first executes the
+newly built binary)
+rather than just the
+0.01 s timer step
+claimed in
+README.md
+§"Time: start-up".
+
+[D] Design and 19 / 20 General-purpose, 1. In
+development zero-dependency bootstrap/stream.g
+reusable packages o
+(rrand, stats, (blockStream.Sourc
+bootstrap, dataset) e, lines 40–43),
+with no printing or BlockStream
+os.Exit outside heap-allocates a
+main.go; new *rand.PCG and
+replaceable *rand.Rand on
+Statistic and every replicate
+Stream/IndexSourc (2,007 allocations
+e interfaces verified for 𝐵 = 1, 000 in
+by external tests BenchmarkWorkers
+(scripts/acceptance , results/tables.md
+.sh AC-15); unified ## benchmarks),
+worker-pool path in contradicting
+bootstrap.Replicate bootstrap/bootstra
+s producing p.go lines 82–83 ("//
+bit-identical results One scratch buffer
+across any worker per worker, refilled
+count for every replicate:
+(bootstrap/bootstra no allocation inside
+p.go lines 65–95). the loop").
+
+2.
+bootstrap.Replicate
+ s
+(bootstrap/bootstra
+p.go lines 86–89)
+passes the same
+slice to each
+statistic in statistics
+without isolating
+in-place mutations;
+callers that pass
+stats.MedianInPlace
+before stats.Mean
+get reordered
+summation in Mean
+(worked around via
+comment in
+main.go line 154).
+
+[Doc] 19 / 20 README.md is 1. README.md
+Documentation complete, clear, and §"Cloud cost"
+100% ("How to read it")
+script-generated draws an
+for all numbers unsupported
+(scripts/readme.sh conclusion from
+--check in results/tables.md
+scripts/acceptance. ## cost Scenario B
+sh AC-12); ("eight one-worker
+documents jobs side by side
+CRAN/Go package cost less than one
+search, eight-worker job at
+architecture, every size, because
+predictions, eight workers are
+mutation checks, not eight times
+and AI dialogs. faster"), comparing
+an unmeasured
+theoretical
+extrapolation
+(1-process time ÷ 8
+with zero hardware
+contention) against
+a measured
+8-worker run that
+includes real
+ multi-core
+contention.
+
+2.
+prices/aws-ec2.tsv
+line 2 retains an
+unresolved TODO
+comment ("to be
+confirmed against
+the AWS page by
+Luis"), and the small
+seed table for
+seehuhn/mt19937
+required by
+specs/001-bootstra
+p-median/spec.md
+§10 Q2 is missing
+from README.md.
+
+[A] Application 20 / 20 Runs with no Full marks (20/20).
+arguments on Minor edge case
+embedded noted in §3:
+data/lognormal-100 dataset.Read line
+0.csv (main.go lines 42 rejects a header
+35–36, line whose text is
+scripts/acceptance. "NaN" or "Inf" as a
+sh AC-9); validates number, and skips a
+all flags and CSV blank line 1 before
+lines with specific failing on line 2.
+file/line error
+messages and exit
+codes 0, 1, 2
+(main.go lines
+102–128,
+dataset/dataset.go
+lines 36–63,
+scripts/acceptance.
+sh AC-8); includes
+working scripts and
+instructions for
+macOS binaries,
+Windows .exe, and
+ macOS .app
+(scripts/acceptance
+.sh FR-14).
+
+2. Audit of Assignment Steps (S1–S12), Management
+Questions (M1–M2), and Benchmarking Guidance
+(G1–G9)
+
+ID Requirement Status Where in the
+Bundle (File &
+Section / Function)
+
+S1 Read Gelman & Met README.md §"The
+Vehtari; select one method" ("Gelman
+computer-intensive and Vehtari (2021)
+method fully list bootstrapping
+implemented in R and
+simulation-based
+inference...") and
+§"References and
+credits" ("Gelman,
+A., and A. Vehtari.
+2021...").
+
+S2 Identify CRAN R Met README.md §"The
+package(s); name R side" (names and
+method and show gives URLs
+URLs; demonstrate [https://cran.r-proje
+analysis in R ct.org/package=bo
+ot](https://cran.r-pr
+oject.org/package=
+boot) and
+[https://cran.r-proje
+ct.org/package=bo
+otstrap](https://cran
+.r-project.org/packa
+ge=bootstrap), plus
+<!--
+generated:example:
+ start --> table);
+r/bootstrap-se.R
+and
+r/bootstrap-se-boo
+t.R.
+
+S3 Implement method Met README.md §"The
+in Go (check Go side" ("A search
+Awesome Go and of the web,
+pkg.go.dev) pkg.go.dev listings
+and Awesome
+Go...") and
+§"References and
+credits";
+implemented in
+main.go,
+rrand/rrand.go,
+stats/stats.go,
+bootstrap/bootstra
+p.go,
+bootstrap/stream.g
+o,
+dataset/dataset.go.
+
+S4 Employ Go testing, Met README.md §"Go
+benchmarking, benchmarks and
+profiling, logging; what improved
+explain performance" (<!--
+performance generated:benchm
+improvements arks:start --> and
+<!--
+generated:step4:st
+art -->) and
+§"Experience with
+testing,
+benchmarking,
+profiling and
+logging"; main.go
+(slog in analyse,
+startCPUProfile,
+writeMemoryProfile
+ );
+scripts/acceptance.
+sh AC-7, AC-10.
+
+S5 (Consider) Met README.md §"The
+Mersenne Twister Go side" ("The
+([github.com/seehu Mersenne Twister.
+hn/mt19937](https:// The assignment
+github.com/seehuh suggests
+n/mt19937)) in Go [https://github.com/
+seehuhn/mt19937](
+https://github.com/s
+eehuhn/mt19937)..."
+); rrand/rrand.go
+implements R's
+32-bit MT19937 +
+R_unif_index
+rejection sampling.
+(Note:
+specs/001-bootstra
+p-median/spec.md
+§10 Q2 also called
+for a small
+one-seed table in
+README.md, which
+is only in prose).
+
+S6 Compare R and Met README.md
+final Go on same §"Results" (<!--
+input data; ensure generated:correctn
+comparable results; ess:start -->, <!--
+report memory and generated:scaling:s
+time tart -->, <!--
+generated:ratios:sta
+rt -->, <!--
+generated:memory:
+start -->);
+results/tables.md;
+scripts/measure.sh
+and
+scripts/acceptance.
+ sh AC-3, AC-6,
+AC-11.
+
+S7 Complete data and Met README.md §"The
+code for R and Go; data" (12 files
+data sets ≥ 100 across 3 shapes at
+observations 𝑛 = 100, 1, 000, 10, 00
+); verified by
+scripts/check-input
+s.sh in
+scripts/acceptance.
+sh AC-1.
+
+S8 README: efforts Met README.md §"The
+finding packages, R side", §"The Go
+build process, side", §"Experience
+experiences with with testing,
+testing/benchmarki benchmarking,
+ng/profiling/logging profiling and
+logging", and §"How
+this was built".
+
+S9 README Met README.md
+recommendation: §"Recommendation
+when Go replaces to the consultancy"
+R, cloud IaaS and §"Cloud cost"
+provider, VM costs, (<!--
+% saved generated:cost:star
+t -->);
+prices/aws-ec2.tsv
+(c7g.medium at
+$0.0363/hr,
+c7g.2xlarge at
+$0.2900/hr, savings
+45.8 % to 96.8 %).
+
+S10 Complete README Met README.md
+with instructions for §"Build, run, test"
+running, testing, (includes
+and creating an scripts/build.sh and
+scripts/build-macos
+ executable -app.sh, verified by
+scripts/acceptance.
+sh FR-14).
+
+S11 GenAI Tools section Met README.md
++ conversation logs §"GenAI Tools"
+(references
+docs/ai-dialogs/
+and
+docs/ai-dialogs/REA
+DME.md, verified by
+scripts/acceptance.
+sh AC-17).
+
+S12 Submit cloneable Partly met (at README.md
+.git URL in Canvas submission) §"Build, run, test"
+comments provides
+[https://github.com/
+mioluigi/go-applied
+-statistics.git](https:
+//github.com/miolui
+gi/go-applied-statis
+tics.git); final
+Canvas comment
+submission is a
+manual owner step
+(specs/001-bootstr
+ap-median/spec.m
+d §9a S12).
+
+M1 How easy is it to Met README.md
+use Go in place of §"Recommendation
+R? to the consultancy"
+and §"Effort: how
+easy is it?" (<!--
+generated:effort:st
+art -->: 630 lines of
+Go + 1,125 lines of
+tests = 17.5× the
+36-line base-R
+script).
+M2 How much money Partly met README.md
+will the firm save in §"Headline",
+cloud computing §"Recommendation
+costs? to the consultancy",
+and §"Cloud cost"
+(results/tables.md
+## cost). It reports
+USD per 1M jobs, %
+saved, and jobs per
+$1 saved, though
+Scenario B
+extrapolates 8-job
+concurrency
+without measuring
+8 concurrent
+processes and the
+Recommendation
+prose does not
+connect "Jobs to
+save one dollar" to
+rewrite labor cost
+(see §4 and §5).
+
+G1 Same computer for Met results/machine.txt
+every condition (MacBookPro18,2 ·
+Apple M1 Max · 64
+GB); enforced by [
+"$(uname -s)" =
+"Darwin" ] in
+scripts/measure.sh
+line 34.
+
+G2 Close other Partly met README.md
+programs while §"Results" states
+measuring "applications
+closed", and
+scripts/measure.sh
+lines 40–44 checks
+vm.loadavg against
+busy_load=2.0, but
+results/machine.txt
+ line 11 shows load
+average (1 minute)
+before: 6.25
+(dropping to 1.87
+after), indicating
+residual 1-minute
+load when
+measure.sh began.
+
+G3 Batch execution for Met scripts/measure.sh
+all conditions run_implementation
+(lines 83–93)
+invokes Rscript and
+the compiled
+$work/bootse
+binary from the
+same bash loop.
+
+G4 Same tasks in every Met r/bootstrap-se.R,
+condition r/bootstrap-se-boo
+t.R, and main.go all
+read the same CSV,
+compute
+𝐵 = 1, 000
+resamples for
+median and mean
+with seed 431, print
+one TSV line to
+stdout, and log
+timings to stderr;
+neither plots
+(scripts/measure.sh
+lines 85–90).
+
+G5 Same measurement Met scripts/measure.sh
+method, preferably line 28 and time_run
+command-line (lines 62–80) wrap
+utilities every condition in
+/usr/bin/time -l.
+G6 Run each condition Met scripts/measure.sh
+hundreds or lines 26–27, 96–131
+thousands of times (RUNS=200 for
+and average start-up,
+𝑛 ≤ 10, 000, and
+shapes;
+RUNS_LARGE=30
+for 𝑛 = 100, 000
+and course
+program, with
+justification and
+standard errors in
+README.md
+§"Time: every
+implementation at
+every size").
+
+G7 Keep a log or listing Met scripts/measure.sh
+of the results in the writes
+repository results/runs.tsv,
+results/benchmarks
+.txt,
+results/cpu-profile.t
+xt,
+results/mem-profile
+.txt, and
+results/machine.txt;
+verified by
+scripts/acceptance.
+sh AC-10, AC-11.
+
+G8 Consider whether Met scripts/measure.sh
+package loading is lines 96–100
+part of measured measures r-empty
+time (r/startup-empty.R),
+r-boot-load
+(r/startup-boot.R),
+and go-help
+(bootse -h);
+r/bootstrap-se-boo
+t.R logs load_ms,
+ read_ms, and
+compute_ms
+(README.md
+§"Time: start-up",
+results/tables.md
+## startup).
+
+G9 Same random Met rrand/rrand.go
+number algorithm reproduces R
+across languages 4.4.2's 32-bit
+MT19937 and
+sample.int rejection
+sampling; verified
+across 12,000
+resample medians
+in results/tables.md
+## correctness and
+scripts/acceptance.
+sh AC-3, AC-4.
+
+3. Risky Code Review (Defects, Not Style)
+RC-1: rrand.Generator.Index(n) advances PRNG state on n == 1
+(diverging from R) and hangs on n <= 0
+●​ Severity: Medium
+●​ Where: rrand/rrand.go, function Index(n int) int (lines 93–108):​
+Go​
+// The number of bits needed to write n-1 equals ceil(log2(n)), R's bit count, and​
+// costs no logarithm.​
+bitCount := bits.Len(uint(n - 1))​
+mask := uint64(1)<<bitCount - 1​
+for {​
+var candidate uint64​
+for filled := 0; filled <= bitCount; filled += bitsPerDraw {​
+candidate = candidate<<bitsPerDraw | uint64(generator.uint32()>>bitsPerDraw)​
+}​
+candidate &= mask​
+if candidate < uint64(n) {​
+return int(candidate)​
+}​
+}​
+
+●​ Defect:
+ 1.​ When n == 1, bits.Len(uint(0)) is 0 (bitCount = 0). In R's src/main/RNG.c (R_unif_index), if
+(dn <= 0) return 0.0; int bits = (int) ceil(log2(dn)); if (bits == 0) return 0.0;, so R returns 0
+immediately without consuming any random word from the Mersenne Twister. In
+rrand.Index(1), however, the inner loop condition for filled := 0; filled <= bitCount; filled +=
+bitsPerDraw evaluates 0 <= 0 as true on its first pass, calling generator.uint32() once
+before masking with 0 and returning 0! A test that only checks the return value of
+Index(1) (0 == 0, as in docs/mutation-checks.txt line 18) misses that the generator's
+internal state generator.next has advanced by 1 word relative to R.
+2.​ When n <= 0 (e.g., n == 0), uint(n - 1) underflows to math.MaxUint (bitCount = 64),
+uint64(1)<<64 - 1 overflows to math.MaxUint64, and if candidate < uint64(0) is never true,
+causing an infinite loop.
+●​ Property a test can check: After g := rrand.New(431), calling g.Index(1) must return 0
+and a subsequent call to g.Float64() must equal rrand.New(431).Float64() (matching R's
+set.seed(431); sample.int(1, 1); runif(1)), and calling g.Index(0) must return 0 (or
+panic/error) immediately without hanging (if n <= 1 { return 0 } at the top of Index fixes
+both).
+RC-2: bootstrap.BlockStream allocates two heap objects per replicate
+inside the worker loop
+●​ Severity: Medium
+●​ Where: bootstrap/stream.go, function (stream blockStream) Source(replicate int)
+IndexSource (lines 40–43) and bootstrap/bootstrap.go, function Replicates (lines 82–89):​
+Go​
+// bootstrap/stream.go:​
+func (stream blockStream) Source(replicate int) IndexSource {​
+key := uint64(stream.seed)<<32 | uint64(uint32(replicate))​
+return pcgSource{rand.New(rand.NewPCG(splitMix64(key), splitMix64(^key)))}​
+}​
+​
+Go​
+// bootstrap/bootstrap.go:​
+// One scratch buffer per worker, refilled for every replicate: no allocation​
+// inside the loop.​
+resample := make([]float64, len(data))​
+for replicate := first; replicate < last; replicate++ {​
+fillResample(resample, data, config.Stream.Source(replicate))​
+
+●​ Defect: rand.NewPCG(...) returns *rand.PCG (which escapes to the heap when boxed
+into the rand.Source interface parameter of rand.New), and rand.New(...) returns
+*rand.Rand (a second heap allocation). Because config.Stream.Source(replicate) is called
+on every iteration of for replicate := first; replicate < last, BlockStream performs 2𝐵 heap
+allocations per bootstrap run (2,007 allocations for 𝐵 = 1, 000 in results/tables.md ##
+benchmarks Workers/workers=1, compared to 8 allocations for Engine/after with
+RStream). Calling rand.PCG.Uint64() directly on a value-type pcg := rand.NewPCG(...) (or
+ keeping one *rand.PCG per worker and calling pcg.Seed(splitMix64(key),
+splitMix64(^key))) eliminates all 2𝐵 heap allocations.
+●​ Property a test can check: testing.AllocsPerRun for bootstrap.StandardErrors with
+BlockStream(431), Replicates: 1000, Workers: 1 must be ≤ 10 allocations per run
+(independent of 𝐵), rather than ≥ 2𝐵.
+RC-3: bootstrap.Replicates shares a single mutable resample slice
+across statistics in a replicate
+●​ Severity: Low
+●​ Where: bootstrap/bootstrap.go, function Replicates (lines 60–64 and 85–90), and
+main.go (line 154):​
+Go​
+// Every statistic sees the same resample, in the order given; a statistic that reorders its​
+// argument therefore changes the order (not the content) seen by those after it.​
+...​
+fillResample(resample, data, config.Stream.Source(replicate))​
+for s, statistic := range statistics {​
+values[s][replicate] = statistic(resample)​
+}​
+
+●​ Defect: Because Statistic is documented as "It receives a scratch copy and may reorder
+it" (bootstrap/bootstrap.go line 23), if a user of the reusable bootstrap package passes
+[]bootstrap.Statistic{stats.MedianInPlace, stats.Mean}, stats.MedianInPlace partitions
+resample in place before stats.Mean runs. That changes the summation order of
+stats.Mean and causes ULP drift against R's draw-order mean(resample) (which forced
+main.go line 154 to put stats.Mean first and stats.MedianInPlace second). Worse, if a
+caller writes a custom Statistic that normalizes, centers, or winsorizes resample in place,
+all subsequent statistics in the slice receive corrupted data values, not just a reordered
+slice. Also, when config.Workers > config.Replicates, Replicates still spawns
+config.Workers - config.Replicates idle goroutines that each allocate an unused
+make([]float64, len(data)) buffer.
+●​ Property a test can check: Calling bootstrap.Replicates(data,
+[]Statistic{stats.MedianInPlace, stats.Mean}, cfg) and reversing the slice
+[]Statistic{stats.Mean, stats.MedianInPlace} must return bit-for-bit identical float64 slices
+for both statistics, and a statistic that zeroes its input slice (for i := range x { x[i] = 0 }) must
+not alter the result of a second statistic evaluated in the same call.
+RC-4: dataset.Read misclassifies header strings "NaN" / "Inf" as
+numbers and mishandles a leading blank line
+●​ Severity: Low
+●​ Where: dataset/dataset.go, function Read (lines 38–53):​
+Go​
+for lineNumber := 1; scanner.Scan(); lineNumber++ {​
+text := strings.TrimSpace(scanner.Text())​
+ value, parseError := strconv.ParseFloat(text, 64)​
+switch {​
+case lineNumber == 1 && parseError == nil:​
+return nil, fmt.Errorf("%w: %s, line 1: found the number %q where the header line should be;
+"+​
+"add a header such as \"value\"", ErrInvalid, name, text)​
+case lineNumber == 1 || text == "":​
+continue​
+
+●​ Defect:
+1.​ In Go, strconv.ParseFloat parses "NaN", "Inf", "-Inf", and "Infinity" (case-insensitive) with
+parseError == nil. If line 1 is "nan" or "inf", case lineNumber == 1 && parseError == nil
+triggers and falsely reports found the number "nan" where the header line should be.
+2.​ If line 1 of a file is blank ("\nvalue\n1.0\n2.0\n"), lineNumber == 1 consumes the blank line,
+and on lineNumber == 2 the header "value" is rejected with line 2: "value" is not a number.
+3.​ In addition, dataset.Read uses bufio.NewScanner with the default 64 KB line token limit
+without checking for multi-column CSV commas explicitly (it relies on ParseFloat failing
+on "1.0,2.0" with "1.0,2.0" is not a number).
+●​ Property a test can check: dataset.Read on "nan\n1.0\n2.0\n" or "\nvalue\n1.0\n2.0\n"
+either accepts the non-finite header / skips leading blank lines before the header, or
+explicitly rejects an empty line 1 with a clear header error message.
+RC-5: main.go calls stopProfile() inside the compute_ms timer and
+calls runtime.GC() for an allocs profile
+●​ Severity: Low
+●​ Where: main.go, functions analyse (lines 151–164) and writeMemoryProfile (lines
+236–249):​
+Go​
+computeStart := time.Now()​
+config := bootstrap.Config{Replicates: settings.replicates, Stream: newStream(settings),
+Workers: settings.workers}​
+// The mean is listed first: the median reorders the resample it is given.​
+values, err := bootstrap.Replicates(data, []bootstrap.Statistic{stats.Mean,
+stats.MedianInPlace}, config)​
+stopProfile()​
+​
+and:​
+Go​
+runtime.GC() // so the profile shows what is still in use, not garbage​
+if err := pprof.Lookup("allocs").WriteTo(file, 0); err != nil {​
+
+●​ Defect:
+1.​ When -cpuprofile is passed, stopProfile() flushes the profile to disk and closes the file
+ before time.Since(computeStart) is logged as compute_ms, and before
+stats.StandardDeviation(medians) and stats.StandardDeviation(means) finish computing
+the standard errors.
+2.​ In writeMemoryProfile, the comment states runtime.GC() // so the profile shows what is
+still in use, not garbage, which applies to the "heap" (inuse_space) profile when live data
+is still referenced, whereas line 245 writes "allocs" and scripts/measure.sh line 139 queries
+-sample_index=alloc_space (cumulative allocations since program start, which
+runtime.GC() never changes).
+●​ Property a test or file reading can check: In main.go analyse, compute_ms is recorded
+before stopProfile() flushes to disk, and writeMemoryProfile's comment accurately
+describes the "allocs" profile (alloc_space vs inuse_space).
+RC-6: scripts/measure.sh warns on high load average (6.25 > 2.0)
+without waiting, and awk parsing of /usr/bin/time -l does not guard
+against multi-line matches
+●​ Severity: Low
+●​ Where: scripts/measure.sh, lines 40–44 and lines 69–78:​
+Bash​
+load_before="$(load_average)"​
+if awk -v load="$load_before" -v limit="$busy_load" 'BEGIN { exit !(load > limit) }'; then​
+echo "measure: WARNING: the 1-minute load average is $load_before (above $busy_load). Other
+programs are busy; timings will be noisier." >&2​
+fi​
+​
+and:​
+Bash​
+real="$(awk '/ real /{print $1}' "$log")"​
+footprint="$(awk '/peak memory footprint/{print $1}' "$log")"​
+
+●​ Defect:
+1.​ Although docs/decisions.md (2026-11-14 · After official run 1) states that run 1 was
+repeated partly because of its high starting load average, the second run still started at
+load average (1 minute) before: 6.25 (results/machine.txt line 11), more than triple
+busy_load=2.0. Because measure.sh only prints a warning and immediately begins timing
+startup (go-help run 1), any transient background activity at the start of the script hits
+the startup runs first.
+2.​ In time_run, field() uses | tail -n 1, whereas the awk extractions for real, user, sys,
+max_rss_bytes, and peak_footprint_bytes do not use tail -n 1; if a timed command's
+stderr ever contains " real ", runs.tsv gets a multi-line broken row.
+●​ Property a test or file reading can check: Every awk extraction in time_run pipes
+through tail -n 1 (or matches anchored /usr/bin/time -l lines), and measure.sh runs a
+1-iteration untimed warm-up of $work/bootse -h and Rscript r/startup-empty.R right after
+go build so macOS binary verification does not pollute run 1 of startup.
+4. Audit of README Conclusions Against
+results/tables.md
+Claim 1: Scenario B conclusion ("eight one-worker jobs side by side
+cost less than one eight-worker job at every size, because eight
+workers are not eight times faster")
+●​ Where: README.md §"Cloud cost" ("How to read it") vs. results/tables.md ## cost
+("Scenario B") and scripts/measure.sh lines 83–124.
+●​ Quoted text in README.md:"Scenario B assumes a one-core program can keep all eight
+cores busy with eight separate jobs without slowing down. Comparing like with like (the
+block stream), eight one-worker jobs side by side cost less than one eight-worker job at
+every size, because eight workers are not eight times faster. Parallel Go is for getting one
+large answer sooner, not for making a batch cheaper."
+●​ Quoted table in results/tables.md (## cost):Scenario A, right-sized: one job at a time
+on c7g.medium (1 vCPU)...​
+| 100,000 | $44.56 | $24.13 | 45.8 % | 45.9 % | 48,958 | $15.35 | 65.6 % |​
+Scenario B, one c7g.2xlarge (8 vCPUs) kept busy. One-core programs run 8 jobs at once;
+parallel Go runs one job at a time on 8 workers. Savings are against R.​
+| 100,000 | $44.50 | $24.10 | 45.8 % | $15.33 | 65.6 % | $17.88 | 59.8 % |
+●​ Why the tables do not support the claim as stated: scripts/measure.sh never ran 8
+one-worker jobs at once. The "8 jobs at once" columns ($44.50, $24.10, $15.33) were
+computed by taking the single-process solo time (measured when 1 core had the entire
+M1 Max memory bus, caches, and OS scheduler to itself) and dividing by 8 (t_1job / 8 *
+$0.2900/hr, which is identical to Scenario A multiplied by $\frac{\$0.03625}{\$0.03630} =
+0.9986$). By contrast, Go, block stream, 8 workers, 1 job at a time ($17.88) was actually
+measured running on 8 cores simultaneously, paying real hardware memory-bus and
+cache contention (7.4× speedup instead of 8.0×). Comparing a theoretical
+zero-contention extrapolation ($15.33) against a measured 8-core run with real
+hardware contention ($17.88) cannot prove that 8 OS processes running side by side are
+cheaper than 1 eight-worker process; in reality, 8 concurrent OS processes at
+𝑛 = 100, 000 also contend for memory bandwidth and L2/SLC cache (and use 8 × the
+RAM).
+●​ Property a reading of README.md can check: State explicitly in README.md §"Cloud
+cost" that in Scenario B the "8 jobs at once" columns are an idealized lower-bound
+extrapolation from 1 solo process (𝑡𝑖𝑚𝑒 ÷ 8, with zero multi-core memory or cache
+contention), whereas the 8-worker column is a measured 8-core run that includes real
+multi-core contention.
+Claim 2: The 0.01 s timer step explanation for Go, printing its help (SD
+= 0.019 s, SE = 40.1 % ⚠)
+●​ Where: README.md §"Time: start-up" and §"Headline" vs. results/tables.md ## startup
+and ## scaling.
+ ●​ Quoted text in README.md:"/usr/bin/time reports whole-process time in steps of 0.01 s.
+The Go program's start-up is below that step, so its whole-process times for small jobs
+are at the limit of the tool; rows where the standard error of the mean exceeds 2 % of the
+mean are marked ⚠."
+●​ Quoted table in results/tables.md (## startup):| Go, printing its help | 200 | 0.003 |
+0.000 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
+●​ Why the numbers show more than a 0.01 s step: For 200 non-negative measurements
+quantized to {0.00 s, 0.01 s} with sample mean 0.003 s, the mathematical maximum
+sample standard deviation is 0. 3 × 0. 7 × 0. 01𝑠 = 0. 0046𝑠 (which matches the 0.005 s
+and 0.006 s SDs seen at 𝑛 = 100 in ## scaling). An SD of 0.019 s on 200 non-negative
+runs with mean 0.003 s is mathematically impossible unless at least one run took ≥ 0. 25𝑠
+2
+( (0. 26 − 0. 003) /199 ≈ 0. 018𝑠)—which happens on run 1 of go-help
+(scripts/measure.sh line 99), the very first time macOS syspolicyd / Gatekeeper verifies
+the newly compiled $work/bootse binary! Thus, the 40.1 % ⚠ standard error on Go,
+printing its help is driven by a first-run cold-start outlier, not just the 0.01 s quantization
+step of /usr/bin/time.
+●​ Property a reading of README.md (or results/runs.tsv) can check: Note in
+README.md §"Time: start-up" that in addition to /usr/bin/time's 0.01 s step, run 1 of
+go-help incurs macOS's one-time first-execution check on the freshly built binary
+(pushing SD to 0.019 s while the median is 0.000 s).
+Claim 3: Precision of small-job speed-up ratios (59.9×, 30.8×) and cost
+savings (96.8 %) at 𝑛 = 100
+●​ Where: README.md §"Headline", §"Time: R against Go", and §"Cloud cost" vs.
+results/tables.md ## scaling, ## ratios, and ## cost.
+●​ Quoted text in README.md / results/tables.md:
+○​ ## headline: "Whole process, small job (n = 100): R 0.168 s, of which 76.2 % is R starting
+up; Go about 0.005 s, which is below the timer's 0.01 s step, so the ratio is approximate:
+16.0× from medians, 30.8× from means." and "Cloud cost (c7g.medium, one job at a
+time): Go saves 45.8 % to 96.8 % of the compute cost across the four sizes."
+○​ ## ratios (𝑛 = 100): R ÷ Go (R stream), whole process, means: 30.8× | same, medians:
+16.0× | ... | R ÷ Go with 8 workers, whole process: 59.9×
+○​ ## scaling (𝑛 = 100): Go, R stream (1 core) | Mean: 0.005 | Median: 0.010 | SD: 0.006 |
+Std. error of mean: 7.8 % ⚠ and Go, block stream (8 workers) | Mean: 0.003 | Median:
+0.000 | SD: 0.005 | Std. error of mean: 11.6 % ⚠
+●​ Why the numbers require caution: While ## headline rightly warns that the 𝑛 = 100
+whole-process ratio is approximate because 0.005 s is below the 0.01 s timer step, ##
+ratios reports 59.9× (for 8 workers at 𝑛 = 100, where the denominator 0.003 s has 11.6 %
+⚠ standard error and a 0.000 s median!) and ## cost reports $0.0550, $0.0534, and
+96.8 % to three significant digits without the ⚠ marker.
+●​ Property a reading of README.md can check: Note below ## ratios and ## cost that
+at 𝑛 = 100 (and 8-worker 𝑛 = 1, 000), whole-process ratios and dollar figures inherit the
+ ⚠ timer-quantization uncertainty shown in ## scaling (which is why Saving (from
+medians) is 93.8 % vs. 96.8 % from means at 𝑛 = 100).
+Claim 4: Worker-count inconsistency (8 workers vs. 10 workers) and
+P7 check count (48 vs. 60 + 60) across tables
+●​ Where: README.md §"Are the results comparable?", §"Go benchmarks and what
+improved performance", and §"Experience with testing, benchmarking, profiling and
+logging" vs. results/tables.md ## correctness, ## scaling, ## benchmarks, and ##
+predictions.
+●​ Quoted text in results/tables.md:
+○​ ## correctness: | Go (block stream), 10 workers against 1 worker | 60 of 60 | 0 |
+○​ ## benchmarks: | Parallel workers: 10 instead of 1 (block stream, n = 10,000, B = 1,000) |
+152.57 ms | 22.44 ms | 6.8× |
+○​ ## scaling (𝑛 = 10, 000): | 10,000 | Go, block stream (8 workers) | 200 | 0.028 | ... | 21.1 |
+(7.3× in ## ratios)
+○​ ## correctness: Go (block stream) against R (sample loop): different draws | 60 of 60
+and R (boot package) against R (sample loop): different draws | 60 of 60
+○​ ## predictions: | P7 | Every different-draws check passes at 15 %, and the largest
+difference is under 11 % | 48 checks, largest 6.5 % | Held |
+●​ Why this is confusing without explanation:
+1.​ ## scaling, ## ratios, and ## cost use 8 workers (scripts/measure.sh line 49 caps
+workers=8 to match c7g.2xlarge and the M1 Max's 8 performance cores, achieving 21.1
+ms / 7.3× at 𝑛 = 10, 000), whereas ## correctness and ## benchmarks use 10 workers
+(runtime.NumCPU() = 10, which spills onto the M1 Max's 2 slower efficiency cores and
+runs slower at 22.44 ms / 6.8×).
+2.​ ## correctness lists two "different draws" rows of 60 of 60 checks each (because all 5
+fields × 12 datasets = 60 checks are counted, including deterministic n, Sample median,
+and Sample mean), while ## predictions P7 reports 48 checks (counting only the 2
+random standard-error fields × 12 datasets × 2 implementations = 48).
+●​ Property a reading of README.md can check: One sentence in README.md explains
+both: why measure.sh uses 8 workers while default -stream block / go test -bench uses
+runtime.NumCPU() = 10, and why 48 of the 120 checks in the two "different draws" rows
+are random standard-error checks.
+5. Is the Cost Model Sound?
+1.​ The "8 jobs at once" assumption in Scenario B:
+○​ Not sound as a comparison between 1-worker and 8-worker Go: As detailed in §4
+(Claim 1), dividing a single solo process's runtime by 8 assumes 100% linear
+multi-process scaling with zero shared-resource contention (no L2/SLC cache
+thrashing, no memory-bandwidth saturation, no OS context switching, and no disk I/O
+contention). Comparing that idealized number against a measured 8-worker Go run
+(which achieved a 7.4× speedup at 𝑛 = 100, 000 on real hardware) stacks the deck
+against parallel Go.
+ ○​ Omitted memory-tier constraint on multi-process R: Look at results/tables.md ##
+memory at 𝑛 = 100, 000: R's boot package uses 564.6 MB mean peak footprint and
+822.2 MB mean maximum resident set size per process (and r-loop uses 238.6 MB
+Max RSS). Running 8 R boot processes concurrently requires 8 × 0. 82𝐺𝐵 ≈ 6. 6𝐺𝐵 of
+RAM (and at 𝑛 = 300, 000 would exceed the 16 GiB RAM of c7g.2xlarge, or exceed the 2
+GiB RAM of c7g.medium for a single job!), whereas 8-worker Go shares a single copy of
+the dataset in memory and uses only 14.0 MB peak footprint (16.0 MB Max RSS) across
+all 8 workers combined! That shared-memory advantage is a major reason to use parallel
+Go on large datasets, yet the cost prose overlooks it.
+2.​ Using Apple M1 Max laptop timings with AWS EC2 c7g (Graviton3) prices:
+○​ Architecturally reasonable for a classroom study, with caveats: Choosing
+c7g.medium (1 vCPU) and c7g.2xlarge (8 vCPUs) aligns the ARM64 instruction set
+(arm64) and core count (8 performance cores on M1 Max ↔ 8 vCPUs on c7g.2xlarge).
+However, an Apple M1 Max performance core (3.2 GHz, 400 GB/s unified memory) is
+significantly faster per core than an AWS Graviton3 c7g vCPU (2.6 GHz Neoverse V1), so
+absolute cloud runtimes and dollar costs on EC2 would be roughly 1. 3 × –1. 6 × higher
+than the laptop numbers. Furthermore, on-demand EC2 bills for instance uptime (per
+second of VM wall-clock life), so Scenario A's per-job cost (whole-process time × hourly
+price) only holds if a continuous batch queue keeps the c7g.medium instance
+approaches 100% utilization (otherwise idle time between jobs dominates the bill).
+3.​ Does the "percentage saved" answer the consultancy's question (M1 + M2)?:
+○​ Only when paired with the dollar figures and break-even job counts: A headline of
+"Go saves 45.8 % to 96.8 % of the compute cost" sounds massive in isolation, but
+results/tables.md ## cost reveals that 96.8% of a 𝑛 = 100 job is $1.64 saved per million
+jobs (610,863 jobs to save one dollar!), and 45.8% of an 𝑛 = 100, 000 job is $20.43
+saved per million jobs (48,958 jobs to save one dollar).
+○​ In README.md §"Effort: how easy is it?", the Go implementation required 1,755 lines of
+Go code and tests (630 code + 1,125 test lines) compared to 36 lines of base R. Even if
+a senior engineer writes and validates the Go port in two days (~1, 500–2,500 of
+engineering time), recovering $2,000 requires ~100 million runs at 𝑛 = 100, 000 (or
+~1.2 billion runs at 𝑛 = 100)! The table in ## cost wisely includes "Jobs to save one
+dollar", which is the exact metric needed to connect M1 and M2, but the
+Recommendation section at the top of README.md should cite those concrete dollar
+and job-count thresholds so management sees immediately why small-scale migration
+loses money on engineering time.
+6. Grader Friction
+1.​ Unfinished TODO comment in prices/aws-ec2.tsv (line 2):
+○​ Quote prices/aws-ec2.tsv line 2:# Primary source (AWS):
+[https://aws.amazon.com/ec2/pricing/on-demand/](https://aws.amazon.com/ec2/pricing/
+on-demand/) Looked up 2026-11-14 through the price listings in the source column,
+which agree with each other; to be confirmed against the AWS page by Luis.
+○​ A grader inspecting prices/aws-ec2.tsv sees "to be confirmed against the AWS page by
+ Luis", which looks like an uncompleted checklist item.
+2.​ Elevated starting load average (6.25) in README.md and results/machine.txt right
+below "applications closed":
+○​ Quote README.md §"Results":"applications closed. The script records the machine's
+load average before and after... - load average (1 minute) before: 6.25 - load average (1
+minute) after: 1.87"
+○​ Because scripts/measure.sh sets busy_load=2.0 (line 31) and prints a warning above 2.0,
+a grader reading 6.25 without explanation may wonder whether another heavy job was
+running when measure.sh started (or whether 6.25 was just the 1-minute exponential
+moving average decaying after closing applications/building right before starting the
+30-minute run).
+3.​ Missing seehuhn/mt19937 seed table promised by
+specs/001-bootstrap-median/spec.md §10 Q2:
+○​ Quote specs/001-bootstrap-median/spec.md §10 Q2:"(a), with a standard-library
+generator as the second source for FR-R2, and the README explaining, with a small table
+for one seed, why the suggested package cannot match R (R1 agrees)."
+○​ A grader who reads specs/001-bootstrap-median/spec.md §10 Q2 and then checks
+README.md §"The Go side" will find the prose paragraph on seehuhn/mt19937 but not
+the promised one-seed table.
+4.​ CLI usability difference between ./bootse (runs with no arguments) and Rscript
+r/bootstrap-se.R (fails with exit code 2 if run with no arguments):
+○​ While ./bootse runs with no arguments on lognormal-1000.csv (main.go lines 35–36),
+running Rscript r/bootstrap-se.R without arguments exits with status 2 (r/bootstrap-se.R
+line 16). Providing a default data/lognormal-1000.csv (or noting in README.md that the R
+scripts require the file path argument) avoids surprise if a grader runs Rscript
+r/bootstrap-se.R bare.
+7. Top Three High-Impact Changes Under 20 Minutes
+Each
+Because scripts/acceptance.sh (line 119) runs:
+
+Bash
+git diff --quiet "$measured" HEAD -- main.go rrand/rrand.go stats/stats.go
+bootstrap/bootstrap.go bootstrap/stream.go dataset/dataset.go record/record.go r data​
+
+any edit to main.go, rrand/, stats/, bootstrap/, dataset/, record/, r/, or data/ would invalidate the
+commit check against results/machine.txt (commit: 3a19148) and require a 30-minute re-run of
+scripts/measure.sh! The three highest-return changes below touch only README.md and
+prices/aws-ec2.tsv, take under 15 minutes total, require no re-measurement, and keep
+scripts/acceptance.sh and scripts/readme.sh --check 100% green:
+1.​ Tighten the prose in README.md (§"Recommendation to the consultancy", §"Cloud
+cost", and §"Time: start-up") so every claim matches results/tables.md (10 minutes,
++2 points on [Doc] and [T]):
+○​ In README.md §"Cloud cost" ("How to read it"), clarify that Scenario B's "8 jobs at once"
+columns divide the 1-process solo runtime by 8 (an idealized zero-contention lower
+bound) whereas the 8-worker column is a measured 8-core run with real memory/cache
+contention, and highlight Go's shared-memory advantage at 𝑛 = 100, 000 (14.0 MB peak
+footprint for 8-worker Go vs. 8 × 564. 6𝑀𝐵 ≈ 4. 5𝐺𝐵 footprint / 6. 6𝐺𝐵 Max RSS for 8
+concurrent R boot processes).
+○​ In README.md §"Recommendation to the consultancy", cite the concrete break-even
+numbers from ## cost ($1.69 to $44.56 per million jobs; 48,958 to 610,863 jobs to save $1
+of rewrite cost) to connect M1 (1,755 lines of Go code + tests vs. 36 lines of R) directly to
+M2.
+○​ In README.md §"Time: start-up" and §"Results", add one sentence noting that Go,
+printing its help's 0.019 s SD reflects macOS's first-execution check on run 1 (while the
+median is 0.000 s), that load average (1 minute) before: 6.25 was the decaying 1-minute
+average immediately after closing apps and compiling before the run dropped to 1.87,
+and why measure.sh uses 8 workers (matching c7g.2xlarge's 8 vCPUs and the M1 Max's 8
+performance cores) while go test -bench and correctness use runtime.NumCPU() = 10.
+2.​ Add the 3-row one-seed comparison table for seehuhn/mt19937 vs. R 4.4.2 vs.
+rrand in README.md §"The Go side" (5 minutes, closes Spec §10 Q2):
+○​ Right below the The Mersenne Twister paragraph in README.md §"The Go side", add a
+compact Markdown table showing for seed = 431 (from Spike 001 §5–§6) why R 4.4.2
+and rrand produce identical runif(3) and sample.int(10, 5, replace = TRUE) draws while
+[github.com/seehuhn/mt19937](https://github.com/seehuhn/mt19937) (MT19937-64,
+GPL-3.0) produces a completely different stream.
+3.​ Confirm and remove the "to be confirmed against the AWS page by Luis" note in
+prices/aws-ec2.tsv line 2 (2 minutes):
+○​ Verify the two US East (us-east-1) Linux On-Demand prices (c7g.medium = $0.0363/hr,
+c7g.2xlarge = $0.2900/hr) and update line 2 of prices/aws-ec2.tsv from "to be confirmed
+against the AWS page by Luis" to "confirmed against the AWS page by Luis on
+2026-11-14", then run scripts/readme.sh --check and scripts/acceptance.sh.
+Total Score and Verdict
+●​ Total Score: 96 / 100 ([C] 19 + [T] 19 + [D] 19 + [Doc] 19 + [A] 20)
+●​ Verdict: Submit after the listed changes (specifically the three fast
+documentation/price-file edits in §7, which take under 20 minutes and do not require
+re-running the 30-minute measurement script).

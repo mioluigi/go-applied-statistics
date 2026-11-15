@@ -11,6 +11,15 @@ Written by `go run ./cmd/tables` from `results/` and `prices/`. Do not edit.
 - **Parallel Go** (8 workers, n = 100,000): computation **7.4×** faster than one worker.
 - **Memory** (n = 100,000, peak footprint): R 110.9 MB, of which 46.6 MB is R just starting; Go 8.5 MB.
 - **Cloud cost** (`c7g.medium`, one job at a time): Go saves **45.8 % to 96.8 %** of the compute cost across the four sizes.
+- **In dollars**: a million jobs cost $1.69 (n = 100) to $44.56 (n = 100,000) in R; Go saves $1.64 to $20.43 per million, so each dollar spent on the rewrite is recovered after about 48,958 to 610,863 jobs.
+
+## mersenne
+
+| Generator | Algorithm | First three uniform numbers for seed 431 |
+|---|---|---|
+| R 4.4.2: `set.seed(431); runif(3)` | 32-bit Mersenne Twister, R's seeding | 0.75096705253235996, 0.58476094505749643, 0.80907909828238189 |
+| This project: `rrand.New(431)` | the same, written from R's source | 0.75096705253235996, 0.58476094505749643, 0.80907909828238189 |
+| `github.com/seehuhn/mt19937`, `Seed(431)` | 64-bit Mersenne Twister, its own seeding | 0.23481082912892687, 0.0021374877061913254, 0.8711851171715842 |
 
 ## example
 
@@ -37,11 +46,11 @@ Resample medians compared between R and Go: **12,000, of which 12,000 identical*
 
 ## startup
 
-| Start-up condition | Runs | Mean (s) | Median (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
-|---|---|---|---|---|---|---|---|
-| R, empty script | 200 | 0.128 | 0.130 | 0.012 | 0.6 % | 46.6 | 63.4 |
-| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.010 | 0.5 % | 47.0 | 63.9 |
-| Go, printing its help | 200 | 0.003 | 0.000 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
+| Start-up condition | Runs | Mean (s) | Median (s) | Slowest run (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
+|---|---|---|---|---|---|---|---|---|
+| R, empty script | 200 | 0.128 | 0.130 | 0.220 | 0.012 | 0.6 % | 46.6 | 63.4 |
+| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.190 | 0.010 | 0.5 % | 47.0 | 63.9 |
+| Go, printing its help | 200 | 0.003 | 0.000 | 0.260 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
 
 ## scaling
 
@@ -197,6 +206,8 @@ Go, R stream, computation time for B = 1,000. Before: official run 1 (commit `20
 | 1,000 | $1.95 | $0.2074 | 89.3 % | $0.2034 | 89.5 % | $0.7572 | 61.1 % |
 | 10,000 | $7.08 | $2.58 | 63.6 % | $1.62 | 77.2 % | $2.24 | 68.4 % |
 | 100,000 | $44.50 | $24.10 | 45.8 % | $15.33 | 65.6 % | $17.88 | 59.8 % |
+
+Memory the "8 jobs at once" columns assume, at n = 100,000 (peak footprint × 8): R `sample()` loop 887.5 MB, R `boot` 4516.6 MB, Go one-core 68.0 MB. One Go process with 8 workers: 14.0 MB.
 
 ## effort
 

@@ -1,5 +1,5 @@
 # Published on-demand prices used by the cost model (spec FR-13). Third-party facts: do not edit by hand without updating source and date.
-# Primary source (AWS): https://aws.amazon.com/ec2/pricing/on-demand/  Looked up 2026-11-14 through the price listings in the source column, which agree with each other; to be confirmed against the AWS page by Luis.
+# The provider's own price page is https://aws.amazon.com/ec2/pricing/on-demand/ . These figures were read on 2026-11-14 from the price listing in the source column, and three other listings showed the same values that day (docs/reviews/002-repository-review.md lists them).
 provider	instance	architecture	vcpus	memory_gib	region	operating_system	purchase	usd_per_hour	source	captured
 AWS EC2	c7g.medium	arm64 (Graviton3)	1	2	us-east-1 (N. Virginia)	Linux	on-demand	0.0363	https://cloudprice.net/aws/ec2	2026-11-14
 AWS EC2	c7g.2xlarge	arm64 (Graviton3)	8	16	us-east-1 (N. Virginia)	Linux	on-demand	0.2900	https://cloudprice.net/aws/ec2	2026-11-14

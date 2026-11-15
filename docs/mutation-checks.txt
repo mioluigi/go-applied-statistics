@@ -65,3 +65,9 @@ rrand | refill: second loop reads one word too far | caught
 rrand | refill: last word mixed with the wrong neighbour | caught
 rrand | index takes the low 16 bits instead of the top 16 | caught
 rrand | refill: first loop stops one word early | caught
+bootstrap | each worker leaves a goroutine behind (after the leak test was made to wait for workers to exit) | caught
+
+Note (after review R2): the goroutine test failed once in about ten full runs under the race detector,
+with nothing leaked. Cause: it counted goroutines the instant the engine returned, and a worker is still
+counted for a moment after it reports its work done. The test now waits up to two seconds for the count to
+return; the leak mutation above is still caught. The engine was not changed.

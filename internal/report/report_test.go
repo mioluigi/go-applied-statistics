@@ -188,7 +188,8 @@ func TestBlocksFromRealShapedResults(t *testing.T) {
 	for name, want := range map[string]string{
 		"headline":    "264 of 264 comparison checks passed; 12,000 of 12,000 resample medians are identical",
 		"correctness": "| Go (R stream) against R (sample loop): same draws | 72 of 72 |",
-		"startup":     "| R, empty script | 2 | 0.120 |",
+		"startup":     "| R, empty script | 2 | 0.120 | 0.120 | 0.120 |",
+		"mersenne":    "| This project: `rrand.New(431)` | the same, written from R's source | 0.75096705253235996, 0.58476094505749643, 0.80907909828238189 |",
 		"scaling":     "| 100,000 | Go, block stream (2 workers) | 1 |",
 		"cost":        "| AWS EC2 `c7g.medium` | 1 | 2 | us-east-1 (N. Virginia) | $0.0363 |",
 		"effort":      "| R: `r/bootstrap-se.R` (base R) |",
@@ -226,6 +227,7 @@ func syntheticInputs() *Inputs {
 		add("r-loop", 3.6)
 		add("go-r", 0.36)
 		add("go-block-1", 0.18)
+		add("r-boot", 4.5)
 		add("go-block-multi", 0.09) // four times faster than one core, on eight workers
 	}
 	return inputs
@@ -293,5 +295,28 @@ func TestInsertBlocks(t *testing.T) {
 		if _, err := InsertBlocks(broken, blocks); err == nil {
 			t.Errorf("%s: accepted", name)
 		}
+	}
+}
+
+// TestGeneratorComparisonShowsRAndOursEqual: the README's table must show this project's
+// generator printing exactly what R printed, and the suggested package printing otherwise.
+func TestGeneratorComparisonShowsRAndOursEqual(t *testing.T) {
+	body, err := (&Inputs{Root: "../.."}).generatorComparison()
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(body), "\n")
+	if len(lines) != 5 {
+		t.Fatalf("got %d lines, want a header, a rule and three rows:\n%s", len(lines), body)
+	}
+	numbers := func(line string) string {
+		cells := strings.Split(line, " | ")
+		return strings.TrimSuffix(cells[len(cells)-1], " |")
+	}
+	if numbers(lines[2]) != numbers(lines[3]) {
+		t.Errorf("R and this project's generator differ:\n%s\n%s", lines[2], lines[3])
+	}
+	if numbers(lines[4]) == numbers(lines[2]) {
+		t.Errorf("the suggested package matches R, which the README says it cannot:\n%s", lines[4])
 	}
 }

@@ -1,0 +1,3 @@
+# github.com/seehuhn/mt19937 v1.0.0 (64-bit Mersenne Twister); rand.New(mt19937.New()); Seed(431); Float64() three times
+seed	values
+431	0.23481082912892687 0.0021374877061913254 0.8711851171715842

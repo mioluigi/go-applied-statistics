@@ -106,6 +106,7 @@ func (inputs *Inputs) Blocks() ([]Block, error) {
 		generate func() (string, error)
 	}{
 		{"headline", inputs.headline},
+		{"mersenne", inputs.generatorComparison},
 		{"example", inputs.exampleAnalysis},
 		{"correctness", inputs.correctness},
 		{"startup", inputs.startupTable},
@@ -203,10 +204,10 @@ func (inputs *Inputs) startupTable() (string, error) {
 			return "", err
 		}
 		rows = append(rows, []string{inputs.label(implementation), fmt.Sprint(summary.Count),
-			seconds(summary.Mean), seconds(summary.Median), seconds(summary.Deviation), precisionNote(summary),
-			megabytes(summary.MeanFootprint), megabytes(summary.MeanResident)})
+			seconds(summary.Mean), seconds(summary.Median), seconds(summary.Slowest), seconds(summary.Deviation),
+			precisionNote(summary), megabytes(summary.MeanFootprint), megabytes(summary.MeanResident)})
 	}
-	return table([]string{"Start-up condition", "Runs", "Mean (s)", "Median (s)", "SD (s)",
+	return table([]string{"Start-up condition", "Runs", "Mean (s)", "Median (s)", "Slowest run (s)", "SD (s)",
 		"Std. error of mean", "Peak footprint (MB)", "Max resident (MB)"}, rows), nil
 }
 

@@ -42,6 +42,7 @@ type Summary struct {
 	Count        int     // N, the number of runs
 	Mean         float64 // seconds
 	Median       float64 // seconds
+	Slowest      float64 // seconds: the longest single run
 	Deviation    float64 // standard deviation, seconds
 	// RelativeError is the standard error of the mean as a share of the mean: how far the
 	// reported mean may be from the true one.
@@ -168,7 +169,7 @@ func summarize(condition Condition, runs []Run) Summary {
 	}
 	summary := Summary{
 		Condition: condition, Observations: runs[0].Observations, Count: len(runs),
-		Mean: stats.Mean(seconds), Median: stats.Median(seconds),
+		Mean: stats.Mean(seconds), Median: stats.Median(seconds), Slowest: slices.Max(seconds),
 		MeanComputeMs: meanOf(runs, func(run Run) float64 { return run.ComputeMs }),
 		MeanReadMs:    meanOf(runs, func(run Run) float64 { return run.ReadMs }),
 		MeanFootprint: stats.Mean(footprints),

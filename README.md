@@ -19,6 +19,7 @@ and the prices saved in `prices/`. Nothing is typed by hand.
 - **Parallel Go** (8 workers, n = 100,000): computation **7.4×** faster than one worker.
 - **Memory** (n = 100,000, peak footprint): R 110.9 MB, of which 46.6 MB is R just starting; Go 8.5 MB.
 - **Cloud cost** (`c7g.medium`, one job at a time): Go saves **45.8 % to 96.8 %** of the compute cost across the four sizes.
+- **In dollars**: a million jobs cost $1.69 (n = 100) to $44.56 (n = 100,000) in R; Go saves $1.64 to $20.43 per million, so each dollar spent on the rewrite is recovered after about 48,958 to 610,863 jobs.
 <!-- generated:headline:end -->
 
 ## Recommendation to the consultancy
@@ -47,9 +48,14 @@ any statistic.
 
 **How much cloud cost would be saved?** The table under [Cloud cost](#cloud-cost) gives dollars per million
 jobs and the percentage saved for each data size, on AWS EC2 at published on-demand prices. The percentage
-depends strongly on the size of the job: highest for small jobs, lowest for the largest one-core job. Read
-it with its limits: the timings come from a laptop with the same processor architecture as the priced
-instances, not from those instances, and nothing was run in the cloud.
+depends strongly on the size of the job: highest for small jobs, lowest for the largest one-core job. A
+large percentage is not a large sum, though: the headline's "In dollars" line gives the cost of a million
+jobs and the number of jobs after which each dollar spent on the rewrite comes back. Multiply that
+number by the cost of the rewrite in dollars, and remember that the Go code runs to many times the length
+of the R script: for any realistic cost the break-even lies in the tens of millions of jobs or beyond.
+Below that volume the reasons to move are speed and memory, not the bill. Read the figures with
+their limits: the timings come from a laptop with the same processor architecture as the priced instances,
+not from those instances, and nothing was run in the cloud.
 
 ## The method
 
@@ -134,7 +140,19 @@ random number generator algorithm used in R". Reading that package's source show
 package is also licensed under the GPL, which would apply to this program if it were imported. So the
 generator in `rrand/` was written from R's own source, with the standard library only, and tested against
 values R wrote: it reproduces `runif()` to the last digit and `sample()` exactly
-(`docs/spikes/001-environment-and-baseline.md`).
+(`docs/spikes/001-environment-and-baseline.md`). For one seed:
+
+<!-- generated:mersenne:start -->
+| Generator | Algorithm | First three uniform numbers for seed 431 |
+|---|---|---|
+| R 4.4.2: `set.seed(431); runif(3)` | 32-bit Mersenne Twister, R's seeding | 0.75096705253235996, 0.58476094505749643, 0.80907909828238189 |
+| This project: `rrand.New(431)` | the same, written from R's source | 0.75096705253235996, 0.58476094505749643, 0.80907909828238189 |
+| `github.com/seehuhn/mt19937`, `Seed(431)` | 64-bit Mersenne Twister, its own seeding | 0.23481082912892687, 0.0021374877061913254, 0.8711851171715842 |
+<!-- generated:mersenne:end -->
+
+The first row is what R printed on the measurement machine, the second is computed by this repository's
+code each time the README is generated, and the third is the saved output of a stand-alone program that
+imports the suggested package (`docs/spikes/003-suggested-generator/`); the product itself never imports it.
 
 **Design.** Small packages, each usable alone, with no printing and no `os.Exit` outside `main.go`:
 
@@ -232,7 +250,9 @@ Values are written with four decimals. R and Go read the same bytes.
 Measured on one machine, in one session, by one script (`scripts/measure.sh`): batch execution for both
 languages (`Rscript`, the built Go binary), the same data files, B and seed, the same command-line timer
 (`/usr/bin/time -l`), applications closed. Neither side plots. The script records the machine's load average
-before and after; macOS background services were still running, as they are on any working Mac.
+before and after. The value at the start was above the script's own warning level and fell during the run;
+macOS background services were active, as they are on any working Mac, and the cause of the starting value
+was not pinned down. The standard errors in the tables show how steady each condition was.
 
 <!-- generated:machine:start -->
 - machine: MacBookPro18,2 · Apple M1 Max · 64 GB · macOS 27.0.1
@@ -255,7 +275,11 @@ The rule was written before measuring (`specs/001-bootstrap-median/spec.md` §6)
 sample median and **every resample median must be identical** as 64-bit values, and summed quantities
 (means, standard errors) must agree to 1e-12. With different draws, standard errors must agree within 15 %,
 a limit set from 2,400 measured comparisons of correct runs (`docs/spikes/002-tolerance.md`). The bootstrap
-standard error of the mean is also checked against its theoretical value on every data set.
+standard error of the mean is also checked against its theoretical value on every data set. Each
+comparison of two programs checks five quantities on each of the 12 data sets (the same-draws row also
+checks the resample medians; the theory row checks one quantity). In the two "different draws" rows, three
+of the five (n, sample median, sample mean) do not depend on the draws and the other two are the standard
+errors, which is what the prediction table further down counts.
 
 <!-- generated:correctness:start -->
 | Comparison (12 data sets each) | Checks passed | Largest relative difference |
@@ -276,17 +300,21 @@ Every check, with both values, is in `results/comparison.tsv`.
 What it costs to start each program and do nothing.
 
 <!-- generated:startup:start -->
-| Start-up condition | Runs | Mean (s) | Median (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
-|---|---|---|---|---|---|---|---|
-| R, empty script | 200 | 0.128 | 0.130 | 0.012 | 0.6 % | 46.6 | 63.4 |
-| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.010 | 0.5 % | 47.0 | 63.9 |
-| Go, printing its help | 200 | 0.003 | 0.000 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
+| Start-up condition | Runs | Mean (s) | Median (s) | Slowest run (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
+|---|---|---|---|---|---|---|---|---|
+| R, empty script | 200 | 0.128 | 0.130 | 0.220 | 0.012 | 0.6 % | 46.6 | 63.4 |
+| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.190 | 0.010 | 0.5 % | 47.0 | 63.9 |
+| Go, printing its help | 200 | 0.003 | 0.000 | 0.260 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
 <!-- generated:startup:end -->
 
-`/usr/bin/time` reports whole-process time in steps of 0.01 s. The Go program's start-up is below that
-step, so its whole-process times for small jobs are at the limit of the tool; rows where the standard error
-of the mean exceeds 2 % of the mean are marked ⚠. The computation times logged inside each program
-(`compute_ms`) do not have this limit.
+Two things limit the precision of the Go row. `/usr/bin/time` reports whole-process time in steps of
+0.01 s, and the Go program's start-up is below that step, so its whole-process times for small jobs are at
+the limit of the tool. And the very first run of the freshly built Go binary was far slower than every
+later one (see "Slowest run"; the likely cause is the operating system examining a new executable on its
+first launch), which by itself accounts for most of that row's standard deviation; the median is not
+affected. Rows where the standard
+error of the mean exceeds 2 % of the mean are marked ⚠. The computation times logged inside each program
+(`compute_ms`) do not have these limits.
 
 ### Time: every implementation at every size
 
@@ -322,7 +350,14 @@ of the mean shows the precision reached.
 ### Time: R against Go
 
 Each ratio says what it includes. "Whole process" is what a cloud bill sees. "Computation only" excludes
-start-up, reading the file and printing.
+start-up, reading the file and printing. Whole-process ratios whose Go time carries a ⚠ in the table above
+(the smallest size, and the 8-worker run at n = 1,000) inherit that uncertainty and are approximate; the
+same holds for the dollar figures and savings at those sizes in the cost section, which is why the savings
+from means and from medians differ there.
+
+The timed parallel condition uses 8 workers, the number of vCPUs of the larger priced instance. The
+correctness comparison and the Go benchmarks use every CPU of the machine instead, which is the program's
+default for `-stream block`; that is why those two places name a different worker count.
 
 <!-- generated:ratios:start -->
 | n | R ÷ Go (R stream), whole process, means | same, medians | R ÷ Go (R stream), computation only | R ÷ Go (block stream, 1 worker), computation only | R start-up as share of R's time | Go: 8 workers ÷ 1 worker, computation | R ÷ Go with 8 workers, whole process | `boot` ÷ `sample()` loop |
@@ -486,6 +521,8 @@ the saving computed from medians is shown beside it.
 | 1,000 | $1.95 | $0.2074 | 89.3 % | $0.2034 | 89.5 % | $0.7572 | 61.1 % |
 | 10,000 | $7.08 | $2.58 | 63.6 % | $1.62 | 77.2 % | $2.24 | 68.4 % |
 | 100,000 | $44.50 | $24.10 | 45.8 % | $15.33 | 65.6 % | $17.88 | 59.8 % |
+
+Memory the "8 jobs at once" columns assume, at n = 100,000 (peak footprint × 8): R `sample()` loop 887.5 MB, R `boot` 4516.6 MB, Go one-core 68.0 MB. One Go process with 8 workers: 14.0 MB.
 <!-- generated:cost:end -->
 
 How to read it:
@@ -493,12 +530,19 @@ How to read it:
 - **Scenario A** is the like-for-like comparison: one core each. "Jobs to save one dollar" is the number of
   jobs after which the saving adds up to one dollar; multiply by the cost of the rewrite to get its
   break-even.
-- **Scenario B** assumes a one-core program can keep all eight cores busy with eight separate jobs without
-  slowing down. Comparing like with like (the block stream), eight one-worker jobs side by side cost less
-  than one eight-worker job at every size, because eight workers are not eight times faster. Parallel Go is
-  for getting one large answer sooner, not for making a batch cheaper.
-- Limits: laptop timings, not cloud timings; on-demand prices only; compute only, no storage or transfer;
-  one method. The percentages are for this method at these sizes.
+- **Scenario B is partly an extrapolation.** The "jobs at once" columns were **not measured**: they take
+  the time of one process running alone and assume eight such processes share the instance without slowing
+  each other down or running out of memory. They are a best case. The 8-worker column **was measured**,
+  with the real cost of eight cores working at once. So the table cannot show that eight separate jobs are
+  cheaper than one 8-worker job; it shows only that parallel Go cannot be much cheaper per job than the best
+  case of running one-core jobs side by side, because eight workers are not eight times faster. Parallel Go
+  is for getting one large answer sooner, and for memory: the line under the table gives what eight
+  processes side by side would need.
+- Cost per job assumes the instance is kept busy. An instance that waits between jobs is billed for the
+  waiting too.
+- Limits: laptop timings, not cloud timings (a cloud vCPU is not this laptop's core, so the dollar amounts
+  on EC2 would differ; the ratios are what should carry over); on-demand prices only; compute only, no
+  storage or transfer; one method. The percentages are for this method at these sizes.
 
 ## Effort: how easy is it?
 
@@ -565,6 +609,25 @@ over R was smaller than predicted. It holds in the final run only because of per
 prediction had assumed R's cost was mostly interpreter overhead; at large sizes R spends its time in
 compiled C, and Go has to earn its lead. Earlier predictions (the course program reproduces its listing; it
 takes a few seconds; Go reproduces R's draws) held and are recorded in the spike.
+
+## Known limits
+
+Found by the second independent review, after the final measurement. They are recorded here and not
+changed in the code, because the results in this README are valid only for the code that was measured
+(`scripts/acceptance.sh` checks that the program has not changed since). None affects a reported number.
+
+- `rrand.Generator.Index(n)` requires n ≥ 1, as its documentation says; for n = 0 it does not return, and
+  for negative n its result is meaningless. The engine never calls it with fewer than 2.
+- The block stream creates a small generator object for every resample (see the allocation counts of the
+  `Workers` benchmark). Reusing one per worker would remove those allocations.
+- A `Statistic` may reorder the resample it is given but must not change its values: every statistic in the
+  list sees the same slice. The command line lists the mean before the median for that reason.
+- A data file whose header line is the word `nan` or `inf`, or that begins with a blank line, is rejected
+  with a message about the header. Rename the header or remove the blank line.
+- With `-cpuprofile`, the logged `compute_ms` includes writing the profile; the official timings were taken
+  without profiling. The memory profile records all allocations (`alloc_space`).
+- `scripts/measure.sh` does not warm up the freshly built binary, which is why the first start-up run is
+  slow (see [Time: start-up](#time-start-up)).
 
 ## Reproducing the measurements
 

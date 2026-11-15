@@ -101,7 +101,31 @@ func (inputs *Inputs) costTables() (string, error) {
 	atOnce := fmt.Sprint(large.VCPUs) + " jobs at once"
 	out.WriteString(table([]string{"n", "R, " + atOnce, "Go, R stream, " + atOnce, "Saving",
 		"Go, block stream, 1 worker each, " + atOnce, "Saving", "Go, block stream, " + workers + " workers, 1 job at a time", "Saving"}, largeRows))
+	note, err := inputs.memoryAtOnce(large.VCPUs)
+	if err != nil {
+		return "", err
+	}
+	out.WriteString(note)
 	return out.String(), nil
+}
+
+// memoryAtOnce states the memory that running several one-core jobs side by side would need
+// at the largest size, against one parallel Go process: the "jobs at once" columns assume
+// that memory is available.
+func (inputs *Inputs) memoryAtOnce(jobs int) (string, error) {
+	largest := Sizes[len(Sizes)-1]
+	footprint := map[string]float64{}
+	for _, implementation := range []string{"r-loop", "r-boot", "go-r", "go-block-multi"} {
+		summary, err := inputs.scaling(implementation, largest)
+		if err != nil {
+			return "", err
+		}
+		footprint[implementation] = summary.MeanFootprint
+	}
+	return fmt.Sprintf("\nMemory the \"%d jobs at once\" columns assume, at n = %s (peak footprint × %d): R `sample()` loop %s MB, "+
+		"R `boot` %s MB, Go one-core %s MB. One Go process with %s workers: %s MB.\n",
+		jobs, thousands(largest), jobs, megabytes(float64(jobs)*footprint["r-loop"]), megabytes(float64(jobs)*footprint["r-boot"]),
+		megabytes(float64(jobs)*footprint["go-r"]), inputs.machineValue("parallel workers"), megabytes(footprint["go-block-multi"])), nil
 }
 
 // jobsText formats the number of jobs needed to save one dollar. When Go is not cheaper
@@ -200,6 +224,7 @@ func (inputs *Inputs) headline() (string, error) {
 	for _, row := range costRows {
 		lowSaving, highSaving = math.Min(lowSaving, row.savingMean), math.Max(highSaving, row.savingMean)
 	}
+	first, last := costRows[0], costRows[len(costRows)-1]
 	lines := []string{
 		fmt.Sprintf("**Same results.** %d of %d comparison checks passed; %s of %s resample medians are identical between R and Go.",
 			passed, total, thousands(identical), thousands(compared)),
@@ -218,6 +243,11 @@ func (inputs *Inputs) headline() (string, error) {
 			thousands(largest), megabytes(loopLarge.MeanFootprint), megabytes(empty.MeanFootprint), megabytes(goLarge.MeanFootprint)),
 		fmt.Sprintf("**Cloud cost** (`%s`, one job at a time): Go saves **%s to %s** of the compute cost across the four sizes.",
 			small.Instance, percent(lowSaving), percent(highSaving)),
+		fmt.Sprintf("**In dollars**: a million jobs cost %s (n = %s) to %s (n = %s) in R; Go saves %s to %s per million, "+
+			"so each dollar spent on the rewrite is recovered after about %s to %s jobs.",
+			dollars(first.rSmall), thousands(first.n), dollars(last.rSmall), thousands(last.n),
+			dollars(first.rSmall-first.goSmall), dollars(last.rSmall-last.goSmall),
+			jobsText(last.jobsPerDollar), jobsText(first.jobsPerDollar)),
 	}
 	return "- " + strings.Join(lines, "\n- ") + "\n", nil
 }

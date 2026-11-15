@@ -1,5 +1,12 @@
 # Decisions log (newest first)
 
+## 2026-11-14 · Review R2 triaged: documentation fixed, measured code left as measured
+- **Review:** 96/100, "submit after the listed changes" (`docs/reviews/002-repository-review.md`).
+- **Decision (Claude, for Luis to overturn):** fix every finding about the README, the report generator and the price file; record findings about the measured program as **known limits** in the README instead of patching them. Patching would break "what was measured is what is submitted" or need a third measurement, for defects that change no reported number. The alternative, for Luis: apply the code fixes and measure a third time (about 35 minutes on a quiet Mac).
+- **One reviewer claim was wrong and was tested against R's own output:** R does draw a number for `sample.int(1)`.
+- **Spec Q2 completed:** the README now has the generated one-seed table (spike 003).
+- **Documents updated:** README, `prices/aws-ec2.tsv` note, `internal/report`, review record.
+
 ## 2026-11-14 · After official run 1: performance step 4, and the measurement is repeated
 - **Evidence from run 1** (`results/run-1/`, commit `202d3cc`): all 264 comparison checks passed. The CPU profile showed the random generator taking 59 % of the time at n = 100,000 (the median 30 %). Go on one core with the R stream was only 1.4 times faster than R in computation at n = 100,000; spike prediction P5 (2× to 10× at n = 10,000) did not hold at that size.
 - **Decision (Claude, for Luis to overturn):** add performance step 4, which the profile points to: refill the generator's state without remainder operations, and take the 16 random bits per draw directly from the 32-bit output (equal to R's `floor(unif_rand() * 65536)`, proved by test on every earlier version). Because the program changed, the official measurement must be repeated: results are only valid for the code they measured.

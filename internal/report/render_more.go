@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mioluigi/go-applied-statistics/record"
+	"github.com/mioluigi/go-applied-statistics/rrand"
 )
 
 // shapesTable compares R and Go on the two other shapes at n = 10,000.
@@ -173,6 +174,47 @@ func bytesText(bytes float64) string {
 		return fmt.Sprintf("%.1f kB", bytes/1e3)
 	}
 	return fmt.Sprintf("%.0f B", bytes)
+}
+
+// generatorSeed is the seed of the generator comparison (the project's seed).
+const generatorSeed = 431
+
+// savedUniforms returns the values on the data line of a saved "seed<TAB>values" file.
+func savedUniforms(path string) (string, error) {
+	rows, column, err := readTable(path)
+	if err != nil {
+		return "", err
+	}
+	position, found := column["values"]
+	if !found || len(rows) != 1 {
+		return "", fmt.Errorf("%s should hold one row with a values column", path)
+	}
+	return strings.ReplaceAll(rows[0][position], " ", ", "), nil
+}
+
+// generatorComparison shows the first three uniform numbers for one seed from R, from this
+// project's generator and from the package the assignment suggests. The first comes from the
+// file R wrote, the second is computed now, the third from the saved output of spike 003.
+func (inputs *Inputs) generatorComparison() (string, error) {
+	fromR, err := savedUniforms(filepath.Join(inputs.Root, "testdata", "r-reference", "runif.tsv"))
+	if err != nil {
+		return "", err
+	}
+	suggested, err := savedUniforms(filepath.Join(inputs.Root, "docs", "spikes", "003-suggested-generator", "output.tsv"))
+	if err != nil {
+		return "", err
+	}
+	generator := rrand.New(generatorSeed)
+	ours := make([]string, 3)
+	for i := range ours {
+		ours[i] = record.Exact(generator.Float64())
+	}
+	rows := [][]string{
+		{"R 4.4.2: `set.seed(431); runif(3)`", "32-bit Mersenne Twister, R's seeding", fromR},
+		{"This project: `rrand.New(431)`", "the same, written from R's source", strings.Join(ours, ", ")},
+		{"`github.com/seehuhn/mt19937`, `Seed(431)`", "64-bit Mersenne Twister, its own seeding", suggested},
+	}
+	return table([]string{"Generator", "Algorithm", "First three uniform numbers for seed 431"}, rows), nil
 }
 
 // exampleDataset is the data set whose results the README shows as the worked example.

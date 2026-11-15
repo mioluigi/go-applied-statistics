@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/mioluigi/go-applied-statistics/dataset"
 	"github.com/mioluigi/go-applied-statistics/stats"
@@ -119,8 +120,10 @@ func TestAcceptsARandomSourceFromOutsideThePackage(t *testing.T) {
 	}
 }
 
-// TestNoGoroutineOutlivesARun: the count of goroutines after many parallel runs equals the
-// count before. The test releases nothing itself (SFEDD §5.5).
+// TestNoGoroutineOutlivesARun: the count of goroutines after many parallel runs returns to
+// the count before. The test releases nothing itself (SFEDD §5.5); it only allows the workers
+// a moment to finish exiting, because a goroutine is still counted for an instant after it
+// has reported that its work is done.
 func TestNoGoroutineOutlivesARun(t *testing.T) {
 	data := readData(t, "normal-100.csv")
 	before := runtime.NumGoroutine()
@@ -130,7 +133,11 @@ func TestNoGoroutineOutlivesARun(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	deadline := time.Now().Add(2 * time.Second)
+	for runtime.NumGoroutine() != before && time.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
 	if after := runtime.NumGoroutine(); after != before {
-		t.Errorf("goroutines: %d before, %d after", before, after)
+		t.Errorf("goroutines: %d before, %d after (2 seconds after the last run)", before, after)
 	}
 }
