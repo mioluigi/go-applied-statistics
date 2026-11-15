@@ -56,9 +56,11 @@ check "official comparison includes block stream, boot and theory (AC-6)" \
 if [ "$have_r" = yes ]; then
   Rscript r/original/run-bootstrap-median.R > "$work/course.txt" 2>/dev/null
   # The listing must appear as one contiguous block inside the program's output (AC-2).
+  # The course's listing file has Windows line endings (CR LF) and R prints LF only, so the
+  # carriage return is removed before comparing; nothing else is.
   check "course R program, unchanged, reproduces its listing (AC-2)" \
-    awk 'NR==FNR { listing[++count] = $0; next }
-         { output[++lines] = $0 }
+    awk 'NR==FNR { sub(/\r$/, ""); listing[++count] = $0; next }
+         { sub(/\r$/, ""); output[++lines] = $0 }
          END { for (start = 1; start + count - 1 <= lines; start++) { same = 1
                  for (i = 1; i <= count; i++) if (output[start + i - 1] != listing[i]) { same = 0; break }
                  if (same) exit 0 }

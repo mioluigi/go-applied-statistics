@@ -1,5 +1,11 @@
 # Decisions log (newest first)
 
+## 2026-11-15 · Acceptance on the fresh clone: one failure, and the check was wrong
+- **Evidence:** on the Mac, 100 of 101 checks passed; "course R program, unchanged, reproduces its listing (AC-2)" failed. It was the first time that check ran with R.
+- **Cause:** the course's listing file has Windows line endings (CR LF); R prints LF. The check compared the lines byte for byte, carriage return included. The program was right: its output saved by the spike (`docs/spikes/001-evidence/original-run-1.txt`) contains the listing once the carriage returns are set aside, as the spike's own comparison had done.
+- **Fix:** the check removes a trailing carriage return before comparing, and nothing else. Tested on R's saved output (passes) and on three altered outputs (a changed number, a missing line, an empty file: each fails).
+- **Lesson (again, L-W7-13):** when a check fails on real data, suspect the check first. And a check that needs a tool the builder lacks should be tested against saved real output before the hand-off.
+
 ## 2026-11-15 · Two defects found by re-running acceptance before hand-off
 - **Evidence:** `scripts/acceptance.sh`, run again in the workspace after a pause, failed two checks that had passed: the race-detector suite (intermittently) and "README numbers equal the generated ones".
 - **Cause 1:** the goroutine-leak test required the goroutine count after the runs to EQUAL the count before; once in about six runs the count was lower, because an unrelated goroutine had ended. Fixed in the test only (a leak is more goroutines, not fewer); the leak mutation is still caught.
