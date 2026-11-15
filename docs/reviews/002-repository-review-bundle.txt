@@ -1,0 +1,2582 @@
+REVIEW BUNDLE: 18 files, from commit 94a7609
+  - docs/assignment-and-rubric.md
+  - README.md
+  - results/tables.md
+  - results/machine.txt
+  - prices/aws-ec2.tsv
+  - specs/001-bootstrap-median/spec.md
+  - docs/decisions.md
+  - docs/mutation-checks.txt
+  - main.go
+  - rrand/rrand.go
+  - stats/stats.go
+  - bootstrap/bootstrap.go
+  - bootstrap/stream.go
+  - dataset/dataset.go
+  - r/bootstrap-se.R
+  - r/bootstrap-se-boot.R
+  - scripts/measure.sh
+  - scripts/acceptance.sh
+
+===== FILE: docs/assignment-and-rubric.md =====
+# Assignment Requirements and Rubric (summary)
+
+> Summary of the Week 8 assignment, *Modern Applied Statistics with Go* (100 points, due
+> **2026-11-15, 11:59 PM ET**; assignment page revised July 3, 2025), in our own words, so every tool and
+> reviewer can check the spec against it. The Canvas page is the authoritative source.
+
+## Scenario
+
+A **research consultancy** has used **R** for years, relying on CRAN for modelling techniques, many of them
+computer-intensive. Worried about **cloud computing costs** on large data sets, and having heard that Go is
+fast and uses multicore processors well, it is considering moving much of its programming from R to Go. It
+wants an **independent data scientist** to answer two questions:
+
+- **M1** How easy is it to use Go in place of R?
+- **M2** How much money will the firm save in cloud computing costs?
+
+## Required steps (numbered for traceability)
+
+| # | Step | Source wording, condensed |
+|---|---|---|
+| S1 | Read Gelman & Vehtari and **select one computer-intensive method** from its list, one that is **fully implemented in R** | list: counterfactual causal inference; bootstrapping and simulation-based inference; overparameterized models; regularization; Bayesian multilevel models; generic algorithms; adaptive decision analysis |
+| S2 | From **CRAN**, identify the **R package(s)** for the method; **name the method and show its URLs**; **demonstrate an analysis in R** | "identify the R package(s) … demonstrate an analysis in R. Name the method and show its web addresses" |
+| S3 | **Implement the method in Go**, with a third-party package or our own program (look at Awesome Go and pkg.go.dev) | "either by drawing on a third-party Go package or developing your own" |
+| S4 | Employ Go **testing, benchmarking, profiling and logging**; say **what was done to improve the Go implementation's performance** | "What did you do to improve the performance…?" |
+| S5 | *(Consider)* the **Mersenne Twister** in Go for random test data, the generator R and Python use | `github.com/seehuhn/mt19937` |
+| S6 | **Compare R and the final Go implementation on the same input data**; **ensure results are comparable**; report **memory requirements and processing times** of both | also: read the Canvas page *Performance Comparisons of R, Python, and Go* |
+| S7 | Repository holds **complete data and code for R and Go**; data sets of **at least 100 observations** | deliverables |
+| S8 | README: **efforts in finding R and Go packages**; **process of building** the Go implementation; **experiences** with testing, benchmarking, profiling, logging | "describe your efforts … Review your process … Review your experiences" |
+| S9 | README **recommendation**: when Go should replace R for this method; **select a cloud IaaS provider**; **note its VM costs**; **what percentage of cloud cost might be saved** | "Under what circumstances … What percentage…?" |
+| S10 | README is **complete documentation**, with **instructions for running and testing**, and for **creating an executable** | deliverables; rubric [A] |
+| S11 | **GenAI Tools** section + conversation logs | deliverables |
+| S12 | Submit the cloneable **`.git` URL** in the Canvas comments | deliverables |
+
+### The assignment's own suggested example (not mandatory)
+
+Bootstrap sampling for a **robust, distribution-free estimate of the standard error of the median**, for
+distributions of **various shapes (positively skewed, symmetric, negatively skewed)**: "Start by implementing
+in R and then refactor into Go." It adds that bootstrap-median code **may be reusable in the Week 9
+assignment**. Jump-start material named on the page (Canvas login required; **received 2026-11-14**, commit `80060ad`, in `r/original/`):
+
+- `run-bootstrap-median.R`: R code for the standard error of the median from a normal distribution.
+- `listing-from-100-run-bootstrap-median.txt`: its sample output.
+- CRAN packages mentioned: **bootstrap** (Efron & Tibshirani 1993), **boot** (Davison & Hinkley 1997).
+
+## Deliverables
+
+- Cloneable GitHub URL ending in `.git`, in the Canvas comments.
+- `README.md` as complete documentation (roles of programs and data, how to run and test).
+- Complete **data and code for R and Go**; R and Go run on the **same data sets** (≥ 100 observations),
+  comparing **run times and memory**.
+- **GenAI Tools** section and conversation logs (plain text or links).
+
+## Rubric: five criteria, 20 points each
+
+Ratings per criterion: Outstanding 20 (all criteria) · Meets 15 (most) · Needs Improvement 10 · Partially
+Acceptable 5 · Unacceptable 0.
+
+| Criterion | What earns full marks |
+|---|---|
+| **[C] Coding rules, organization, aesthetics** | Go modules, idiomatic Go; meaningful names; no useless temporaries; clean blocks; one task per block; simple control flow; distribute the NOT; self-documenting code (McConnell 2004, 777–817). |
+| **[T] Testing and software metrics** | Unit tests of critical components with synthetic data; logs and profiles; memory and processing measured for components and the whole program; **Monte Carlo performance benchmark if the requirements call for one**. We treat it as called for: the method is itself a Monte Carlo procedure and S4/S6 require benchmarks. |
+| **[D] Design and development** | Clean, efficient design meeting every requirement; **general-purpose modules reusable in other projects**. |
+| **[Doc] Documentation** | Effective Git/GitHub use; README with roles of programs and data, how to test and use. |
+| **[A] Application** | **Instructions for creating** an executable (`.exe` or `.app`); *changed from Week 7, which asked for delivery of one*. Runs to completion; validates user input and explains mistakes; clean UX/UI. |
+
+## Course guidance on benchmark studies (Canvas page *Performance Comparisons of R, Python, and Go*)
+
+Read in full on 2026-11-14 (two pages, supplied by Luis; not committed, it is course material). S6 points to
+it, so its advice is treated as requirements, numbered for traceability:
+
+| # | Guidance, in our words | How we will meet it |
+|---|---|---|
+| G1 | Same computer for every condition | Everything official runs on the Mac |
+| G2 | Close other programs while measuring | A manual step before `measure.sh`, stated in the hand-off |
+| G3 | **Batch execution for all** conditions (no RStudio against a command-line Go) | `Rscript` and the built Go binary, both from the same shell script |
+| G4 | **Same tasks** in every condition (if one plots, all plot) | Same data, replicates, statistic and output; neither side plots |
+| G5 | Same measurement method, preferably command-line utilities | `/usr/bin/time -l` for both (whole-process time and peak memory) |
+| G6 | **Run each condition hundreds or thousands of times** and average | Hundreds of whole-process runs per condition. *Changes our habit:* Weeks 6–7 used medians of a handful of runs; this week reports mean and median over hundreds |
+| G7 | Keep a log or listing of the results in the repository | Raw per-run results committed under `results/` |
+| G8 | Consider whether **package loading** is part of the measured time; very large ratios usually reflect start-up and loading | Report start-up separately: an empty R script against an empty Go program, and computation time measured inside each program |
+| G9 | Same random number algorithm across languages; the Go Mersenne Twister package is suggested | Spike 001 §5–§6: the suggested package is the 64-bit variant, R uses the 32-bit one; Go can reproduce R's stream exactly |
+
+The page also shows a table from a past class: R measured from about 2× to about 1,900× slower than Go
+across students, on a different, earlier assignment. The spread itself is the lesson: the ratio depends on
+what is timed (G8). Our README must say what each ratio includes.
+
+## Differences from Week 7 that matter
+
+1. **Two languages.** R code is a deliverable and the baseline; it runs only on the Mac (the workspace has no R).
+2. **Results must be comparable**, not only timed: the comparison is a correctness question before a speed one.
+3. **A business answer is required** (S9): a cloud provider, its prices, and a percentage. Prices are
+   third-party facts and need provenance (source URL, date).
+4. No external system is called at run time; the outside world enters through **R's behaviour** (random
+   numbers, quantile definition) and **cloud price lists**.
+
+## Owner's emphasis (Luis, 2026-11-14)
+
+Enhance the methodology, reuse what works, speed with quality first, learn to industrialize and keep improving.
+
+## Who runs what
+
+| Work | Where | Why |
+|---|---|---|
+| Documents, Go code, Go tests, scripts, review bundles | **Claude** (workspace) | Go 1.24.7 available; `mt19937` fetched directly from GitHub |
+| Anything that runs **R** (baseline, R↔Go comparison, R timing and memory) | **Mac** | No R in the workspace, and none installable |
+| `go mod tidy` to produce `go.sum` | **Mac** | Workspace cannot reach `proxy.golang.org` (L-W7-06) |
+| Official measurements, profiles, builds (`.app`, `.exe`) | **Mac** | Official machine (SFEDD §5.3) |
+| Downloading the Canvas jump-start files and the Canvas performance page | **Mac** (Luis, by hand) | Course login |
+| Cloud price capture | **Claude** by web lookup, **confirmed by Luis** | Third-party fact with provenance |
+| Gemini reviews R1 and R2; submission | **Luis** | Roles |
+
+===== FILE: README.md =====
+# Modern Applied Statistics with Go: the bootstrap, in R and in Go
+
+MSDS 431 (Northwestern), Week 8. A research consultancy runs computer-intensive statistics in R and asks
+whether moving to Go would be easy and how much cloud cost it would save. This repository answers for one
+method, **bootstrap estimation of the standard error of the median**, with the same analysis written in R
+and in Go, a check that the two give the same results on the same data, measurements of time and memory,
+and a cost estimate from published cloud prices.
+
+Every number in this README is generated by `scripts/readme.sh` from the measurements saved in `results/`
+and the prices saved in `prices/`. Nothing is typed by hand.
+
+## Headline
+
+<!-- generated:headline:start -->
+- **Same results.** 264 of 264 comparison checks passed; 12,000 of 12,000 resample medians are identical between R and Go.
+- **Computation only, one core** (n = 100,000, B = 1,000): R 4239.6 ms, Go 2376.0 ms: Go is **1.8×** faster.
+- **Whole process, small job** (n = 100): R 0.168 s, of which 76.2 % is R starting up; Go about 0.005 s, which is below the timer's 0.01 s step, so the ratio is approximate: **16.0×** from medians, **30.8×** from means.
+- **Whole process, large job** (n = 100,000): R 4.419 s, Go 2.393 s (**1.8×**).
+- **Parallel Go** (8 workers, n = 100,000): computation **7.4×** faster than one worker.
+- **Memory** (n = 100,000, peak footprint): R 110.9 MB, of which 46.6 MB is R just starting; Go 8.5 MB.
+- **Cloud cost** (`c7g.medium`, one job at a time): Go saves **45.8 % to 96.8 %** of the compute cost across the four sizes.
+<!-- generated:headline:end -->
+
+## Recommendation to the consultancy
+
+**How easy is it to use Go in place of R?** Not as easy as changing languages, because R's standard library
+is the statistics. The R analysis is one short script. In Go, the random generator, `sample()`, the median
+and the bootstrap loop had to be written and tested (the line counts are under
+[Effort](#effort-how-easy-is-it)). There is a Go package for bootstrap confidence intervals, but none that
+reproduces R's results, which is what an audit of a migration needs. The work is done once, though, and what
+it produced is reusable: a generator that draws exactly what R draws, and a resampling engine that accepts
+any statistic.
+
+**When does it make sense to use Go for this method?**
+
+- **Many small or medium jobs** (a pipeline that bootstraps thousands of data sets): yes. Most of R's time
+  on a small job is R starting up, and the Go program starts almost instantly. This is where the cost saving
+  is largest.
+- **Large jobs that can use several cores**: yes. The Go program spreads the resamples over the cores with
+  one flag and gives the same result for any number of workers. Base R runs this loop on one core.
+- **Large jobs on one core where results must match R number for number**: the gain is real but modest.
+  R's `sample()`, `mean()` and `median()` are compiled C; Go, reproducing R's generator step by step, is
+  faster by less than a factor of two at the largest size measured. With Go's own generator (the block
+  stream) the one-core gain is larger.
+- **Exploratory work, one-off analyses, anything that needs a method R already has on CRAN**: stay in R.
+  The saving on a single run is a fraction of a cent, and the analyst's time costs more than the computer's.
+
+**How much cloud cost would be saved?** The table under [Cloud cost](#cloud-cost) gives dollars per million
+jobs and the percentage saved for each data size, on AWS EC2 at published on-demand prices. The percentage
+depends strongly on the size of the job: highest for small jobs, lowest for the largest one-core job. Read
+it with its limits: the timings come from a laptop with the same processor architecture as the priced
+instances, not from those instances, and nothing was run in the cloud.
+
+## The method
+
+Gelman and Vehtari (2021) list *bootstrapping and simulation-based inference* among the most important
+statistical ideas of the past fifty years. The bootstrap (Efron 1979; Efron and Tibshirani 1993) estimates
+how much a statistic would vary from sample to sample using only the sample in hand:
+
+1. draw a **resample**: n values from the n observations, with replacement;
+2. compute the statistic on the resample;
+3. repeat B times; the **standard deviation of the B values** (denominator B − 1) is the bootstrap standard
+   error.
+
+It needs no formula for the statistic's distribution, which is why it suits the **median**, whose standard
+error has no simple formula for skewed data. It is computer-intensive: B × n random draws and B evaluations
+of the statistic. Here B = 1,000, and the mean's standard error is computed on the same resamples as a
+check, because for the mean theory gives the answer.
+
+The course's jump-start program (`r/original/run-bootstrap-median.R`, T. W. Miller) is kept unchanged. It
+estimates something slightly different: it draws 100 fresh normal samples, averages the bootstrap medians of
+each, and reports how that average varies across the samples. The programs in this repository compute the
+textbook quantity above, on fixed data files, so that R and Go can be compared run for run.
+
+## The R side
+
+**Finding packages.** CRAN's search and the course notes lead to two packages, both by the authors of the
+standard books:
+
+- **boot** (Davison and Hinkley 1997), <https://cran.r-project.org/package=boot>, a recommended package
+  that ships with R. Used here.
+- **bootstrap** (Efron and Tibshirani 1993), <https://cran.r-project.org/package=bootstrap>. Cited, not
+  installed: `boot` and base R already cover the method.
+
+Other packages can be browsed at <https://r-universe.dev/search/?q=bootstrap>. Base R alone is enough for
+this method: `sample(x, n, replace = TRUE)` is a resample.
+
+**The R programs** (run with `Rscript`, no RStudio):
+
+| File | Role |
+|---|---|
+| `r/bootstrap-se.R` | The reference analysis in idiomatic base R: a `sample()` loop filling preallocated vectors |
+| `r/bootstrap-se-boot.R` | The same analysis with `boot::boot()` |
+| `r/generate-data.R` | Generates the 12 data sets from fixed seeds |
+| `r/original/run-bootstrap-median.R` | The course's program, unchanged, with its listing |
+| `r/startup-empty.R`, `r/startup-boot.R` | Do nothing, and only load `boot`: they measure start-up |
+| `r/reference/`, `r/spike/` | Wrote the R reference values the Go tests read |
+
+```bash
+Rscript r/bootstrap-se.R data/lognormal-1000.csv 1000 431        # data file, B, seed
+Rscript r/bootstrap-se-boot.R data/lognormal-1000.csv 1000 431
+```
+
+Each prints one tab-separated line: data set, n, B, seed, stream, sample median, SE of the median, sample
+mean, SE of the mean. The Go program prints the same line with `-format tsv`.
+
+**One analysis, as each implementation reported it:**
+
+<!-- generated:example:start -->
+Data set `data/lognormal-1000.csv`, B = 1,000 resamples, seed 431; every digit as the program printed it.
+
+| Implementation | Sample median | Bootstrap SE of the median | Sample mean | Bootstrap SE of the mean |
+|---|---|---|---|---|
+| R, `sample()` loop (`r/bootstrap-se.R`) | 86.648300000000006 | 1.503050518008813 | 97.8793036 | 1.7145995070818436 |
+| Go, R stream (`bootse`) | 86.648300000000006 | 1.503050518008813 | 97.8793036 | 1.7145995070818436 |
+| R, `boot` package (`r/bootstrap-se-boot.R`) | 86.648300000000006 | 1.5442582547127548 | 97.8793036 | 1.7239710285052126 |
+| Go, block stream (`bootse -stream block`) | 86.648300000000006 | 1.5390110210425931 | 97.8793036 | 1.7159476269489826 |
+<!-- generated:example:end -->
+
+The first two rows use the same random draws; the last two use different draws and agree with them up to
+Monte Carlo error.
+
+## The Go side
+
+**Finding packages.** A search of the web, pkg.go.dev listings and Awesome Go for bootstrap resampling in Go
+turned up general statistics libraries (for example `gonum.org/v1/gonum/stat`) and one package aimed at
+bootstrap confidence intervals (`github.com/Preetam/bootstrap`). None reproduces R's random draws, so none
+could show that a Go result equals R's. The engine here is therefore our own, and small.
+
+**The Mersenne Twister.** The assignment suggests <https://github.com/seehuhn/mt19937> so that Go uses "the
+random number generator algorithm used in R". Reading that package's source showed it implements the
+**64-bit** Mersenne Twister; R uses the **32-bit** one, seeds it differently, and turns its output into
+`sample()` indices by its own rejection method. The same seed therefore cannot give the same numbers. The
+package is also licensed under the GPL, which would apply to this program if it were imported. So the
+generator in `rrand/` was written from R's own source, with the standard library only, and tested against
+values R wrote: it reproduces `runif()` to the last digit and `sample()` exactly
+(`docs/spikes/001-environment-and-baseline.md`).
+
+**Design.** Small packages, each usable alone, with no printing and no `os.Exit` outside `main.go`:
+
+| Package | Role | Reusable for |
+|---|---|---|
+| `rrand` | R's generator: `set.seed`, `runif`, `sample` index | Any Go program that must reproduce R's random numbers |
+| `stats` | `Mean`, `StandardDeviation`, `Median`, `MedianInPlace`, defined as R defines them | Any project |
+| `bootstrap` | The resampling engine: data, a list of statistics, B, a random stream, workers | Any statistic; any random source |
+| `dataset` | Reads and checks a one-column CSV, naming file and line on error | Any one-column numeric file |
+| `record` | The one-line result both languages write | Comparing programs |
+| `main.go` | The `bootse` command: flags, validation, output, logging, profiles | |
+| `internal/compare`, `cmd/compare` | The comparability rule as code | |
+| `internal/report`, `cmd/tables` | Generates this README's numbers | |
+| `internal/quality` | Checks doc comments and function length | |
+
+Two random streams:
+
+- **R stream** (`-stream r`, the default): one generator, drawn in order, exactly as R does. One core. Use it
+  when a result must be checked against R.
+- **Block stream** (`-stream block`): every resample has its own generator, derived from the seed and the
+  resample's number, so resamples can run on any core in any order. The result for a seed is identical for
+  any number of workers. Its draws differ from R's, so its standard errors agree with R's up to Monte Carlo
+  error.
+
+A new statistic needs no change to the engine:
+
+```go
+trimmedMean := func(resample []float64) float64 {
+    slices.Sort(resample)
+    trim := len(resample) / 10
+    return stats.Mean(resample[trim : len(resample)-trim])
+}
+standardErrors, err := bootstrap.StandardErrors(data,
+    []bootstrap.Statistic{trimmedMean},
+    bootstrap.Config{Replicates: 1000, Stream: bootstrap.BlockStream(431), Workers: 8})
+```
+
+## Build, run, test
+
+Requirements: Go 1.24 or later. R (4.4 or later, with `boot`) only to re-run the R side.
+
+```bash
+git clone https://github.com/mioluigi/go-applied-statistics.git
+cd go-applied-statistics
+go build -o bootse .        # the program
+./bootse                    # analyses the built-in data set (1,000 lognormal observations)
+./bootse -data data/normal-10000.csv -replicates 1000 -seed 431
+./bootse -data data/normal-10000.csv -stream block -workers 8
+./bootse -h                 # every option
+```
+
+Results go to standard output; log lines (settings, `read_ms`, `compute_ms`) go to standard error and are
+silenced by `-quiet`. `-format tsv` prints the one-line record; `-medians FILE` saves the B resample
+medians; `-cpuprofile FILE` and `-memprofile FILE` write profiles for `go tool pprof`.
+
+**Input checks.** A data file is a header line followed by one number per line. Bad input stops the program
+before any computation, with a message that names the problem (for a bad value, the file and line): a
+missing file, text where a number should be, NaN or infinite values, fewer than 2 observations, fewer than 2
+resamples, an unknown stream or format, a seed out of range, more than one worker with the R stream.
+Exit codes: **0** success, **2** unusable input, **1** any other failure.
+
+**Creating the executables** (the program is pure Go, so it cross-compiles from any machine):
+
+```bash
+scripts/build.sh              # dist/bootse-macos-arm64, dist/bootse-macos-amd64, dist/bootse.exe (Windows)
+scripts/build-macos-app.sh    # dist/BootstrapSE.app: double-click it; it opens Terminal and runs the program
+```
+
+**Tests.**
+
+```bash
+go vet ./... && go test -race ./...     # needs neither R nor the internet
+scripts/check-inputs.sh                 # the 12 data sets match their manifest (size, SHA-256)
+scripts/acceptance.sh                   # every acceptance criterion; R-dependent checks say when they are skipped
+```
+
+The Go tests read R's saved reference values from `testdata/r-reference/`, so the claim "Go draws what R
+draws" is tested on any machine.
+
+## The data
+
+Twelve files in `data/`, generated by R from fixed seeds (`r/generate-data.R`), listed with size and SHA-256
+in `data/MANIFEST.tsv`: three shapes at n = 100, 1,000, 10,000 and 100,000.
+
+| Shape | Generator | Skew |
+|---|---|---|
+| `normal` | Normal(mean 100, sd 10) | symmetric |
+| `lognormal` | Lognormal with mean 100 | positive |
+| `mirrored-lognormal` | 200 minus a lognormal with mean 100 | negative |
+
+Values are written with four decimals. R and Go read the same bytes.
+
+## Results
+
+Measured on one machine, in one session, by one script (`scripts/measure.sh`): batch execution for both
+languages (`Rscript`, the built Go binary), the same data files, B and seed, the same command-line timer
+(`/usr/bin/time -l`), applications closed. Neither side plots. The script records the machine's load average
+before and after; macOS background services were still running, as they are on any working Mac.
+
+<!-- generated:machine:start -->
+- machine: MacBookPro18,2 · Apple M1 Max · 64 GB · macOS 27.0.1
+- cpus: 10
+- parallel workers: 8
+- go: go1.27.2
+- r: R version 4.4.2 (2024-10-31)
+- r package boot: 1.3.32
+- commit: 3a19148
+- measured: 2026-11-14 19:54 EST
+- runs per condition: 200 (large conditions: 30); B = 1000; seed = 431
+- time tool: /usr/bin/time -l
+- load average (1 minute) before: 6.25
+- load average (1 minute) after: 1.87
+<!-- generated:machine:end -->
+
+### Are the results comparable?
+
+The rule was written before measuring (`specs/001-bootstrap-median/spec.md` §6). With the same draws, the
+sample median and **every resample median must be identical** as 64-bit values, and summed quantities
+(means, standard errors) must agree to 1e-12. With different draws, standard errors must agree within 15 %,
+a limit set from 2,400 measured comparisons of correct runs (`docs/spikes/002-tolerance.md`). The bootstrap
+standard error of the mean is also checked against its theoretical value on every data set.
+
+<!-- generated:correctness:start -->
+| Comparison (12 data sets each) | Checks passed | Largest relative difference |
+|---|---|---|
+| Go (R stream) against R (sample loop): same draws | 72 of 72 | 2e-16 |
+| Go (block stream) against R (sample loop): different draws | 60 of 60 | 0.065 |
+| Go (block stream), 10 workers against 1 worker | 60 of 60 | 0 |
+| R (boot package) against R (sample loop): different draws | 60 of 60 | 0.065 |
+| Go (R stream) against theory | 12 of 12 | 0.037 |
+
+Resample medians compared between R and Go: **12,000, of which 12,000 identical** (same 64-bit value).
+<!-- generated:correctness:end -->
+
+Every check, with both values, is in `results/comparison.tsv`.
+
+### Time: start-up
+
+What it costs to start each program and do nothing.
+
+<!-- generated:startup:start -->
+| Start-up condition | Runs | Mean (s) | Median (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
+|---|---|---|---|---|---|---|---|
+| R, empty script | 200 | 0.128 | 0.130 | 0.012 | 0.6 % | 46.6 | 63.4 |
+| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.010 | 0.5 % | 47.0 | 63.9 |
+| Go, printing its help | 200 | 0.003 | 0.000 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
+<!-- generated:startup:end -->
+
+`/usr/bin/time` reports whole-process time in steps of 0.01 s. The Go program's start-up is below that
+step, so its whole-process times for small jobs are at the limit of the tool; rows where the standard error
+of the mean exceeds 2 % of the mean are marked ⚠. The computation times logged inside each program
+(`compute_ms`) do not have this limit.
+
+### Time: every implementation at every size
+
+Lognormal data, B = 1,000. Conditions were run in turn (R, R with `boot`, Go, …) so that any drift in the
+machine affected all alike. The largest size uses fewer runs because each takes seconds; the standard error
+of the mean shows the precision reached.
+
+<!-- generated:scaling:start -->
+| n | Implementation | Runs | Whole process: mean (s) | Median (s) | SD (s) | Std. error of mean | Read (ms) | Compute (ms) |
+|---|---|---|---|---|---|---|---|---|
+| 100 | R, `sample()` loop | 200 | 0.168 | 0.160 | 0.015 | 0.6 % | 0.2 | 30.4 |
+| 100 | R, `boot` package | 200 | 0.164 | 0.160 | 0.011 | 0.5 % | 0.1 | 29.1 |
+| 100 | Go, R stream (1 core) | 200 | 0.005 | 0.010 | 0.006 | 7.8 % ⚠ | 0.3 | 2.2 |
+| 100 | Go, block stream (1 worker) | 200 | 0.005 | 0.010 | 0.005 | 6.8 % ⚠ | 0.4 | 1.8 |
+| 100 | Go, block stream (8 workers) | 200 | 0.003 | 0.000 | 0.005 | 11.6 % ⚠ | 0.4 | 0.5 |
+| 1,000 | R, `sample()` loop | 200 | 0.193 | 0.190 | 0.014 | 0.5 % | 0.3 | 55.0 |
+| 1,000 | R, `boot` package | 200 | 0.193 | 0.190 | 0.013 | 0.5 % | 0.2 | 57.1 |
+| 1,000 | Go, R stream (1 core) | 200 | 0.021 | 0.020 | 0.003 | 0.9 % | 0.5 | 16.9 |
+| 1,000 | Go, block stream (1 worker) | 200 | 0.020 | 0.020 | 0.001 | 0.5 % | 0.5 | 16.7 |
+| 1,000 | Go, block stream (8 workers) | 200 | 0.009 | 0.010 | 0.003 | 2.3 % ⚠ | 0.5 | 2.5 |
+| 10,000 | R, `sample()` loop | 200 | 0.704 | 0.700 | 0.018 | 0.2 % | 1.2 | 559.1 |
+| 10,000 | R, `boot` package | 200 | 0.724 | 0.720 | 0.013 | 0.1 % | 1.1 | 586.4 |
+| 10,000 | Go, R stream (1 core) | 200 | 0.256 | 0.260 | 0.005 | 0.1 % | 1.1 | 251.1 |
+| 10,000 | Go, block stream (1 worker) | 200 | 0.161 | 0.160 | 0.003 | 0.1 % | 1.1 | 153.8 |
+| 10,000 | Go, block stream (8 workers) | 200 | 0.028 | 0.030 | 0.004 | 1.1 % | 1.0 | 21.1 |
+| 100,000 | R, `sample()` loop | 30 | 4.419 | 4.420 | 0.027 | 0.1 % | 9.7 | 4239.6 |
+| 100,000 | R, `boot` package | 30 | 5.374 | 5.370 | 0.028 | 0.1 % | 9.7 | 5198.8 |
+| 100,000 | Go, R stream (1 core) | 30 | 2.393 | 2.390 | 0.006 | 0.0 % | 6.8 | 2376.0 |
+| 100,000 | Go, block stream (1 worker) | 30 | 1.522 | 1.520 | 0.005 | 0.1 % | 6.9 | 1503.0 |
+| 100,000 | Go, block stream (8 workers) | 30 | 0.222 | 0.220 | 0.006 | 0.5 % | 6.9 | 202.5 |
+<!-- generated:scaling:end -->
+
+### Time: R against Go
+
+Each ratio says what it includes. "Whole process" is what a cloud bill sees. "Computation only" excludes
+start-up, reading the file and printing.
+
+<!-- generated:ratios:start -->
+| n | R ÷ Go (R stream), whole process, means | same, medians | R ÷ Go (R stream), computation only | R ÷ Go (block stream, 1 worker), computation only | R start-up as share of R's time | Go: 8 workers ÷ 1 worker, computation | R ÷ Go with 8 workers, whole process | `boot` ÷ `sample()` loop |
+|---|---|---|---|---|---|---|---|---|
+| 100 | 30.8× | 16.0× | 13.6× | 16.4× | 76.2 % | 3.5× | 59.9× | 1.0× |
+| 1,000 | 9.4× | 9.5× | 3.2× | 3.3× | 66.2 % | 6.6× | 20.6× | 1.0× |
+| 10,000 | 2.7× | 2.7× | 2.2× | 3.6× | 18.2 % | 7.3× | 25.3× | 1.0× |
+| 100,000 | 1.8× | 1.8× | 1.8× | 2.8× | 2.9 % | 7.4× | 19.9× | 1.2× |
+<!-- generated:ratios:end -->
+
+### Time: the three shapes
+
+<!-- generated:shapes:start -->
+| Shape (n = 10,000) | Runs | R whole process (s) | Go whole process (s) | R ÷ Go | R compute (ms) | Go compute (ms) | R ÷ Go, computation |
+|---|---|---|---|---|---|---|---|
+| normal | 200 | 0.699 | 0.258 | 2.7× | 557.4 | 251.3 | 2.2× |
+| lognormal | 200 | 0.704 | 0.256 | 2.7× | 559.1 | 251.1 | 2.2× |
+| mirrored-lognormal | 200 | 0.700 | 0.258 | 2.7× | 557.4 | 251.6 | 2.2× |
+<!-- generated:shapes:end -->
+
+### Time: the course's program
+
+<!-- generated:course:start -->
+| Program | Runs | Mean time (s) | Memory (MB: peak footprint; Go: allocated per run) |
+|---|---|---|---|
+| Course R program, unchanged (whole process) | 30 | 4.725 | 72.3 |
+| Go, same resampling volume (benchmark, computation only) | 5 | 0.144 | 1.4 |
+
+Ratio: **32.9×**. Same volume of resampling (40,000 resamples, mean and median), not the same program.
+<!-- generated:course:end -->
+
+The course program builds its results by growing a data frame one row at a time, which is slow in R. That is
+why it is not the baseline for the comparison above: against it, Go looks far better than it does against R
+written the usual way.
+
+### Memory
+
+Peak memory of the whole process. The last column subtracts what the language uses just to start, to show
+what the analysis itself needs. Two things stand out: most of R's memory on small jobs is R itself, and the
+`boot` package needs several times more memory than the `sample()` loop at the largest size, because it
+draws the indices of all resamples before computing anything.
+
+<!-- generated:memory:start -->
+| n | Implementation | Peak footprint: mean (MB) | SD (MB) | Max resident: mean (MB) | Footprint above the language's start-up (MB) |
+|---|---|---|---|---|---|
+| 100 | R, `sample()` loop | 64.6 | 3.2 | 82.2 | 18.0 |
+| 100 | R, `boot` package | 64.3 | 3.3 | 82.1 | 17.4 |
+| 100 | Go, R stream (1 core) | 3.3 | 0.1 | 5.3 | 0.1 |
+| 100 | Go, block stream (1 worker) | 3.4 | 0.1 | 5.3 | 0.1 |
+| 100 | Go, block stream (8 workers) | 4.1 | 0.1 | 6.0 | 0.8 |
+| 1,000 | R, `sample()` loop | 82.8 | 3.6 | 100.0 | 36.2 |
+| 1,000 | R, `boot` package | 88.2 | 3.2 | 106.0 | 41.2 |
+| 1,000 | Go, R stream (1 core) | 3.4 | 0.1 | 5.4 | 0.2 |
+| 1,000 | Go, block stream (1 worker) | 3.4 | 0.1 | 5.4 | 0.2 |
+| 1,000 | Go, block stream (8 workers) | 4.3 | 0.1 | 6.2 | 1.0 |
+| 10,000 | R, `sample()` loop | 123.3 | 3.9 | 217.4 | 76.7 |
+| 10,000 | R, `boot` package | 112.0 | 2.2 | 143.4 | 65.0 |
+| 10,000 | Go, R stream (1 core) | 4.1 | 0.1 | 6.1 | 0.8 |
+| 10,000 | Go, block stream (1 worker) | 4.1 | 0.1 | 6.1 | 0.8 |
+| 10,000 | Go, block stream (8 workers) | 5.4 | 0.1 | 7.4 | 2.1 |
+| 100,000 | R, `sample()` loop | 110.9 | 2.6 | 238.6 | 64.4 |
+| 100,000 | R, `boot` package | 564.6 | 19.0 | 822.2 | 517.6 |
+| 100,000 | Go, R stream (1 core) | 8.5 | 0.5 | 10.5 | 5.2 |
+| 100,000 | Go, block stream (1 worker) | 8.9 | 0.5 | 10.9 | 5.6 |
+| 100,000 | Go, block stream (8 workers) | 14.0 | 0.5 | 16.0 | 10.7 |
+<!-- generated:memory:end -->
+
+### Go benchmarks and what improved performance
+
+Each step was chosen from a profile, measured before and after with `go test -bench -benchmem`, and tested
+to return exactly the same values as the version before it. The "before" versions are kept in the test
+files so the comparison can be re-run.
+
+<!-- generated:benchmarks:start -->
+**Performance steps, before and after** (median of repeated benchmark runs)
+
+| Step | Before | After | Speed-up | Memory allocated per run | Allocations per run |
+|---|---|---|---|---|---|
+| 1. Median by selection instead of sorting (n = 10,000) | 550.4 µs | 47.1 µs | 11.7× | 81.9 kB → 0 B | 1 → 0 |
+| 2. One resample buffer per worker (n = 10,000, B = 100) | 25.53 ms | 25.00 ms | 1.0× | 8.2 MB → 86.6 kB | 104 → 7 |
+| 3. Index bit count without a logarithm (n = 100) | 23.9 ns | 13.1 ns | 1.8× | 0 B → 0 B | 0 → 0 |
+|    same, n = 100,000 | 30.6 ns | 20.5 ns | 1.5× | 0 B → 0 B | 0 → 0 |
+| 4. Generator without remainders or floating point (n = 100) | 13.1 ns | 8.2 ns | 1.6× | 0 B → 0 B | 0 → 0 |
+|    same, n = 100,000 | 20.5 ns | 12.8 ns | 1.6× | 0 B → 0 B | 0 → 0 |
+| Whole engine, steps 1 and 2 (n = 1,000, B = 100) | 5.15 ms | 1.56 ms | 3.3× | 1.6 MB → 12.9 kB | 204 → 8 |
+| Whole engine, steps 1 and 2 (n = 100,000, B = 100) | 880.83 ms | 234.90 ms | 3.7× | 160.6 MB → 807.5 kB | 207 → 8 |
+| Parallel workers: 10 instead of 1 (block stream, n = 10,000, B = 1,000) | 152.57 ms | 22.44 ms | 6.8× | 130.5 kB → 869.5 kB | 2007 → 2025 |
+
+**All component benchmarks** (`go test -bench . -benchmem`)
+
+| Benchmark | Repetitions | Time per operation | Bytes per operation | Allocations per operation |
+|---|---|---|---|---|
+| `Float64` | 5 | 3.1 ns | 0 B | 0 |
+| `Step3Index/before=logarithm/n=100` | 5 | 23.9 ns | 0 B | 0 |
+| `Step3Index/after=bitlength/n=100` | 5 | 13.1 ns | 0 B | 0 |
+| `Step3Index/before=logarithm/n=100000` | 5 | 30.6 ns | 0 B | 0 |
+| `Step3Index/after=bitlength/n=100000` | 5 | 20.5 ns | 0 B | 0 |
+| `Step4Generator/before=uniforms/n=100` | 5 | 13.1 ns | 0 B | 0 |
+| `Step4Generator/after=bits/n=100` | 5 | 8.2 ns | 0 B | 0 |
+| `Step4Generator/before=uniforms/n=100000` | 5 | 20.5 ns | 0 B | 0 |
+| `Step4Generator/after=bits/n=100000` | 5 | 12.8 ns | 0 B | 0 |
+| `Step1Median/before=sort` | 5 | 550.4 µs | 81.9 kB | 1 |
+| `Step1Median/after=select` | 5 | 47.1 µs | 0 B | 0 |
+| `Step2Resample/before=allocate` | 5 | 25.53 ms | 8.2 MB | 104 |
+| `Step2Resample/after=reuse` | 5 | 25.00 ms | 86.6 kB | 7 |
+| `Engine/before/n=1000` | 5 | 5.15 ms | 1.6 MB | 204 |
+| `Engine/after/n=1000` | 5 | 1.56 ms | 12.9 kB | 8 |
+| `Engine/before/n=100000` | 5 | 880.83 ms | 160.6 MB | 207 |
+| `Engine/after/n=100000` | 5 | 234.90 ms | 807.5 kB | 8 |
+| `Workers/workers=1` | 5 | 152.57 ms | 130.5 kB | 2007 |
+| `Workers/workers=10` | 5 | 22.44 ms | 869.5 kB | 2025 |
+| `CourseStudyVolume` | 5 | 143.53 ms | 1.4 MB | 2401 |
+<!-- generated:benchmarks:end -->
+
+**Step 4 on the whole program.** The first official run's CPU profile (`results/run-1/cpu-profile.txt`)
+showed the random generator, not the median, taking most of the time. Step 4 followed from it, and the
+measurement was run again:
+
+<!-- generated:step4:start -->
+Go, R stream, computation time for B = 1,000. Before: official run 1 (commit `202d3cc`). After: the final run (commit `3a19148`).
+
+| n | Runs before | Before step 4 (ms) | Runs after | After step 4 (ms) | Speed-up |
+|---|---|---|---|---|---|
+| 100 | 200 | 2.9 | 200 | 2.2 | 1.3× |
+| 1,000 | 200 | 19.2 | 200 | 16.9 | 1.1× |
+| 10,000 | 200 | 351.9 | 200 | 251.1 | 1.4× |
+| 100,000 | 30 | 3165.3 | 30 | 2376.0 | 1.3× |
+<!-- generated:step4:end -->
+
+The final CPU and memory profiles are `results/cpu-profile.txt` and `results/mem-profile.txt` (raw:
+`results/cpu.prof`, `results/mem.prof`).
+
+## Cloud cost
+
+Provider: **AWS EC2**, on-demand, Linux, US East, compute-optimised arm64 instances (the measurement machine
+is also arm64). Cost per job = whole-process time × price. Means are used because a bill adds up run times;
+the saving computed from medians is shown beside it.
+
+<!-- generated:cost:start -->
+**Published prices used** (on-demand, Linux)
+
+| Instance | vCPUs | Memory (GiB) | Region | USD per hour | USD per vCPU-hour | Source | Captured |
+|---|---|---|---|---|---|---|---|
+| AWS EC2 `c7g.medium` | 1 | 2 | us-east-1 (N. Virginia) | $0.0363 | $0.036300 | https://cloudprice.net/aws/ec2 | 2026-11-14 |
+| AWS EC2 `c7g.2xlarge` | 8 | 16 | us-east-1 (N. Virginia) | $0.2900 | $0.036250 | https://cloudprice.net/aws/ec2 | 2026-11-14 |
+
+**Scenario A, right-sized: one job at a time on `c7g.medium` (1 vCPU).** Cost of one million jobs (B = 1,000), from mean whole-process times.
+
+| n | R, `sample()` loop | Go, R stream | Saving (from means) | Saving (from medians) | Jobs to save one dollar | Go, block stream, 1 worker | Saving, block stream |
+|---|---|---|---|---|---|---|---|
+| 100 | $1.69 | $0.0550 | **96.8 %** | 93.8 % | 610,863 | $0.0534 | 96.8 % |
+| 1,000 | $1.95 | $0.2077 | **89.3 %** | 89.5 % | 574,586 | $0.2037 | 89.5 % |
+| 10,000 | $7.09 | $2.58 | **63.6 %** | 62.9 % | 221,617 | $1.62 | 77.2 % |
+| 100,000 | $44.56 | $24.13 | **45.8 %** | 45.9 % | 48,958 | $15.35 | 65.6 % |
+
+**Scenario B, one `c7g.2xlarge` (8 vCPUs) kept busy.** One-core programs run 8 jobs at once; parallel Go runs one job at a time on 8 workers. Savings are against R.
+
+| n | R, 8 jobs at once | Go, R stream, 8 jobs at once | Saving | Go, block stream, 1 worker each, 8 jobs at once | Saving | Go, block stream, 8 workers, 1 job at a time | Saving |
+|---|---|---|---|---|---|---|---|
+| 100 | $1.69 | $0.0549 | 96.8 % | $0.0534 | 96.8 % | $0.2256 | 86.7 % |
+| 1,000 | $1.95 | $0.2074 | 89.3 % | $0.2034 | 89.5 % | $0.7572 | 61.1 % |
+| 10,000 | $7.08 | $2.58 | 63.6 % | $1.62 | 77.2 % | $2.24 | 68.4 % |
+| 100,000 | $44.50 | $24.10 | 45.8 % | $15.33 | 65.6 % | $17.88 | 59.8 % |
+<!-- generated:cost:end -->
+
+How to read it:
+
+- **Scenario A** is the like-for-like comparison: one core each. "Jobs to save one dollar" is the number of
+  jobs after which the saving adds up to one dollar; multiply by the cost of the rewrite to get its
+  break-even.
+- **Scenario B** assumes a one-core program can keep all eight cores busy with eight separate jobs without
+  slowing down. Comparing like with like (the block stream), eight one-worker jobs side by side cost less
+  than one eight-worker job at every size, because eight workers are not eight times faster. Parallel Go is
+  for getting one large answer sooner, not for making a batch cheaper.
+- Limits: laptop timings, not cloud timings; on-demand prices only; compute only, no storage or transfer;
+  one method. The percentages are for this method at these sizes.
+
+## Effort: how easy is it?
+
+<!-- generated:effort:start -->
+| Code | Lines of code | Lines of tests | What it supplies |
+|---|---|---|---|
+| R: `r/bootstrap-se.R` (base R) | 36 | – | Everything else is built into R |
+| R: `r/bootstrap-se-boot.R` (`boot` package) | 35 | – | Resampling comes from the package |
+| Go: `rrand` | 82 | 269 | R's random generator and `sample()` (built into R) |
+| Go: `stats` | 85 | 144 | `mean`, `sd`, `median` (built into R) |
+| Go: `bootstrap` | 116 | 400 | The resampling loop, the streams, parallel workers |
+| Go: `dataset` | 49 | 84 | Reading and checking the data file (`scan` in R) |
+| Go: `record` | 65 | 56 | The shared output line |
+| Go: `main.go` (command line) | 233 | 172 | Flags, validation, logging, profiles |
+| **Go, total** | **630** | **1125** | **17.5× the base-R script** |
+
+Lines counted: not blank and not only a comment.
+<!-- generated:effort:end -->
+
+## Experience with testing, benchmarking, profiling and logging
+
+**Testing.** Tests came first, with answers known independently of the code: values written by R, exact
+rational arithmetic for the mean and standard deviation, hand-computed small cases. The most useful habit was
+the **mutation check**: break the code on purpose and see whether a test fails (`docs/mutation-checks.txt`).
+It found three gaps: no R reference for sample sizes needing exactly 16 random bits; a test that would not
+notice the median and the mean being swapped in the output; and a branch that no input could reach. It also
+found that the check itself was wrong once: `go test` answered from its cache, so every mutant seemed to
+survive until the runs used `-count=1`.
+
+**What R taught the Go code.** Reproducing R meant learning what R actually does: how `set.seed` scrambles a
+seed, that `sample()` uses rejection sampling since R 3.6.0, that `mean()` makes a second correcting pass,
+that `median()` averages the two middle values. Each was learned by running R and saving its output, not
+from memory of the documentation.
+
+**Benchmarking.** Three kinds of time are kept apart because they answer different questions: whole process,
+start-up, and computation. Each whole-process condition was run hundreds of times, with the number of runs
+and the standard error of the mean in the tables. Two lessons: the command-line timer's 0.01 s step is too
+coarse for a program that starts in milliseconds; and the first official run recorded a very high load
+average, traced afterwards to a web browser left open. Its timings were stable, but it was kept only as
+evidence (`results/run-1/`) and the measurement was repeated with applications closed.
+
+**Profiling.** `pprof` chose every performance step. The first profile, of the plain implementation
+(`docs/performance/profile-before.txt`), pointed at sorting and at memory allocated per resample. The
+profile from the first official run pointed somewhere unexpected: the random generator. That led to step 4.
+
+**Logging.** The program logs with `log/slog` to standard error: what it read, the settings, and how long
+reading and computing took. Those two timings are what the measurement script collects, so the log is part
+of the method, not decoration. Results go to standard output, so a pipeline can use them directly.
+
+**Predictions, checked.** Each prediction made before measuring was written with its conditions and then
+compared with the result:
+
+<!-- generated:predictions:start -->
+| # | Prediction (with its conditions) | Measured | Outcome |
+|---|---|---|---|
+| P4 | Go does the course study's resampling volume in under 0.20 s of computation | 0.144 s | **Held** |
+| P5 | Computation only, R ÷ Go (one core) is between 2× and 10× at n = 1,000 and n = 10,000 | 3.2× and 2.2× | **Held** |
+| P6 | R's start-up is more than 50 % of its whole-process time at n = 100 and under 20 % at n = 100,000 | 76.2 % and 2.9 % | **Held** |
+| P7 | Every different-draws check passes at 15 %, and the largest difference is under 11 % | 48 checks, largest 6.5 % | **Held** |
+<!-- generated:predictions:end -->
+
+P5 is worth a note: in the first official run it did **not** hold at n = 10,000, where Go's one-core lead
+over R was smaller than predicted. It holds in the final run only because of performance step 4. The
+prediction had assumed R's cost was mostly interpreter overhead; at large sizes R spends its time in
+compiled C, and Go has to earn its lead. Earlier predictions (the course program reproduces its listing; it
+takes a few seconds; Go reproduces R's draws) held and are recorded in the spike.
+
+## Reproducing the measurements
+
+```bash
+scripts/make-data.sh     # regenerate the data sets and R reference values (needs R)
+scripts/compare.sh       # R and Go on all 12 data sets, checked by the comparability rule (needs R)
+scripts/measure.sh       # the official measurement: comparison first, then timing, benchmarks, profiles (Mac, about 30 minutes)
+scripts/readme.sh        # regenerate results/tables.md and this README's numbers
+scripts/readme.sh --check   # fail if the README differs from what the results generate
+```
+
+`scripts/measure.sh` refuses to run on a copy that differs from GitHub, and records the commit it measured.
+
+## Repository map
+
+| Path | What it holds |
+|---|---|
+| `main.go`, `rrand/`, `stats/`, `bootstrap/`, `dataset/`, `record/` | The Go program and its packages |
+| `cmd/compare/`, `cmd/tables/`, `internal/` | Comparison rule, report generator, source checks |
+| `r/` | All R code, including the course's original |
+| `data/` | The 12 data sets and their manifest |
+| `testdata/r-reference/` | Values written by R that the Go tests read |
+| `prices/aws-ec2.tsv` | The published prices used, with source and date |
+| `results/` | Final measurements: every run, comparison, benchmarks, profiles, machine record, generated tables |
+| `results/run-1/` | The first official run, kept as evidence |
+| `scripts/` | Data, comparison, measurement, README, build and acceptance scripts |
+| `specs/001-bootstrap-median/` | Specification, plan and tasks |
+| `docs/` | Assignment summary, constitution, spikes, reviews, decisions, mutation checks, AI dialogs |
+
+## How this was built
+
+Spec-First, Evidence-Driven Development (SFEDD v2.1): the assignment restated as numbered steps
+(`docs/assignment-and-rubric.md`); project rules (`docs/constitution.md`); a spike that tested the riskiest
+assumptions before planning (`docs/spikes/`); a specification reviewed independently before any code
+(`specs/`, `docs/reviews/`); one task per commit, tests first; measurements on one machine; and every change
+after approval recorded with its evidence (`docs/decisions.md`).
+
+## GenAI Tools
+
+- **Claude** (Anthropic; Claude Fable 5.2, through the Claude app on a Claude Pro subscription) acted as the
+  builder: it restated the assignment, ran the spikes, drafted the specification, plan and tasks, wrote the
+  Go and R code, tests and scripts, searched for packages and prices, and drafted this README. It could not
+  run R; everything involving R, and every official measurement, was run by the author on his Mac and
+  returned through GitHub.
+- **Gemini** (Google; web app on a Gemini Ultra subscription) acted as the independent reviewer, twice: of
+  the specification before any code, and of the finished repository. Its findings and the decision taken on
+  each are in `docs/reviews/`. It did not edit files.
+- **The author** made the decisions (`docs/decisions.md` records each), approved the specification, plan and
+  tasks, ran everything on the official machine, and submitted.
+
+Conversation logs are in `docs/ai-dialogs/`, with an index in `docs/ai-dialogs/README.md`.
+
+## References and credits
+
+- Davison, A. C., and D. V. Hinkley. 1997. *Bootstrap Methods and Their Application*. Cambridge University Press.
+- Efron, B. 1979. "Bootstrap Methods: Another Look at the Jackknife." *Annals of Statistics* 7 (1): 1–26.
+- Efron, B., and R. J. Tibshirani. 1993. *An Introduction to the Bootstrap*. Chapman and Hall/CRC.
+- Gelman, A., and A. Vehtari. 2021. "What Are the Most Important Statistical Ideas of the Past 50 Years?" *Journal of the American Statistical Association* 116: 2087–2097. <https://arxiv.org/abs/2012.00174>
+- Matsumoto, M., and T. Nishimura. 1998. "Mersenne Twister: A 623-Dimensionally Equidistributed Uniform Pseudo-Random Number Generator." *ACM Transactions on Modeling and Computer Simulation* 8 (1): 3–30.
+- R Core Team. *R: A Language and Environment for Statistical Computing.* <https://www.r-project.org/>. The generator in `rrand/` follows the algorithm in R's `src/main/RNG.c`.
+- `r/original/run-bootstrap-median.R` and its listing are course material by Thomas W. Miller (revised May 23, 2024), included unchanged.
+- Go package sites consulted: <https://pkg.go.dev/> and Awesome Go, <https://awesome-go.com/>.
+
+===== FILE: results/tables.md =====
+# Generated tables
+
+Written by `go run ./cmd/tables` from `results/` and `prices/`. Do not edit.
+
+## headline
+
+- **Same results.** 264 of 264 comparison checks passed; 12,000 of 12,000 resample medians are identical between R and Go.
+- **Computation only, one core** (n = 100,000, B = 1,000): R 4239.6 ms, Go 2376.0 ms: Go is **1.8×** faster.
+- **Whole process, small job** (n = 100): R 0.168 s, of which 76.2 % is R starting up; Go about 0.005 s, which is below the timer's 0.01 s step, so the ratio is approximate: **16.0×** from medians, **30.8×** from means.
+- **Whole process, large job** (n = 100,000): R 4.419 s, Go 2.393 s (**1.8×**).
+- **Parallel Go** (8 workers, n = 100,000): computation **7.4×** faster than one worker.
+- **Memory** (n = 100,000, peak footprint): R 110.9 MB, of which 46.6 MB is R just starting; Go 8.5 MB.
+- **Cloud cost** (`c7g.medium`, one job at a time): Go saves **45.8 % to 96.8 %** of the compute cost across the four sizes.
+
+## example
+
+Data set `data/lognormal-1000.csv`, B = 1,000 resamples, seed 431; every digit as the program printed it.
+
+| Implementation | Sample median | Bootstrap SE of the median | Sample mean | Bootstrap SE of the mean |
+|---|---|---|---|---|
+| R, `sample()` loop (`r/bootstrap-se.R`) | 86.648300000000006 | 1.503050518008813 | 97.8793036 | 1.7145995070818436 |
+| Go, R stream (`bootse`) | 86.648300000000006 | 1.503050518008813 | 97.8793036 | 1.7145995070818436 |
+| R, `boot` package (`r/bootstrap-se-boot.R`) | 86.648300000000006 | 1.5442582547127548 | 97.8793036 | 1.7239710285052126 |
+| Go, block stream (`bootse -stream block`) | 86.648300000000006 | 1.5390110210425931 | 97.8793036 | 1.7159476269489826 |
+
+## correctness
+
+| Comparison (12 data sets each) | Checks passed | Largest relative difference |
+|---|---|---|
+| Go (R stream) against R (sample loop): same draws | 72 of 72 | 2e-16 |
+| Go (block stream) against R (sample loop): different draws | 60 of 60 | 0.065 |
+| Go (block stream), 10 workers against 1 worker | 60 of 60 | 0 |
+| R (boot package) against R (sample loop): different draws | 60 of 60 | 0.065 |
+| Go (R stream) against theory | 12 of 12 | 0.037 |
+
+Resample medians compared between R and Go: **12,000, of which 12,000 identical** (same 64-bit value).
+
+## startup
+
+| Start-up condition | Runs | Mean (s) | Median (s) | SD (s) | Std. error of mean | Peak footprint (MB) | Max resident (MB) |
+|---|---|---|---|---|---|---|---|
+| R, empty script | 200 | 0.128 | 0.130 | 0.012 | 0.6 % | 46.6 | 63.4 |
+| R, loading `boot` only | 200 | 0.128 | 0.130 | 0.010 | 0.5 % | 47.0 | 63.9 |
+| Go, printing its help | 200 | 0.003 | 0.000 | 0.019 | 40.1 % ⚠ | 3.3 | 5.3 |
+
+## scaling
+
+| n | Implementation | Runs | Whole process: mean (s) | Median (s) | SD (s) | Std. error of mean | Read (ms) | Compute (ms) |
+|---|---|---|---|---|---|---|---|---|
+| 100 | R, `sample()` loop | 200 | 0.168 | 0.160 | 0.015 | 0.6 % | 0.2 | 30.4 |
+| 100 | R, `boot` package | 200 | 0.164 | 0.160 | 0.011 | 0.5 % | 0.1 | 29.1 |
+| 100 | Go, R stream (1 core) | 200 | 0.005 | 0.010 | 0.006 | 7.8 % ⚠ | 0.3 | 2.2 |
+| 100 | Go, block stream (1 worker) | 200 | 0.005 | 0.010 | 0.005 | 6.8 % ⚠ | 0.4 | 1.8 |
+| 100 | Go, block stream (8 workers) | 200 | 0.003 | 0.000 | 0.005 | 11.6 % ⚠ | 0.4 | 0.5 |
+| 1,000 | R, `sample()` loop | 200 | 0.193 | 0.190 | 0.014 | 0.5 % | 0.3 | 55.0 |
+| 1,000 | R, `boot` package | 200 | 0.193 | 0.190 | 0.013 | 0.5 % | 0.2 | 57.1 |
+| 1,000 | Go, R stream (1 core) | 200 | 0.021 | 0.020 | 0.003 | 0.9 % | 0.5 | 16.9 |
+| 1,000 | Go, block stream (1 worker) | 200 | 0.020 | 0.020 | 0.001 | 0.5 % | 0.5 | 16.7 |
+| 1,000 | Go, block stream (8 workers) | 200 | 0.009 | 0.010 | 0.003 | 2.3 % ⚠ | 0.5 | 2.5 |
+| 10,000 | R, `sample()` loop | 200 | 0.704 | 0.700 | 0.018 | 0.2 % | 1.2 | 559.1 |
+| 10,000 | R, `boot` package | 200 | 0.724 | 0.720 | 0.013 | 0.1 % | 1.1 | 586.4 |
+| 10,000 | Go, R stream (1 core) | 200 | 0.256 | 0.260 | 0.005 | 0.1 % | 1.1 | 251.1 |
+| 10,000 | Go, block stream (1 worker) | 200 | 0.161 | 0.160 | 0.003 | 0.1 % | 1.1 | 153.8 |
+| 10,000 | Go, block stream (8 workers) | 200 | 0.028 | 0.030 | 0.004 | 1.1 % | 1.0 | 21.1 |
+| 100,000 | R, `sample()` loop | 30 | 4.419 | 4.420 | 0.027 | 0.1 % | 9.7 | 4239.6 |
+| 100,000 | R, `boot` package | 30 | 5.374 | 5.370 | 0.028 | 0.1 % | 9.7 | 5198.8 |
+| 100,000 | Go, R stream (1 core) | 30 | 2.393 | 2.390 | 0.006 | 0.0 % | 6.8 | 2376.0 |
+| 100,000 | Go, block stream (1 worker) | 30 | 1.522 | 1.520 | 0.005 | 0.1 % | 6.9 | 1503.0 |
+| 100,000 | Go, block stream (8 workers) | 30 | 0.222 | 0.220 | 0.006 | 0.5 % | 6.9 | 202.5 |
+
+## ratios
+
+| n | R ÷ Go (R stream), whole process, means | same, medians | R ÷ Go (R stream), computation only | R ÷ Go (block stream, 1 worker), computation only | R start-up as share of R's time | Go: 8 workers ÷ 1 worker, computation | R ÷ Go with 8 workers, whole process | `boot` ÷ `sample()` loop |
+|---|---|---|---|---|---|---|---|---|
+| 100 | 30.8× | 16.0× | 13.6× | 16.4× | 76.2 % | 3.5× | 59.9× | 1.0× |
+| 1,000 | 9.4× | 9.5× | 3.2× | 3.3× | 66.2 % | 6.6× | 20.6× | 1.0× |
+| 10,000 | 2.7× | 2.7× | 2.2× | 3.6× | 18.2 % | 7.3× | 25.3× | 1.0× |
+| 100,000 | 1.8× | 1.8× | 1.8× | 2.8× | 2.9 % | 7.4× | 19.9× | 1.2× |
+
+## shapes
+
+| Shape (n = 10,000) | Runs | R whole process (s) | Go whole process (s) | R ÷ Go | R compute (ms) | Go compute (ms) | R ÷ Go, computation |
+|---|---|---|---|---|---|---|---|
+| normal | 200 | 0.699 | 0.258 | 2.7× | 557.4 | 251.3 | 2.2× |
+| lognormal | 200 | 0.704 | 0.256 | 2.7× | 559.1 | 251.1 | 2.2× |
+| mirrored-lognormal | 200 | 0.700 | 0.258 | 2.7× | 557.4 | 251.6 | 2.2× |
+
+## course
+
+| Program | Runs | Mean time (s) | Memory (MB: peak footprint; Go: allocated per run) |
+|---|---|---|---|
+| Course R program, unchanged (whole process) | 30 | 4.725 | 72.3 |
+| Go, same resampling volume (benchmark, computation only) | 5 | 0.144 | 1.4 |
+
+Ratio: **32.9×**. Same volume of resampling (40,000 resamples, mean and median), not the same program.
+
+## memory
+
+| n | Implementation | Peak footprint: mean (MB) | SD (MB) | Max resident: mean (MB) | Footprint above the language's start-up (MB) |
+|---|---|---|---|---|---|
+| 100 | R, `sample()` loop | 64.6 | 3.2 | 82.2 | 18.0 |
+| 100 | R, `boot` package | 64.3 | 3.3 | 82.1 | 17.4 |
+| 100 | Go, R stream (1 core) | 3.3 | 0.1 | 5.3 | 0.1 |
+| 100 | Go, block stream (1 worker) | 3.4 | 0.1 | 5.3 | 0.1 |
+| 100 | Go, block stream (8 workers) | 4.1 | 0.1 | 6.0 | 0.8 |
+| 1,000 | R, `sample()` loop | 82.8 | 3.6 | 100.0 | 36.2 |
+| 1,000 | R, `boot` package | 88.2 | 3.2 | 106.0 | 41.2 |
+| 1,000 | Go, R stream (1 core) | 3.4 | 0.1 | 5.4 | 0.2 |
+| 1,000 | Go, block stream (1 worker) | 3.4 | 0.1 | 5.4 | 0.2 |
+| 1,000 | Go, block stream (8 workers) | 4.3 | 0.1 | 6.2 | 1.0 |
+| 10,000 | R, `sample()` loop | 123.3 | 3.9 | 217.4 | 76.7 |
+| 10,000 | R, `boot` package | 112.0 | 2.2 | 143.4 | 65.0 |
+| 10,000 | Go, R stream (1 core) | 4.1 | 0.1 | 6.1 | 0.8 |
+| 10,000 | Go, block stream (1 worker) | 4.1 | 0.1 | 6.1 | 0.8 |
+| 10,000 | Go, block stream (8 workers) | 5.4 | 0.1 | 7.4 | 2.1 |
+| 100,000 | R, `sample()` loop | 110.9 | 2.6 | 238.6 | 64.4 |
+| 100,000 | R, `boot` package | 564.6 | 19.0 | 822.2 | 517.6 |
+| 100,000 | Go, R stream (1 core) | 8.5 | 0.5 | 10.5 | 5.2 |
+| 100,000 | Go, block stream (1 worker) | 8.9 | 0.5 | 10.9 | 5.6 |
+| 100,000 | Go, block stream (8 workers) | 14.0 | 0.5 | 16.0 | 10.7 |
+
+## benchmarks
+
+**Performance steps, before and after** (median of repeated benchmark runs)
+
+| Step | Before | After | Speed-up | Memory allocated per run | Allocations per run |
+|---|---|---|---|---|---|
+| 1. Median by selection instead of sorting (n = 10,000) | 550.4 µs | 47.1 µs | 11.7× | 81.9 kB → 0 B | 1 → 0 |
+| 2. One resample buffer per worker (n = 10,000, B = 100) | 25.53 ms | 25.00 ms | 1.0× | 8.2 MB → 86.6 kB | 104 → 7 |
+| 3. Index bit count without a logarithm (n = 100) | 23.9 ns | 13.1 ns | 1.8× | 0 B → 0 B | 0 → 0 |
+|    same, n = 100,000 | 30.6 ns | 20.5 ns | 1.5× | 0 B → 0 B | 0 → 0 |
+| 4. Generator without remainders or floating point (n = 100) | 13.1 ns | 8.2 ns | 1.6× | 0 B → 0 B | 0 → 0 |
+|    same, n = 100,000 | 20.5 ns | 12.8 ns | 1.6× | 0 B → 0 B | 0 → 0 |
+| Whole engine, steps 1 and 2 (n = 1,000, B = 100) | 5.15 ms | 1.56 ms | 3.3× | 1.6 MB → 12.9 kB | 204 → 8 |
+| Whole engine, steps 1 and 2 (n = 100,000, B = 100) | 880.83 ms | 234.90 ms | 3.7× | 160.6 MB → 807.5 kB | 207 → 8 |
+| Parallel workers: 10 instead of 1 (block stream, n = 10,000, B = 1,000) | 152.57 ms | 22.44 ms | 6.8× | 130.5 kB → 869.5 kB | 2007 → 2025 |
+
+**All component benchmarks** (`go test -bench . -benchmem`)
+
+| Benchmark | Repetitions | Time per operation | Bytes per operation | Allocations per operation |
+|---|---|---|---|---|
+| `Float64` | 5 | 3.1 ns | 0 B | 0 |
+| `Step3Index/before=logarithm/n=100` | 5 | 23.9 ns | 0 B | 0 |
+| `Step3Index/after=bitlength/n=100` | 5 | 13.1 ns | 0 B | 0 |
+| `Step3Index/before=logarithm/n=100000` | 5 | 30.6 ns | 0 B | 0 |
+| `Step3Index/after=bitlength/n=100000` | 5 | 20.5 ns | 0 B | 0 |
+| `Step4Generator/before=uniforms/n=100` | 5 | 13.1 ns | 0 B | 0 |
+| `Step4Generator/after=bits/n=100` | 5 | 8.2 ns | 0 B | 0 |
+| `Step4Generator/before=uniforms/n=100000` | 5 | 20.5 ns | 0 B | 0 |
+| `Step4Generator/after=bits/n=100000` | 5 | 12.8 ns | 0 B | 0 |
+| `Step1Median/before=sort` | 5 | 550.4 µs | 81.9 kB | 1 |
+| `Step1Median/after=select` | 5 | 47.1 µs | 0 B | 0 |
+| `Step2Resample/before=allocate` | 5 | 25.53 ms | 8.2 MB | 104 |
+| `Step2Resample/after=reuse` | 5 | 25.00 ms | 86.6 kB | 7 |
+| `Engine/before/n=1000` | 5 | 5.15 ms | 1.6 MB | 204 |
+| `Engine/after/n=1000` | 5 | 1.56 ms | 12.9 kB | 8 |
+| `Engine/before/n=100000` | 5 | 880.83 ms | 160.6 MB | 207 |
+| `Engine/after/n=100000` | 5 | 234.90 ms | 807.5 kB | 8 |
+| `Workers/workers=1` | 5 | 152.57 ms | 130.5 kB | 2007 |
+| `Workers/workers=10` | 5 | 22.44 ms | 869.5 kB | 2025 |
+| `CourseStudyVolume` | 5 | 143.53 ms | 1.4 MB | 2401 |
+
+## step4
+
+Go, R stream, computation time for B = 1,000. Before: official run 1 (commit `202d3cc`). After: the final run (commit `3a19148`).
+
+| n | Runs before | Before step 4 (ms) | Runs after | After step 4 (ms) | Speed-up |
+|---|---|---|---|---|---|
+| 100 | 200 | 2.9 | 200 | 2.2 | 1.3× |
+| 1,000 | 200 | 19.2 | 200 | 16.9 | 1.1× |
+| 10,000 | 200 | 351.9 | 200 | 251.1 | 1.4× |
+| 100,000 | 30 | 3165.3 | 30 | 2376.0 | 1.3× |
+
+## cost
+
+**Published prices used** (on-demand, Linux)
+
+| Instance | vCPUs | Memory (GiB) | Region | USD per hour | USD per vCPU-hour | Source | Captured |
+|---|---|---|---|---|---|---|---|
+| AWS EC2 `c7g.medium` | 1 | 2 | us-east-1 (N. Virginia) | $0.0363 | $0.036300 | https://cloudprice.net/aws/ec2 | 2026-11-14 |
+| AWS EC2 `c7g.2xlarge` | 8 | 16 | us-east-1 (N. Virginia) | $0.2900 | $0.036250 | https://cloudprice.net/aws/ec2 | 2026-11-14 |
+
+**Scenario A, right-sized: one job at a time on `c7g.medium` (1 vCPU).** Cost of one million jobs (B = 1,000), from mean whole-process times.
+
+| n | R, `sample()` loop | Go, R stream | Saving (from means) | Saving (from medians) | Jobs to save one dollar | Go, block stream, 1 worker | Saving, block stream |
+|---|---|---|---|---|---|---|---|
+| 100 | $1.69 | $0.0550 | **96.8 %** | 93.8 % | 610,863 | $0.0534 | 96.8 % |
+| 1,000 | $1.95 | $0.2077 | **89.3 %** | 89.5 % | 574,586 | $0.2037 | 89.5 % |
+| 10,000 | $7.09 | $2.58 | **63.6 %** | 62.9 % | 221,617 | $1.62 | 77.2 % |
+| 100,000 | $44.56 | $24.13 | **45.8 %** | 45.9 % | 48,958 | $15.35 | 65.6 % |
+
+**Scenario B, one `c7g.2xlarge` (8 vCPUs) kept busy.** One-core programs run 8 jobs at once; parallel Go runs one job at a time on 8 workers. Savings are against R.
+
+| n | R, 8 jobs at once | Go, R stream, 8 jobs at once | Saving | Go, block stream, 1 worker each, 8 jobs at once | Saving | Go, block stream, 8 workers, 1 job at a time | Saving |
+|---|---|---|---|---|---|---|---|
+| 100 | $1.69 | $0.0549 | 96.8 % | $0.0534 | 96.8 % | $0.2256 | 86.7 % |
+| 1,000 | $1.95 | $0.2074 | 89.3 % | $0.2034 | 89.5 % | $0.7572 | 61.1 % |
+| 10,000 | $7.08 | $2.58 | 63.6 % | $1.62 | 77.2 % | $2.24 | 68.4 % |
+| 100,000 | $44.50 | $24.10 | 45.8 % | $15.33 | 65.6 % | $17.88 | 59.8 % |
+
+## effort
+
+| Code | Lines of code | Lines of tests | What it supplies |
+|---|---|---|---|
+| R: `r/bootstrap-se.R` (base R) | 36 | – | Everything else is built into R |
+| R: `r/bootstrap-se-boot.R` (`boot` package) | 35 | – | Resampling comes from the package |
+| Go: `rrand` | 82 | 269 | R's random generator and `sample()` (built into R) |
+| Go: `stats` | 85 | 144 | `mean`, `sd`, `median` (built into R) |
+| Go: `bootstrap` | 116 | 400 | The resampling loop, the streams, parallel workers |
+| Go: `dataset` | 49 | 84 | Reading and checking the data file (`scan` in R) |
+| Go: `record` | 65 | 56 | The shared output line |
+| Go: `main.go` (command line) | 233 | 172 | Flags, validation, logging, profiles |
+| **Go, total** | **630** | **1125** | **17.5× the base-R script** |
+
+Lines counted: not blank and not only a comment.
+
+## predictions
+
+| # | Prediction (with its conditions) | Measured | Outcome |
+|---|---|---|---|
+| P4 | Go does the course study's resampling volume in under 0.20 s of computation | 0.144 s | **Held** |
+| P5 | Computation only, R ÷ Go (one core) is between 2× and 10× at n = 1,000 and n = 10,000 | 3.2× and 2.2× | **Held** |
+| P6 | R's start-up is more than 50 % of its whole-process time at n = 100 and under 20 % at n = 100,000 | 76.2 % and 2.9 % | **Held** |
+| P7 | Every different-draws check passes at 15 %, and the largest difference is under 11 % | 48 checks, largest 6.5 % | **Held** |
+
+## machine
+
+- machine: MacBookPro18,2 · Apple M1 Max · 64 GB · macOS 27.0.1
+- cpus: 10
+- parallel workers: 8
+- go: go1.27.2
+- r: R version 4.4.2 (2024-10-31)
+- r package boot: 1.3.32
+- commit: 3a19148
+- measured: 2026-11-14 19:54 EST
+- runs per condition: 200 (large conditions: 30); B = 1000; seed = 431
+- time tool: /usr/bin/time -l
+- load average (1 minute) before: 6.25
+- load average (1 minute) after: 1.87
+
+===== FILE: results/machine.txt =====
+machine: MacBookPro18,2 · Apple M1 Max · 64 GB · macOS 27.0.1
+cpus: 10
+parallel workers: 8
+go: go1.27.2
+r: R version 4.4.2 (2024-10-31)
+r package boot: 1.3.32
+commit: 3a19148
+measured: 2026-11-14 19:54 EST
+runs per condition: 200 (large conditions: 30); B = 1000; seed = 431
+time tool: /usr/bin/time -l
+load average (1 minute) before: 6.25
+load average (1 minute) after: 1.87
+
+===== FILE: prices/aws-ec2.tsv =====
+# Published on-demand prices used by the cost model (spec FR-13). Third-party facts: do not edit by hand without updating source and date.
+# Primary source (AWS): https://aws.amazon.com/ec2/pricing/on-demand/  Looked up 2026-11-14 through the price listings in the source column, which agree with each other; to be confirmed against the AWS page by Luis.
+provider	instance	architecture	vcpus	memory_gib	region	operating_system	purchase	usd_per_hour	source	captured
+AWS EC2	c7g.medium	arm64 (Graviton3)	1	2	us-east-1 (N. Virginia)	Linux	on-demand	0.0363	https://cloudprice.net/aws/ec2	2026-11-14
+AWS EC2	c7g.2xlarge	arm64 (Graviton3)	8	16	us-east-1 (N. Virginia)	Linux	on-demand	0.2900	https://cloudprice.net/aws/ec2	2026-11-14
+
+===== FILE: specs/001-bootstrap-median/spec.md =====
+# Spec 001: Bootstrap standard error of the median, in R and in Go
+
+| Field | Value |
+|---|---|
+| Status | **APPROVED v2, 2026-11-14** by Luis: Q1–Q10 all as recommended (`docs/decisions.md`) |
+| Inputs | `docs/assignment-and-rubric.md` (S1–S12, M1–M2, G1–G9) · `docs/constitution.md` · `docs/spikes/001-environment-and-baseline.md` |
+| Deadline | 2026-11-15, 11:59 PM ET. Nothing is built before approval. |
+
+## 1. Problem
+
+A research consultancy runs computer-intensive statistics in R and pays for the cloud time. It asks an
+independent data scientist two questions: **how easy is it to use Go in place of R (M1)**, and **how much
+cloud cost would that save (M2)**. We answer for one method from Gelman and Vehtari's list, *bootstrapping
+and simulation-based inference*, in the form the assignment suggests: a **distribution-free estimate of the
+standard error of the median** by bootstrap resampling, for symmetric, positively skewed and negatively
+skewed data.
+
+The answer has three parts, and each must be reproducible by a command:
+
+1. **The same analysis in R and in Go, on the same data, with comparable results.**
+2. **Time and memory of both**, measured the same way, with start-up separated from computation.
+3. **A recommendation with a cost figure** derived from the measurements and from a cloud provider's saved prices.
+
+The spike changed what "comparable" can mean: Go can reproduce R's random draws exactly, so for the same data
+and seed the two programs can be required to give **the same standard error of the median, digit for digit**
+(spike §6–§7; narrowed after review R1 to *the same resample medians*, with the standard error equal to 1e-12, see §6). The spike also showed the course's jump-start R program spends most of its 5 seconds on data
+frames, so the comparison needs an idiomatic R baseline as well (spike §4).
+
+## 2. Users and use
+
+| User | Needs |
+|---|---|
+| The consultancy's managers | A recommendation they can act on: when Go pays off, when it does not, and a percentage with its assumptions. |
+| An analyst at the consultancy | Run one command on a data file and get the median, its standard error, and the mean's as a check; trust that it matches R. |
+| A Go developer (and Week 9) | Reuse the resampling engine with another statistic or another random source. |
+| Grader | Build, run and test from the README; R and Go code and data in the repository; evidence for every claim. |
+
+## 3. Definitions (so R and Go compute the same thing)
+
+- **Data set**: n observations x₁…xₙ, n ≥ 2, read from a one-column CSV file.
+- **Median**: for odd n the middle value; for even n **the mean of the two middle values** (R's `median`).
+- **Bootstrap resample**: n values drawn from the data set with replacement.
+- **Bootstrap standard error of a statistic** (the textbook definition, Efron and Tibshirani 1993): draw B
+  resamples, compute the statistic on each, and take the **standard deviation of those B values, with
+  denominator B − 1**.
+- **One set of resamples per run** (review DR-4): after seeding, resample b (b = 1…B) is the next n
+  consecutive index draws, and **every statistic is evaluated on that same resample**. The SE of the median
+  and the SE of the mean in one run therefore come from the same B resamples, using B × n draws in total.
+- The course's R program reports a different quantity (the spread, across 100 fresh samples, of the average
+  bootstrap median; spike §4). It is run unchanged and reported as the course's baseline; it is **not** the
+  quantity our R and Go programs compute, and the README says so.
+- **R stream**: resample indices drawn exactly as R 4.4.2 draws them after `set.seed(seed)` with default
+  settings. **Block stream**: every replicate has its own generator, derived only from the seed and the
+  replicate number, so replicates can run on different cores in any order.
+- **Computation time**: the time to evaluate the B replicates on data already in memory. Reading the file
+  and writing the result are outside it (`read_ms` and `compute_ms` in the log).
+
+## 4. Functional requirements
+
+| ID | Requirement |
+|---|---|
+| **FR-1 Data sets** | The repository holds generated data sets for three shapes (symmetric, positively skewed, negatively skewed) at the sizes in **Q5**, each a one-column CSV with a header, values written with **4 decimal places**. A committed, seeded R script generates them; a manifest records file, shape, n, generator call, seed, size and SHA-256. |
+| **FR-2 R analysis** | An R script, run with `Rscript`, reads a data file and reports the sample median, the bootstrap SE of the median and the bootstrap SE of the mean, for given B and seed, using a `sample()` loop with preallocated `numeric(B)` vectors and no data frames (idiomatic base R). A second R script does the same with the CRAN **boot** package. The course's `run-bootstrap-median.R` stays unchanged in `r/original/`. |
+| **FR-3 Go analysis** | A Go program reads the same data file and reports the same quantities for the same B and seed. |
+| **FR-4 Same output format** | R and Go write the same machine-readable record (tab-separated: data set, n, B, seed, stream, sample median, SE median, sample mean, SE mean), numbers with 17 significant digits, so a program can compare them; on request both also write the B resample medians, one per line. The default terminal output is a human-readable summary that states the **data set, n, B, seed, stream, sample median, bootstrap SE of the median, sample mean and bootstrap SE of the mean**. |
+| **FR-5 R-compatible random draws** | With the R stream, the Go program draws the same resample indices as R for the same seed (**Q2**). |
+| **FR-6 Parallel resampling** | There is one execution path: replicates are handed to `-workers` workers (at least 1), and replicate b's statistics are stored at position b, so the final reduction never depends on scheduling. With the **block stream** the result for a given seed is **bit-for-bit identical for every worker count**. The **R stream** is one sequential generator and runs with one worker. `-workers` defaults to **1 for the R stream** and to **the number of CPUs for the block stream**. The two streams give different draws; their results differ within the §6 tolerance and the README says so. |
+| **FR-7 Comparison** | A committed program compares the R and Go records for every data set by the rule in §6 and writes a pass/fail table to `results/`. The official measurement refuses to time anything until this passes. |
+| **FR-8 Input validation** | Bad input is rejected before any computation with a message naming the problem: missing or unreadable file, non-numeric value (file, line), fewer than 2 observations, B < 2, workers < 1, unknown stream, an explicit `-workers` above 1 with the R stream. NaN and infinite values are rejected. |
+| **FR-9 Exit codes** | **0** success · **2** invalid input or usage · **1** any other failure. Tested on the built binary. |
+| **FR-10 No-argument run** | With no arguments the program analyses a built-in copy of one committed data set and runs to completion (so a double-clicked `.app` works). |
+| **FR-11 Logging and profiles** | Structured log lines on standard error (what was read, settings, time per phase); `-cpuprofile` and `-memprofile` write pprof files; `-quiet` silences the log. Results go to standard output. |
+| **FR-12 Performance history** | Each performance step is kept as a benchmark pair (before, after) with allocation counts; a faster variant must return the same values as the plain one (constitution 1.2), so the README's account of what improved the program is generated from saved benchmark output (constitution 3.5). |
+| **FR-13 Cost model** | Cloud prices for the provider in **Q8** are saved in a file with source URL, region, instance type, vCPUs, memory, price and capture date. A program computes from **mean** measured whole-process times and the saved prices: (1) **cost in USD per 1,000,000 jobs** for R and Go, where the price does not cancel; (2) the **percentage saved**; for two scenarios: **right-sized** (each program billed per vCPU it uses: one-core R against one-core Go) and **multi-vCPU instance** (R running one job per vCPU against Go using all vCPUs for one job at a time); (3) **jobs needed to recover each dollar of rewrite cost** (1 ÷ saving per job), so M1 and M2 connect without inventing a developer cost. Median-based figures are shown beside the mean-based ones. The README's figures come from this program. |
+| **FR-14 Builds** | Scripts and README instructions create a macOS binary, a Windows `.exe` and a macOS `.app` (**Q9**); the acceptance script builds all three into a temporary folder and checks they exist. |
+| **FR-15 Effort measure (M1)** | A generated table counts the lines of R and of Go needed for the same analysis, and lists what Go had to supply that R provides (generator, `sample`, median, standard deviation, bootstrap loop). |
+
+### Reuse requirements
+
+| ID | Requirement | Shown by |
+|---|---|---|
+| **FR-R1** | The resampling engine is a Go package with no printing and no `os.Exit`. It takes data, **any statistic** (a function from a sample to a number), B, and a random source. | A test that bootstraps a statistic the package does not define (a trimmed mean) |
+| **FR-R2** | The **random source is replaceable**: the R-compatible generator is one implementation of a small interface; a standard-library generator is another. | A test with each source; README example |
+| **FR-R3** | The R-compatible generator is its own package with no dependency on the rest, usable by any Go program that must reproduce R's `runif` or `sample`. | Its tests use only R's saved reference files |
+| **FR-R4** | Statistics (median, mean, standard deviation) are their own small package. | Used by engine and by `cmd` programs |
+
+## 5. Non-functional requirements
+
+| ID | Requirement |
+|---|---|
+| **NFR-1 Fair comparison (G1–G5)** | Same Mac, same data file, same B, same seed, batch execution (`Rscript`, built Go binary) from one shell script, both measured with `/usr/bin/time -l`. Neither side plots. |
+| **NFR-2 Enough runs (G6, G7)** | Each timed condition is run the number of times in **Q10**. Tables report, per condition, the number of runs N, mean, median, standard deviation and the **relative standard error of the mean** (flagged when above 2 %). The raw per-run log is committed. The README states why the multi-second conditions use N = 30. |
+| **NFR-3 Three kinds of time (G8)** | For each language: **whole-process** time; **start-up** time, three conditions (an empty R script; an R script that only loads `boot`; the Go binary exiting at once); **computation** time (`compute_ms`, §3) and **read** time (`read_ms`) logged inside both programs. Every ratio in the README says which kind it is. |
+| **NFR-4 Memory** | From `/usr/bin/time -l`, **both** fields (maximum resident set size and peak memory footprint) are recorded for every run of both languages, **including the start-up runs**, so memory above each language's empty-process baseline can be reported, with its spread. Component level: saved `go test -bench -benchmem` output has rows (ns/op, B/op, allocs/op) for the **random generator**, the **median**, and the **bootstrap engine**. |
+| **NFR-5 Reported separately** | Go on one core against R (like for like), and Go on all cores (what Go adds). The course's unchanged R program is a third, separate comparison. |
+| **NFR-6 Freshness** | The measurement script refuses a stale or modified copy and records machine, CPU count, Go and R versions, R package versions and the commit. No user name, host name or home path. It records the **load average before and after** the run and warns when the machine is busy at the start (G2). |
+| **NFR-7 Generated numbers** | All README tables, headline figures and the saving percentage are generated from `results/` and the price file. |
+| **NFR-8 Quality gates** | `gofmt`, `go vet`, `go test -race ./...` clean; tests need neither R nor the internet; critical tests mutation-checked. A test requires a **doc comment on every exported identifier** and **no function longer than 60 lines**. Mean and standard deviation use a two-pass form; on badly conditioned data (n = 100,000, values near 1e6) the mean is accurate to 1e-14 relative and the standard deviation to 1e-12 *(changed 2026-11-14, see `docs/decisions.md`: 1e-14 for the standard deviation was measured not to hold)*. |
+| **NFR-9 Dependencies** | Per **Q2**. `go.sum`, if any, is generated on the Mac. |
+| **NFR-10 Privacy and provenance** | Constitution Article 8; the course's files are credited to their author. |
+
+## 6. Comparability rule (written before measuring; constitution 1.1)
+
+| Quantity | R (`sample()` loop) against Go (R stream) | Against the block stream or `boot` |
+|---|---|---|
+| n | equal | equal |
+| Sample median | **identical** (same double) | identical |
+| Sample mean | relative difference ≤ 1e-12 | ≤ 1e-12 |
+| **Each of the B resample medians** | **identical** (same double), all B of them | not applicable (different draws) |
+| Bootstrap SE of the median | relative difference ≤ **1e-12** | relative difference ≤ **15 %** at B = 1,000 |
+| Bootstrap SE of the mean | relative difference ≤ 1e-12 | ≤ 15 % at B = 1,000 |
+
+Why these numbers.
+
+- **Identity for medians.** The same indices select the same values, and a median is a selection (or one
+  exact average of two), so no rounding can differ. This is the strong claim: Go drew R's resamples.
+- **1e-12 for anything summed** (means, and standard errors, which are standard deviations of B values).
+  The sum can differ in the last bit with the width of the accumulator, which depends on the platform; the
+  spike saw identity on Apple silicon, and a simulation with extended precision saw at most 1.4e-16 (review
+  R1, DR-1). 1e-12 leaves a wide margin and still fails on any real difference.
+- **15 % between different random streams** *(changed from 10 % on 2026-11-14, before any official
+  comparison; `docs/spikes/002-tolerance.md`)*. Two correct bootstraps with different draws differ by Monte
+  Carlo error. Measured on six committed data sets with 200 seeds each at B = 1,000: the standard deviation
+  of the relative difference is 2.1 % to 2.6 %, close to the 2.2 % a normal approximation gives, and the
+  largest of 2,400 differences was 10.7 %, because the single reference run carries its own error. At 10 %
+  a correct implementation would fail about one comparison in several hundred, and the official run makes
+  48. 15 % is beyond everything observed and still fails on any gross error (a wrong statistic, sampling
+  without replacement, a variance reported as a standard deviation).
+- A wrong denominator (B instead of B − 1) hides inside any such tolerance, so it is covered by exact tests.
+
+A second, independent check, on **all 12 data sets** (it holds for any shape): the bootstrap SE of the
+**mean** must be within 10 % of √((n − 1) ÷ n) × s ÷ √n, where s is the sample standard deviation.
+This limit stays at 10 %: the theoretical value has no Monte Carlo error of its own.
+
+## 7. Risks
+
+| # | Risk | Handling |
+|---|---|---|
+| R1 | Exact R parity depends on R's version and settings (spike §7 limits) | The R scripts record `R.version.string` and `RNGkind()` in their output; the comparison reports them; the README states the conditions |
+| R2 | R and Go may parse the same decimal text to different doubles | The values are not exact in binary; what matters is that both parsers return the **same** double. Short decimals (4 places) make that likely; it is **checked, not assumed**: the sample median, the sample mean and all B resample medians are compared on every data set (§6) |
+| R3 | Whole-process timing of sub-second jobs mostly measures start-up | NFR-3 separates the three kinds of time; sizes in Q5 include jobs long enough for computation to dominate |
+| R4 | A parallel run that is fast but not reproducible | FR-6 is a tested property: same result for 1, 2 and all workers |
+| R5 | Per-replicate generators seeded from neighbouring numbers could be correlated | Property to test: block-stream SEs agree with R-stream SEs within the §6 tolerance on all data sets; the README states the block stream is for speed, the R stream for audit |
+| R6 | The cost percentage could be read as general | The README states it holds for this method, these sizes, this instance type, at the capture date |
+| R7 | Time: hundreds of runs per condition | Q10 fixes a budget of about 20 minutes of machine time; deadline-mode cuts are ordered in `plan.md` §9 |
+| R8 | Exact agreement of summed quantities is platform-dependent | §6 requires identity only for medians; summed quantities use 1e-12 |
+
+## 8. Acceptance criteria
+
+| ID | Criterion | Checked by |
+|---|---|---|
+| AC-1 | Every data set in the manifest exists with the recorded hash and has n ≥ 100 | `scripts/check-inputs.sh` |
+| AC-2 | The course's R program, unchanged, prints output that contains the course listing as **one contiguous block** (the program also prints four console lines the listing never had) | acceptance script, where R is present |
+| AC-3 | R (`sample()` loop) and Go (R stream) agree by §6 on every data set, including all B resample medians | `results/comparison` table, all rows pass |
+| AC-4 | Go reproduces R's saved reference draws and bootstraps (spike evidence) without R installed | `go test ./...` |
+| AC-5 | Block-stream results are bit-for-bit identical for 1, 2, 4 and 8 workers, repeated 10 times, under the race detector | `go test -race -count=10` |
+| AC-6 | Block stream and `boot` agree with the R stream by §6; the bootstrap SE of the mean passes the √((n−1)/n)·s/√n check on all 12 data sets | comparison table |
+| AC-7 | Median, mean and standard deviation match independently known answers, including even n, odd n, ties, n = 2, and badly conditioned data (mean 1e-14, standard deviation 1e-12) | unit tests; mutation-checked |
+| AC-8 | Each invalid input of FR-8 gives its message and exit code 2 on the built binary | acceptance script |
+| AC-9 | No-argument run exits 0 and its output names every field listed in FR-4 | acceptance script |
+| AC-10 | Profiles and logs are produced on request; committed profiles exist; saved benchmark output has `-benchmem` rows for the generator, the median and the engine, and the before/after pairs of FR-12 | acceptance script |
+| AC-11 | `results/` holds the raw per-run log with the run counts of Q10 (all three shapes at n = 10,000; three start-up conditions; both memory fields), the load averages, and machine details without personal data | acceptance script |
+| AC-12 | README tables, headline and saving percentage equal the generated ones | `scripts/readme.sh --check` |
+| AC-13 | The price file has source URL, region, instance type, price and date for each price used | acceptance script |
+| AC-14 | README contains the exact CRAN URLs of `boot` and `bootstrap`, pkg.go.dev, Awesome Go, the Gelman and Vehtari citation, the generated line-count table (FR-15), and sections for: method and CRAN URLs; package search (R and Go); build process; experiences with testing, benchmarking, profiling, logging; what improved performance; R against Go results; recommendation with provider, prices and percentage; run, test and build instructions; GenAI Tools | acceptance script (headings and required strings) and review R2 |
+| AC-15 | A statistic defined outside the package and a second random source both work with the engine | unit tests (FR-R1, FR-R2) |
+| AC-16 | `gofmt`, `go vet`, `go test -race ./...` clean on a fresh clone, including the doc-comment and function-length test; all three builds succeed | acceptance script |
+| AC-17 | AI dialogs are in `docs/ai-dialogs/` with an index | acceptance script |
+
+## 9. Traceability
+
+### 9a. Assignment steps
+
+| Step | Covered by |
+|---|---|
+| S1 select a method from Gelman and Vehtari | §1; README method section (AC-14) |
+| S2 CRAN packages, URLs, analysis in R | FR-2 (base R and `boot`); AC-14; Q4 |
+| S3 implement in Go | FR-3, FR-5, FR-6, FR-R1–R4 |
+| S4 testing, benchmarking, profiling, logging; performance improvement | FR-11, FR-12, NFR-8; AC-7, AC-10 |
+| S5 Mersenne Twister | FR-5, Q2; spike §5–§6 |
+| S6 compare on the same data; comparable results; memory and time | FR-4, FR-7, §6, NFR-1–NFR-5; AC-3, AC-6, AC-11 |
+| S7 complete data and code, n ≥ 100 | FR-1, FR-2, FR-3; AC-1 |
+| S8 README: package search, build process, experiences | AC-14 |
+| S9 recommendation, provider, prices, percentage | FR-13; AC-12, AC-13, AC-14 |
+| S10 complete README, run, test and build instructions | FR-14; AC-14 |
+| S11 GenAI Tools and logs | AC-14, AC-17 |
+| S12 `.git` URL | Owner, at submission |
+| M1 how easy | FR-15 (generated line counts; what Go had to supply); README experience sections; AC-14 |
+| M2 how much saved | FR-13 |
+| G1–G9 benchmarking guidance | NFR-1 (G1, G3, G4, G5); hand-off step and NFR-6 load average (G2); NFR-2 (G6, G7); NFR-3 (G8); FR-5 (G9) |
+
+### 9b. Rubric
+
+| Criterion | Covered by |
+|---|---|
+| [C] Coding | Constitution Art. 2; NFR-8; small packages (FR-R1–R4); readable R (constitution 2.9) |
+| [T] Testing and metrics | AC-3–AC-7, AC-10, AC-11; FR-11, FR-12; NFR-2–NFR-4; the bootstrap itself is the Monte Carlo benchmark |
+| [D] Design | FR-R1–R4, FR-6; same code path for 1 and many workers |
+| [Doc] Documentation | AC-12, AC-14, AC-17; one task per commit |
+| [A] Application | FR-8–FR-10, FR-14; AC-8, AC-9 |
+
+## 10. Open decisions (owner)
+
+| # | Decision | Options | Recommendation |
+|---|---|---|---|
+| **Q1** | Method | (a) bootstrap SE of the median, three shapes · (b) another method from the list | **(a)**: the assignment's own example, fully in R, and reusable in Week 9 |
+| **Q2** | Random generator in Go | (a) our own R-compatible 32-bit Mersenne Twister, standard library only · (b) `seehuhn/mt19937` as the assignment suggests (64-bit variant, GPL-3.0; results comparable only statistically) · (c) both: (a) as default, (b) as an optional source | **(a)**, with a standard-library generator as the second source for FR-R2, and the README explaining, with a small table for one seed, why the suggested package cannot match R (*R1 agrees*). (c) honours the suggestion literally but puts the program under GPL terms |
+| **Q3** | R baselines | (a) course program only · (b) idiomatic base R + `boot`, with the course program reported separately | **(b)**: the headline saving rests on idiomatic R; comparing only with the course program would overstate it |
+| **Q4** | Install the CRAN `bootstrap` package | (a) no: cite it with its URL, use base R and `boot` (already installed) · (b) install and add a third R script | **(a)** |
+| **Q5** | Data sizes and shapes | (a) n = 100, 1,000, 10,000, 100,000 × three shapes (12 files, about 3 MB): Normal(100, 10); lognormal (positive skew); 200 − lognormal (negative skew) · (b) stop at 10,000 (9 files, 0.3 MB) | **(a)**: the firm's concern is large data sets, and at 100,000 computation dominates start-up |
+| **Q6** | Replicates B | 1,000 (usual for a standard error) · 10,000 | **1,000** for comparison and timing |
+| **Q7** | Default stream of the Go program | (a) R stream (auditable against R, one core) · (b) block stream (all cores) | **(a)** as default, (b) with `-stream block`; workers default per FR-6 (*R1 agrees with that fix*) |
+| **Q8** | Cloud provider and price basis | (a) AWS EC2, on-demand, Linux, US East, compute-optimised **arm64 (Graviton)** instances, matching the Mac's architecture: a 1-vCPU and an 8-vCPU size · (b) Google Compute Engine · (c) Azure | **(a)**, prices captured with source and date; cost model as in FR-13 (*R1: expanded so the price does not cancel*) |
+| **Q9** | Application builds | (a) scripts and instructions for binary, `.exe`, `.app`; binaries not committed · (b) also commit built binaries | **(a)**: the rubric now asks for instructions |
+| **Q10** | Runs per timed condition | (a) **200** whole-process runs per condition for n ≤ 10,000 and **30** for n = 100,000, on the positively skewed data sets, **plus all three shapes at n = 10,000**; 200 runs of each start-up condition; 30 runs of the course program; about 20 minutes · (b) 1,000 runs per condition; over an hour | **(a)** |
+
+## 11. Out of scope
+
+- Reproducing R's `rnorm` in Go (data is generated once, by R, and read by both).
+- Confidence intervals, BCa, other bootstrap variants; other statistics beyond median and mean in the command-line program (the engine accepts any).
+- Python. The course guidance mentions it; the assignment compares R and Go.
+- A third, idiomatic R version of the course's *study* (review DR-2, rejected part). The course program is compared with Go at the same resampling volume and labelled as such.
+- Running anything in the cloud. Costs are computed from local measurements and published prices, and the README says so.
+
+## 12. Changes from v1 (review R1)
+
+All 24 findings were decided in `docs/reviews/001-spec-review.md`: 19 accepted, 4 adjusted, 1 partly
+rejected. The four High findings: default flags contradiction fixed (FR-6, FR-8); comparability rule
+narrowed to identical *medians* and 1e-12 for standard errors (§6); one set of resamples per run defined
+(§3); component benchmarks required (NFR-4) and the cost model expanded so the price matters (FR-13).
+
+===== FILE: docs/decisions.md =====
+# Decisions log (newest first)
+
+## 2026-11-14 · After official run 1: performance step 4, and the measurement is repeated
+- **Evidence from run 1** (`results/run-1/`, commit `202d3cc`): all 264 comparison checks passed. The CPU profile showed the random generator taking 59 % of the time at n = 100,000 (the median 30 %). Go on one core with the R stream was only 1.4 times faster than R in computation at n = 100,000; spike prediction P5 (2× to 10× at n = 10,000) did not hold at that size.
+- **Decision (Claude, for Luis to overturn):** add performance step 4, which the profile points to: refill the generator's state without remainder operations, and take the 16 random bits per draw directly from the 32-bit output (equal to R's `floor(unif_rand() * 65536)`, proved by test on every earlier version). Because the program changed, the official measurement must be repeated: results are only valid for the code they measured.
+- **Second reason to repeat:** run 1 recorded a 1-minute load average of 117 at the start. The timings were stable (standard error of the mean about 1 % or less for R conditions, no drift, the course program at 5.08 s as in the spike), so the figure may not reflect real contention, but an official run should not carry that doubt. Run 1 is kept as evidence and as the "before" of step 4.
+- **Measurement tool limit, recorded:** `/usr/bin/time` reports whole-process time in steps of 0.01 s, and the Go program runs small jobs in about that time. Whole-process ratios at n = 100 and n = 1,000 are therefore approximate; the README marks conditions whose standard error exceeds 2 % and points to the in-program `compute_ms` for precise comparison. A finer timer was considered and not adopted: the conclusions do not depend on it (the saving at small sizes is above 90 % either way), and the course guidance asks for one command-line tool for both languages.
+- **Report changes:** cost Scenario B now also shows the block stream run one worker per job, so one-core and parallel Go are compared stream for stream; the README shows step 4 from the two official runs.
+- **Documents updated:** `docs/mutation-checks.txt`, `results/run-1/README.md`, README draft.
+
+## 2026-11-14 · T10: Monte Carlo limit in spec §6 raised from 10 % to 15 %, before the official comparison
+- **Evidence:** `docs/spikes/002-tolerance.md`: 2,400 comparisons of correct block-stream runs (200 seeds × 6 data sets × 2 statistics) against the R-stream reference at B = 1,000. Standard deviation of the relative difference 2.1–2.6 %; largest 10.7 %; 3 of 2,400 above 10 % (all on one data set, whose reference run sits far from the centre).
+- **Why it matters:** the official run makes 48 such comparisons (block stream and `boot`, 12 data sets, 2 statistics). At 10 % a correct implementation could fail, stop the measurement, and cost a round trip on deadline day. Review R1 (DR-3) had warned that a correct implementation could exceed 10 %.
+- **Decision:** 15 % for standard errors from different draws. The check against exact theory stays at 10 %. The rule is still written before measuring: no official comparison has run.
+- **Documents updated:** spec §6; `internal/compare` constants and tests.
+
+## 2026-11-14 · T03: accuracy bound for the standard deviation relaxed from 1e-14 to 1e-12
+- **Evidence:** On 100,000 values near 1e6, the two-pass standard deviation differs from exact rational arithmetic by 1.9e-14 relative (`stats` test, first run). Review R1 (DR-5) said a two-pass algorithm would meet 1e-14 "effortlessly"; for a sum of 100,000 squared deviations in double precision it does not (rounding grows with the number of terms). The mean does meet 1e-14.
+- **Decision:** Spec NFR-8 and AC-7 now require 1e-14 for the mean and 1e-12 for the standard deviation, the tolerance the R comparison (§6) actually uses. Compensated summation was considered and not adopted: R does not use it, and the bootstrap takes standard deviations of only B = 1,000 values.
+- **The test still catches** the one-pass variance shortcut (error about 4e-6).
+- **Documents updated:** spec NFR-8, AC-7.
+
+## 2026-11-14 · Approval: spec v2, plan, tasks; Q1–Q10 as recommended
+- **Decision (Luis):** "approved, all recommended". Q1 bootstrap SE of the median; Q2 own R-compatible generator, standard library only; Q3 base R and `boot`, course program separate; Q4 `bootstrap` package cited, not installed; Q5 n = 100 to 100,000 × three shapes; Q6 B = 1,000; Q7 R stream by default; Q8 AWS EC2 on-demand, US East, arm64, 1-vCPU and 8-vCPU; Q9 build scripts and instructions; Q10 200 runs per condition (30 for the largest and the course program).
+- **Q8 clarified before approval:** only published prices are used; nothing runs in the cloud and no account is needed. The README states that costs are computed from local timings and published prices.
+- **Documents updated:** spec, plan, tasks marked APPROVED.
+
+## 2026-11-14 · Review R1 triaged; spec v2
+- **Decision:** 24 findings decided (19 accepted, 4 adjusted, 1 partly rejected); see `docs/reviews/001-spec-review.md`.
+- **Reason:** Four High findings were real: a default-flags contradiction, an identity claim wider than its evidence, an undefined resample order, and a cost model in which the price cancelled.
+- **Documents updated:** spec (v2, §12), constitution (3.4 and 4.2 amended, dated), spike (addenda A and B), assignment summary (receipt of course files).
+
+## 2026-11-14 · Repository name
+- **Decision:** `go-applied-statistics` (the assignment title is not a valid repository name).
+- **Reason:** Matches the earlier `go-…` repositories. Taken by Claude at intake; Luis created the repository under that name.
+
+## 2026-11-14 · The Canvas guidance page is not committed
+- **Decision:** *Performance Comparisons of R, Python, and Go* is summarised in our own words (G1–G9) and not stored.
+- **Reason:** Course material behind a login; the public repository holds only what the assignment hands out as starting code.
+
+===== FILE: docs/mutation-checks.txt =====
+# Mutation checks
+
+Each line: package | mutation applied to the code | outcome when the tests were run against it.
+A mutation that only breaks compilation does not count as caught (SFEDD §5.5). Run in Claude's workspace, 2026-11-14.
+
+## T02 rrand
+rrand | 49 scramble rounds instead of 50 | caught
+rrand | do not discard the position-counter draw | caught
+rrand | one uniform too few when bits is a multiple of 16 | SURVIVED
+rrand | wrong tempering shift | caught
+rrand | accept candidate equal to n | caught
+rrand | no nudge away from 0 | caught
+rrand | modulo instead of rejection | caught
+
+rrand | one uniform too few when bits is a multiple of 16 | caught (after the R reference for sizes 1, 2, 40,000, 65,536 and 65,537 arrived in commit 9e1685f; it had survived before, because no reference size needed exactly 16 bits)
+Closed by a new test: "no nudge away from 0" first survived (the generator returns 0 once in 2^32 draws);
+TestFloat64IsNeverZeroOrOne now sets the state directly.
+
+## T03 stats
+stats | denominator n instead of n - 1 | caught
+stats | even count: upper middle only | caught
+stats | median without sorting | caught
+stats | median sorts its argument in place | caught
+stats | correction not divided by n | caught
+stats | standard deviation of one value not NaN | caught
+stats | one-pass variance shortcut | caught
+stats | no correction pass in the mean | caught
+
+## T07 bootstrap (R stream)
+bootstrap | a fresh resample for each statistic | caught
+bootstrap | never draws the last observation | caught
+bootstrap | results stored in reverse order | caught
+bootstrap | R stream accepted with several workers | caught
+bootstrap | one replicate accepted | caught
+
+## T08 bootstrap (block stream, workers)
+bootstrap | block stream ignores the replicate number | caught
+bootstrap | block stream ignores the seed | caught
+bootstrap | each worker skips its last replicate | caught
+bootstrap | each worker leaves a goroutine behind | caught
+bootstrap | block stream draws only the first half of the data | caught
+
+## T09 command-line program (tests run the built binary)
+main | invalid input exits 1 instead of 2 | caught
+main | R stream with several workers not rejected by the command | caught
+main | default workers = CPUs for the R stream (the R1 CON-1 defect) | caught
+main | missing file exits 1 | caught
+main | -quiet ignored | caught
+main | median and mean swapped in the output | caught (after the record test was extended to compare the standard errors; it had survived)
+
+Notes on T09:
+- The program was written before its tests (a lapse from test-first); the mutation checks are the evidence
+  that the tests fail without the behaviour.
+- **The mutation check itself was wrong at first.** Every mutant "survived" because `go test` answered from
+  its result cache. Re-run with `-count=1`, five were caught and one really survived (now closed). All
+  mutation runs use `-count=1` from here on. Earlier "caught" results are unaffected: Go never caches a
+  failing run, so the cache can only produce a false "survived".
+
+## T11 performance steps (each faster variant must equal the plain one)
+stats | MedianInPlace: lower middle taken from the neighbouring position, not the largest of the lower part | caught
+stats | selection narrows one position too far | caught
+stats | MedianInPlace: even count returns the upper middle only | caught
+rrand | bit count of n instead of n - 1 (one bit too many at powers of two) | caught
+rrand | refill: second loop reads one word too far | caught
+rrand | refill: last word mixed with the wrong neighbour | caught
+rrand | index takes the low 16 bits instead of the top 16 | caught
+rrand | refill: first loop stops one word early | caught
+
+===== FILE: main.go =====
+// Command bootse estimates the bootstrap standard errors of the median and the mean of a
+// data set, and can reproduce R's result for the same data and seed number for number.
+//
+// It is a thin layer: it reads flags, checks them, calls the reusable packages (dataset,
+// bootstrap, stats) and prints. Results go to standard output, log lines to standard error.
+package main
+
+import (
+	"bytes"
+	_ "embed"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"strings"
+	"time"
+
+	"github.com/mioluigi/go-applied-statistics/bootstrap"
+	"github.com/mioluigi/go-applied-statistics/dataset"
+	"github.com/mioluigi/go-applied-statistics/record"
+	"github.com/mioluigi/go-applied-statistics/stats"
+)
+
+// Exit codes (spec FR-9).
+const (
+	exitSuccess = 0
+	exitFailure = 1 // the run could not be completed (for example an output file cannot be written)
+	exitInvalid = 2 // the request was not usable: bad flag, bad value, bad data file
+)
+
+// builtInName is the committed data set a run without -data analyses.
+const builtInName = "lognormal-1000.csv"
+
+//go:embed data/lognormal-1000.csv
+var builtInData []byte
+
+// errInvalid marks a request the user must correct; it maps to exitInvalid.
+var errInvalid = errors.New("invalid request")
+
+// options holds the checked command-line settings.
+type options struct {
+	dataPath    string
+	replicates  int
+	seed        uint32
+	streamName  string
+	workers     int
+	format      string
+	mediansPath string
+	cpuProfile  string
+	memProfile  string
+	quiet       bool
+}
+
+func main() {
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+}
+
+// run is the whole program with its inputs and outputs passed in, so it can be tested.
+func run(arguments []string, stdout, stderr io.Writer) int {
+	settings, err := parseOptions(arguments, stderr)
+	if errors.Is(err, flag.ErrHelp) {
+		return exitSuccess
+	}
+	if err == nil {
+		err = analyse(settings, stdout, stderr)
+	}
+	if err == nil {
+		return exitSuccess
+	}
+	fmt.Fprintln(stderr, "bootse:", err)
+	if errors.Is(err, errInvalid) || errors.Is(err, dataset.ErrInvalid) || errors.Is(err, bootstrap.ErrInvalid) {
+		fmt.Fprintln(stderr, "Run \"bootse -h\" for the list of options.")
+		return exitInvalid
+	}
+	return exitFailure
+}
+
+// parseOptions reads and checks the flags. Every problem is reported in plain words.
+func parseOptions(arguments []string, stderr io.Writer) (options, error) {
+	var settings options
+	var seed uint64
+	flags := flag.NewFlagSet("bootse", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	flags.StringVar(&settings.dataPath, "data", "", "data file: a header line, then one number per line (default: built-in "+builtInName+")")
+	flags.IntVar(&settings.replicates, "replicates", 1000, "number of bootstrap resamples B (at least 2)")
+	flags.Uint64Var(&seed, "seed", 431, "seed of the random stream (0 to 4294967295)")
+	flags.StringVar(&settings.streamName, "stream", "r", "random stream: r (reproduces R's sample(), 1 worker) or block (parallel)")
+	flags.IntVar(&settings.workers, "workers", 0, "goroutines (default: 1 for -stream r, the number of CPUs for -stream block)")
+	flags.StringVar(&settings.format, "format", "text", "output: text (for people) or tsv (one record line, as the R scripts write)")
+	flags.StringVar(&settings.mediansPath, "medians", "", "also write the B resample medians to this file, one per line")
+	flags.StringVar(&settings.cpuProfile, "cpuprofile", "", "write a CPU profile to this file")
+	flags.StringVar(&settings.memProfile, "memprofile", "", "write a memory profile to this file")
+	flags.BoolVar(&settings.quiet, "quiet", false, "do not write log lines to standard error")
+	if err := flags.Parse(arguments); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return settings, err
+		}
+		return settings, fmt.Errorf("%w: %v", errInvalid, err)
+	}
+
+	workersGiven := false
+	flags.Visit(func(given *flag.Flag) { workersGiven = workersGiven || given.Name == "workers" })
+	settings.seed = uint32(seed)
+	return settings, checkOptions(&settings, flags.Args(), seed, workersGiven)
+}
+
+// checkOptions validates the parsed values and fills in the default worker count.
+func checkOptions(settings *options, extra []string, seed uint64, workersGiven bool) error {
+	switch {
+	case len(extra) > 0:
+		return fmt.Errorf("%w: unexpected argument %q (the data file is given with -data)", errInvalid, extra[0])
+	case settings.replicates < 2:
+		return fmt.Errorf("%w: -replicates is %d; at least 2 resamples are needed for a standard error", errInvalid, settings.replicates)
+	case seed > 1<<32-1:
+		return fmt.Errorf("%w: -seed is %d; it must be between 0 and 4294967295", errInvalid, seed)
+	case settings.streamName != "r" && settings.streamName != "block":
+		return fmt.Errorf("%w: -stream is %q; choose r or block", errInvalid, settings.streamName)
+	case settings.format != "text" && settings.format != "tsv":
+		return fmt.Errorf("%w: -format is %q; choose text or tsv", errInvalid, settings.format)
+	case workersGiven && settings.workers < 1:
+		return fmt.Errorf("%w: -workers is %d; at least 1 is needed", errInvalid, settings.workers)
+	case workersGiven && settings.workers > 1 && settings.streamName == "r":
+		return fmt.Errorf("%w: -stream r draws R's numbers in order and runs with 1 worker; "+
+			"use -stream block with -workers %d", errInvalid, settings.workers)
+	}
+	if !workersGiven {
+		settings.workers = 1
+		if settings.streamName == "block" {
+			settings.workers = runtime.NumCPU()
+		}
+	}
+	return nil
+}
+
+// analyse reads the data, runs the bootstrap and writes the result.
+func analyse(settings options, stdout, stderr io.Writer) error {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	if !settings.quiet {
+		logger = slog.New(slog.NewTextHandler(stderr, nil))
+	}
+
+	readStart := time.Now()
+	name, data, err := readData(settings.dataPath)
+	if err != nil {
+		return err
+	}
+	logger.Info("data read", "dataset", name, "n", len(data), "read_ms", milliseconds(time.Since(readStart)))
+
+	stopProfile, err := startCPUProfile(settings.cpuProfile)
+	if err != nil {
+		return err
+	}
+	computeStart := time.Now()
+	config := bootstrap.Config{Replicates: settings.replicates, Stream: newStream(settings), Workers: settings.workers}
+	// The mean is listed first: the median reorders the resample it is given.
+	values, err := bootstrap.Replicates(data, []bootstrap.Statistic{stats.Mean, stats.MedianInPlace}, config)
+	stopProfile()
+	if err != nil {
+		return err
+	}
+	means, medians := values[0], values[1]
+	result := record.Record{
+		Dataset: name, Observations: len(data), Replicates: settings.replicates,
+		Seed: settings.seed, Stream: settings.streamName,
+		SEMedian: stats.StandardDeviation(medians), SEMean: stats.StandardDeviation(means),
+	}
+	logger.Info("bootstrap computed", "replicates", settings.replicates, "stream", settings.streamName,
+		"workers", settings.workers, "compute_ms", milliseconds(time.Since(computeStart)))
+
+	result.SampleMedian, result.SampleMean = stats.Median(data), stats.Mean(data)
+	if err := writeOutputs(settings, result, medians, stdout); err != nil {
+		return err
+	}
+	return writeMemoryProfile(settings.memProfile)
+}
+
+// readData returns the data set's name and values: the file at path, or the built-in copy.
+func readData(path string) (string, []float64, error) {
+	if path == "" {
+		data, err := dataset.Read(bytes.NewReader(builtInData), builtInName)
+		return builtInName, data, err
+	}
+	data, err := dataset.ReadFile(path)
+	if err != nil && !errors.Is(err, dataset.ErrInvalid) {
+		// A file that cannot be opened is the user's to fix, like any other bad input.
+		err = fmt.Errorf("%w: %v", errInvalid, err)
+	}
+	return filepath.Base(path), data, err
+}
+
+// newStream returns the random stream named on the command line.
+func newStream(settings options) bootstrap.Stream {
+	if settings.streamName == "block" {
+		return bootstrap.BlockStream(settings.seed)
+	}
+	return bootstrap.RStream(settings.seed)
+}
+
+// milliseconds converts a duration to milliseconds with three decimals, for the log.
+func milliseconds(elapsed time.Duration) float64 {
+	return float64(elapsed.Microseconds()) / 1000
+}
+
+// writeOutputs prints the result and, if asked, saves the resample medians.
+func writeOutputs(settings options, result record.Record, medians []float64, stdout io.Writer) error {
+	if settings.format == "tsv" {
+		fmt.Fprintln(stdout, result)
+	} else {
+		fmt.Fprint(stdout, summary(result))
+	}
+	if settings.mediansPath == "" {
+		return nil
+	}
+	var lines strings.Builder
+	for _, median := range medians {
+		lines.WriteString(record.Exact(median))
+		lines.WriteByte('\n')
+	}
+	if err := os.WriteFile(settings.mediansPath, []byte(lines.String()), 0o644); err != nil {
+		return fmt.Errorf("cannot write the resample medians: %w", err)
+	}
+	return nil
+}
+
+// summary describes a result in plain words: what was estimated, from which data, and how.
+func summary(result record.Record) string {
+	streamNote := "reproduces R's sample() for this seed"
+	if result.Stream == "block" {
+		streamNote = "parallel stream; agrees with R up to Monte Carlo error"
+	}
+	return fmt.Sprintf(`Bootstrap standard errors
+  Data set:       %s (n = %d observations)
+  Resamples:      B = %d, seed %d, stream %s (%s)
+  Sample median:  %-12.6g bootstrap SE of the median: %.6g
+  Sample mean:    %-12.6g bootstrap SE of the mean:   %.6g
+`, result.Dataset, result.Observations, result.Replicates, result.Seed, result.Stream, streamNote,
+		result.SampleMedian, result.SEMedian, result.SampleMean, result.SEMean)
+}
+
+// startCPUProfile starts a CPU profile if a path was given and returns the function that
+// stops it; with no path, both do nothing.
+func startCPUProfile(path string) (stop func(), err error) {
+	if path == "" {
+		return func() {}, nil
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return nil, fmt.Errorf("cannot write the CPU profile: %w", err)
+	}
+	if err := pprof.StartCPUProfile(file); err != nil {
+		file.Close()
+		return nil, fmt.Errorf("cannot start the CPU profile: %w", err)
+	}
+	return func() {
+		pprof.StopCPUProfile()
+		file.Close()
+	}, nil
+}
+
+// writeMemoryProfile saves a heap profile if a path was given.
+func writeMemoryProfile(path string) error {
+	if path == "" {
+		return nil
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("cannot write the memory profile: %w", err)
+	}
+	defer file.Close()
+	runtime.GC() // so the profile shows what is still in use, not garbage
+	if err := pprof.Lookup("allocs").WriteTo(file, 0); err != nil {
+		return fmt.Errorf("cannot write the memory profile: %w", err)
+	}
+	return nil
+}
+
+===== FILE: rrand/rrand.go =====
+// Package rrand reproduces the random numbers of R's default generator, so that a Go program
+// seeded like set.seed(seed) draws exactly what R's runif() and sample() draw.
+//
+// It follows R's own sources (src/main/RNG.c) for the three steps between set.seed and sample:
+// the scrambling of the seed, the conversion of a 32-bit Mersenne Twister output to a number
+// in (0, 1), and the rejection sampling of an index. It was checked against R 4.4.2 with
+// RNGkind "Mersenne-Twister" and sample.kind "Rejection" (the defaults since R 3.6.0); the
+// reference values are in testdata/r-reference.
+//
+// A Generator is not safe for concurrent use: give each goroutine its own.
+package rrand
+
+import "math/bits"
+
+const (
+	stateSize  = 624        // words of state in the 32-bit Mersenne Twister
+	middleWord = 397        // offset of the word mixed into each new state word
+	matrixA    = 0x9908b0df // the twist matrix, applied when the mixed word is odd
+	upperMask  = 0x80000000 // most significant bit of a state word
+	lowerMask  = 0x7fffffff // the other 31 bits
+
+	seedMultiplier = 69069                  // R's linear congruential scrambler: seed*69069 + 1
+	scrambleRounds = 50                     // rounds R applies before filling the state
+	toUnitInterval = 2.3283064365386963e-10 // 2^-32, R's scale from a 32-bit output to [0, 1)
+	bitsPerDraw    = 16                     // random bits R takes from each uniform number
+)
+
+// Generator is a Mersenne Twister in the state R would have after set.seed.
+type Generator struct {
+	state [stateSize]uint32
+	next  int // position of the next unused state word; stateSize means "refill first"
+}
+
+// New returns a generator in the state R reaches after set.seed(seed).
+func New(seed uint32) *Generator {
+	for round := 0; round < scrambleRounds; round++ {
+		seed = seedMultiplier*seed + 1
+	}
+	// R fills 625 words; the first is a position counter that it then overwrites, so the
+	// value drawn for it is discarded here.
+	seed = seedMultiplier*seed + 1
+	generator := &Generator{next: stateSize}
+	for word := range generator.state {
+		seed = seedMultiplier*seed + 1
+		generator.state[word] = seed
+	}
+	return generator
+}
+
+// twist combines the top bit of one state word with the low 31 bits of the next and applies
+// the Mersenne Twister's recurrence matrix.
+func twist(upper, lower uint32) uint32 {
+	mixed := (upper & upperMask) | (lower & lowerMask)
+	twisted := mixed >> 1
+	if mixed&1 == 1 {
+		twisted ^= matrixA
+	}
+	return twisted
+}
+
+// refill replaces all state words with the next 624. The recurrence reads the word
+// middleWord places ahead, wrapping around; three plain loops cover the part before the
+// wrap, the part after it, and the last word, so no index needs a remainder operation.
+func (generator *Generator) refill() {
+	state := &generator.state
+	word := 0
+	for ; word < stateSize-middleWord; word++ {
+		state[word] = state[word+middleWord] ^ twist(state[word], state[word+1])
+	}
+	for ; word < stateSize-1; word++ {
+		state[word] = state[word+middleWord-stateSize] ^ twist(state[word], state[word+1])
+	}
+	state[stateSize-1] = state[middleWord-1] ^ twist(state[stateSize-1], state[0])
+	generator.next = 0
+}
+
+// uint32 returns the next tempered 32-bit output.
+func (generator *Generator) uint32() uint32 {
+	if generator.next >= stateSize {
+		generator.refill()
+	}
+	output := generator.state[generator.next]
+	generator.next++
+	output ^= output >> 11
+	output ^= (output << 7) & 0x9d2c5680
+	output ^= (output << 15) & 0xefc60000
+	output ^= output >> 18
+	return output
+}
+
+// Float64 returns the next uniform number strictly inside (0, 1), as R's runif(1) does.
+func (generator *Generator) Float64() float64 {
+	value := float64(generator.uint32()) * toUnitInterval
+	// R never returns exactly 0: it nudges it half a step inwards. (R guards 1 the same way,
+	// but the largest 32-bit output times 2^-32 is already below 1, so no guard is needed.)
+	if value <= 0 {
+		return 0.5 * toUnitInterval
+	}
+	return value
+}
+
+// Index returns a uniformly distributed index in [0, n), drawn as R draws each element of
+// sample.int(n, size, replace = TRUE) (R's result is this index plus one). n must be at
+// least 1 and below 2^31, the range in which R uses this method.
+//
+// R builds a candidate from just enough random bits to cover n, 16 bits per uniform number,
+// and draws again while the candidate is n or more. R takes those 16 bits as
+// floor(unif_rand() * 65536); that is exactly the top 16 bits of the generator's 32-bit
+// output, so they are taken directly, without a detour through floating point.
+func (generator *Generator) Index(n int) int {
+	// The number of bits needed to write n-1 equals ceil(log2(n)), R's bit count, and
+	// costs no logarithm.
+	bitCount := bits.Len(uint(n - 1))
+	mask := uint64(1)<<bitCount - 1
+	for {
+		var candidate uint64
+		for filled := 0; filled <= bitCount; filled += bitsPerDraw {
+			candidate = candidate<<bitsPerDraw | uint64(generator.uint32()>>bitsPerDraw)
+		}
+		candidate &= mask
+		if candidate < uint64(n) {
+			return int(candidate)
+		}
+	}
+}
+
+===== FILE: stats/stats.go =====
+// Package stats holds the few descriptive statistics the bootstrap needs, defined exactly as
+// R defines them so that results can be compared with R's.
+package stats
+
+import (
+	"math"
+	"slices"
+)
+
+// Mean returns the arithmetic mean, or NaN for no values.
+//
+// Like R's mean(), it makes a second pass that adds the average of the deviations from the
+// first estimate. The correction removes most of the rounding error a single sum leaves behind.
+func Mean(values []float64) float64 {
+	if len(values) == 0 {
+		return math.NaN()
+	}
+	count := float64(len(values))
+	sum := 0.0
+	for _, value := range values {
+		sum += value
+	}
+	estimate := sum / count
+
+	residual := 0.0
+	for _, value := range values {
+		residual += value - estimate
+	}
+	return estimate + residual/count
+}
+
+// StandardDeviation returns the sample standard deviation (denominator n - 1), as R's sd()
+// does, or NaN for fewer than two values.
+//
+// It sums squared deviations from the mean. The shortcut "sum of squares minus n times the
+// squared mean" is deliberately avoided: it loses most of its digits when the values are
+// large compared with their spread.
+func StandardDeviation(values []float64) float64 {
+	if len(values) < 2 {
+		return math.NaN()
+	}
+	mean := Mean(values)
+	sumOfSquares := 0.0
+	for _, value := range values {
+		deviation := value - mean
+		sumOfSquares += deviation * deviation
+	}
+	return math.Sqrt(sumOfSquares / float64(len(values)-1))
+}
+
+// Median returns the middle value, or for an even count the mean of the two middle values,
+// as R's median() does. It returns NaN for no values and leaves its argument unchanged.
+func Median(values []float64) float64 {
+	if len(values) == 0 {
+		return math.NaN()
+	}
+	sorted := slices.Clone(values)
+	slices.Sort(sorted)
+	lowerMiddle, upperMiddle := (len(sorted)-1)/2, len(sorted)/2
+	return (sorted[lowerMiddle] + sorted[upperMiddle]) / 2
+}
+
+// MedianInPlace returns the same value as Median without sorting: it finds the middle value
+// by selection, which takes time proportional to the number of values instead of n log n.
+// It reorders its argument, so it suits a scratch copy such as a bootstrap resample.
+func MedianInPlace(values []float64) float64 {
+	if len(values) == 0 {
+		return math.NaN()
+	}
+	upperMiddle := len(values) / 2
+	selectPosition(values, upperMiddle)
+	if len(values)%2 == 1 {
+		return values[upperMiddle]
+	}
+	// After selection everything before upperMiddle is no larger than it, so the lower
+	// middle value is the largest of that part.
+	lowerMiddle := slices.Max(values[:upperMiddle])
+	return (lowerMiddle + values[upperMiddle]) / 2
+}
+
+// selectPosition reorders values so that values[position] holds what a full sort would put
+// there, with nothing larger before it and nothing smaller after it (Hoare's quickselect).
+func selectPosition(values []float64, position int) {
+	low, high := 0, len(values)-1
+	for low < high {
+		pivot := medianOfThree(values[low], values[low+(high-low)/2], values[high])
+		left, right := low, high
+		for left <= right {
+			for values[left] < pivot {
+				left++
+			}
+			for values[right] > pivot {
+				right--
+			}
+			if left <= right {
+				values[left], values[right] = values[right], values[left]
+				left++
+				right--
+			}
+		}
+		// Now values[low..right] <= pivot <= values[left..high]; keep the part with position.
+		switch {
+		case position <= right:
+			high = right
+		case position >= left:
+			low = left
+		default:
+			return
+		}
+	}
+}
+
+// medianOfThree returns the middle of three values: a pivot that splits sorted and
+// reverse-sorted input evenly.
+func medianOfThree(a, b, c float64) float64 {
+	return max(min(a, b), min(max(a, b), c))
+}
+
+===== FILE: bootstrap/bootstrap.go =====
+// Package bootstrap estimates standard errors by bootstrap resampling (Efron and Tibshirani
+// 1993): draw B resamples of the data with replacement, evaluate a statistic on each, and
+// take the standard deviation of the B values.
+//
+// The package knows no particular statistic and no particular random generator. A Statistic
+// is any function of a sample, and a Stream supplies the random indices; RStream reproduces
+// R's sample() exactly, BlockStream is built for parallel runs.
+package bootstrap
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+
+	"github.com/mioluigi/go-applied-statistics/stats"
+)
+
+// ErrInvalid marks every error caused by unusable arguments. Test for it with errors.Is.
+var ErrInvalid = errors.New("invalid bootstrap request")
+
+// A Statistic maps one resample to a number. It receives a scratch copy and may reorder it.
+type Statistic func(resample []float64) float64
+
+// An IndexSource draws a uniformly distributed index in [0, n).
+type IndexSource interface {
+	Index(n int) int
+}
+
+// A Stream supplies the random source for each replicate (replicates are numbered from 0).
+type Stream interface {
+	// Source returns the index source to use for one replicate.
+	Source(replicate int) IndexSource
+	// Sequential reports whether replicates must be drawn in order from one shared source.
+	// A sequential stream runs with exactly one worker.
+	Sequential() bool
+}
+
+// Config sets the size of a bootstrap run.
+type Config struct {
+	Replicates int    // B, the number of resamples; at least 2
+	Stream     Stream // where the random indices come from
+	Workers    int    // goroutines evaluating replicates; at least 1
+}
+
+// validate checks a request before any work is done.
+func validate(data []float64, statistics []Statistic, config Config) error {
+	switch {
+	case len(data) < 2:
+		return fmt.Errorf("%w: %d observation(s); at least 2 are needed", ErrInvalid, len(data))
+	case len(statistics) == 0:
+		return fmt.Errorf("%w: no statistic given", ErrInvalid)
+	case config.Replicates < 2:
+		return fmt.Errorf("%w: %d replicate(s); at least 2 are needed", ErrInvalid, config.Replicates)
+	case config.Stream == nil:
+		return fmt.Errorf("%w: no random stream given", ErrInvalid)
+	case config.Workers < 1:
+		return fmt.Errorf("%w: %d worker(s); at least 1 is needed", ErrInvalid, config.Workers)
+	case config.Stream.Sequential() && config.Workers > 1:
+		return fmt.Errorf("%w: this random stream is sequential and runs with 1 worker, not %d",
+			ErrInvalid, config.Workers)
+	}
+	return nil
+}
+
+// Replicates evaluates every statistic on each of config.Replicates resamples of data.
+// The result has one row per statistic; row s holds that statistic's value on resamples
+// 0, 1, 2, … in that order, whatever the number of workers.
+//
+// Every statistic sees the same resample, in the order given; a statistic that reorders its
+// argument therefore changes the order (not the content) seen by those after it.
+func Replicates(data []float64, statistics []Statistic, config Config) ([][]float64, error) {
+	if err := validate(data, statistics, config); err != nil {
+		return nil, err
+	}
+	values := make([][]float64, len(statistics))
+	for s := range values {
+		values[s] = make([]float64, config.Replicates)
+	}
+
+	// Each worker owns a contiguous range of replicate numbers and writes each result at its
+	// replicate's position, so no result depends on which goroutine finished first.
+	var workers sync.WaitGroup
+	for worker := 0; worker < config.Workers; worker++ {
+		first := worker * config.Replicates / config.Workers
+		last := (worker + 1) * config.Replicates / config.Workers
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			// One scratch buffer per worker, refilled for every replicate: no allocation
+			// inside the loop.
+			resample := make([]float64, len(data))
+			for replicate := first; replicate < last; replicate++ {
+				fillResample(resample, data, config.Stream.Source(replicate))
+				for s, statistic := range statistics {
+					values[s][replicate] = statistic(resample)
+				}
+			}
+		}()
+	}
+	workers.Wait()
+	return values, nil
+}
+
+// fillResample overwrites resample with len(resample) values drawn from data with replacement.
+func fillResample(resample, data []float64, source IndexSource) {
+	for i := range resample {
+		resample[i] = data[source.Index(len(data))]
+	}
+}
+
+// StandardErrors returns the bootstrap standard error of each statistic: the standard
+// deviation (denominator B - 1) of its values over the resamples.
+func StandardErrors(data []float64, statistics []Statistic, config Config) ([]float64, error) {
+	values, err := Replicates(data, statistics, config)
+	if err != nil {
+		return nil, err
+	}
+	standardErrors := make([]float64, len(values))
+	for s, row := range values {
+		standardErrors[s] = stats.StandardDeviation(row)
+	}
+	return standardErrors, nil
+}
+
+===== FILE: bootstrap/stream.go =====
+package bootstrap
+
+import (
+	"math/rand/v2"
+
+	"github.com/mioluigi/go-applied-statistics/rrand"
+)
+
+// rStream draws every replicate from one generator, in order: exactly what a loop of
+// sample(x, n, replace = TRUE) does in R after set.seed.
+type rStream struct {
+	generator *rrand.Generator
+}
+
+// RStream returns the stream that reproduces R: for the same seed and data, replicate b is
+// the b-th resample R would draw after set.seed(seed). It is sequential (one worker).
+func RStream(seed uint32) Stream {
+	return rStream{generator: rrand.New(seed)}
+}
+
+// Source returns the shared generator: every replicate continues where the last one stopped.
+func (stream rStream) Source(int) IndexSource { return stream.generator }
+
+// Sequential reports true: the draws of one replicate follow those of the one before.
+func (stream rStream) Sequential() bool { return true }
+
+// blockStream gives every replicate its own generator, derived from the seed and the
+// replicate number alone, so replicates can be drawn in any order and on any goroutine.
+type blockStream struct {
+	seed uint32
+}
+
+// BlockStream returns the stream for parallel runs. For a given seed its results do not
+// depend on the number of workers. Its draws differ from R's, so its standard errors agree
+// with RStream's only up to Monte Carlo error; use RStream when a result must be checked
+// against R number for number.
+func BlockStream(seed uint32) Stream {
+	return blockStream{seed: seed}
+}
+
+// Source returns a new PCG generator (math/rand/v2) for one replicate. The pair (seed,
+// replicate) is unique, and SplitMix64 turns it into two well-mixed seed words, so
+// neighbouring replicates do not start from neighbouring generator states.
+func (stream blockStream) Source(replicate int) IndexSource {
+	key := uint64(stream.seed)<<32 | uint64(uint32(replicate))
+	return pcgSource{rand.New(rand.NewPCG(splitMix64(key), splitMix64(^key)))}
+}
+
+// Sequential reports false: each replicate is independent of the others.
+func (stream blockStream) Sequential() bool { return false }
+
+// pcgSource adapts a standard-library generator to IndexSource.
+type pcgSource struct {
+	generator *rand.Rand
+}
+
+// Index returns an unbiased index in [0, n).
+func (source pcgSource) Index(n int) int { return source.generator.IntN(n) }
+
+// splitMix64 is the standard 64-bit mixing function (Steele, Lea and Flood 2014): it maps
+// consecutive inputs to outputs that look unrelated.
+func splitMix64(x uint64) uint64 {
+	x += 0x9e3779b97f4a7c15
+	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
+	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
+	return x ^ (x >> 31)
+}
+
+===== FILE: dataset/dataset.go =====
+// Package dataset reads the one-column CSV files the analysis runs on: a header line, then
+// one number per line. It validates as it reads, so a bad file is reported with its line.
+package dataset
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"io"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+// MinObservations is the fewest observations a data set may have: a standard error needs two.
+const MinObservations = 2
+
+// ErrInvalid marks every error caused by the content of a data set (as opposed to a file
+// that cannot be opened). Test for it with errors.Is.
+var ErrInvalid = errors.New("invalid data set")
+
+// ReadFile reads the data set stored at path.
+func ReadFile(path string) ([]float64, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read data set: %w", err)
+	}
+	defer file.Close()
+	return Read(file, path)
+}
+
+// Read parses a data set from reader; name is used in error messages.
+//
+// The first line must be a header (any text that is not a number), matching what the R
+// scripts skip. Blank lines are ignored, and Windows line endings are accepted. Every other
+// line must be one finite number.
+func Read(reader io.Reader, name string) ([]float64, error) {
+	var values []float64
+	scanner := bufio.NewScanner(reader)
+	for lineNumber := 1; scanner.Scan(); lineNumber++ {
+		text := strings.TrimSpace(scanner.Text())
+		value, parseError := strconv.ParseFloat(text, 64)
+		switch {
+		case lineNumber == 1 && parseError == nil:
+			return nil, fmt.Errorf("%w: %s, line 1: found the number %q where the header line should be; "+
+				"add a header such as \"value\"", ErrInvalid, name, text)
+		case lineNumber == 1 || text == "":
+			continue
+		case parseError != nil:
+			return nil, fmt.Errorf("%w: %s, line %d: %q is not a number", ErrInvalid, name, lineNumber, text)
+		case math.IsNaN(value) || math.IsInf(value, 0):
+			return nil, fmt.Errorf("%w: %s, line %d: %q is not a finite number", ErrInvalid, name, lineNumber, text)
+		}
+		values = append(values, value)
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("cannot read data set %s: %w", name, err)
+	}
+	if len(values) < MinObservations {
+		return nil, fmt.Errorf("%w: %s has %d observation(s); at least %d are needed",
+			ErrInvalid, name, len(values), MinObservations)
+	}
+	return values, nil
+}
+
+===== FILE: r/bootstrap-se.R =====
+# bootstrap-se.R: bootstrap standard errors of the median and the mean, in idiomatic base R.
+#
+# Usage: Rscript r/bootstrap-se.R <data.csv> [replicates = 1000] [seed = 431] [medians file]
+#
+# Method (Efron and Tibshirani 1993): draw B resamples of the data with replacement, compute
+# the statistic on each, and report the standard deviation of the B values.
+#
+# Output, one tab-separated line on standard output (the same record the Go program writes):
+#   data set, n, B, seed, stream, sample median, SE median, sample mean, SE mean
+# Timing goes to standard error: read_ms (reading the file) and compute_ms (the B resamples).
+# With a fourth argument, the B resample medians are written to that file, one per line.
+
+arguments <- commandArgs(trailingOnly = TRUE)
+fail <- function(message) {
+    cat("bootstrap-se.R: ", message, "\n", sep = "", file = stderr())
+    quit(status = 2)
+}
+if (length(arguments) < 1) fail("usage: Rscript r/bootstrap-se.R <data.csv> [replicates] [seed] [medians file]")
+dataFile <- arguments[1]
+replicates <- if (length(arguments) >= 2) suppressWarnings(as.integer(arguments[2])) else 1000L
+seed <- if (length(arguments) >= 3) suppressWarnings(as.integer(arguments[3])) else 431L
+mediansFile <- if (length(arguments) >= 4) arguments[4] else NA
+if (!file.exists(dataFile)) fail(paste("cannot read", dataFile))
+if (is.na(replicates) || replicates < 2) fail("replicates must be a whole number of at least 2")
+if (is.na(seed)) fail("seed must be a whole number")
+
+readStart <- proc.time()[["elapsed"]]
+x <- scan(dataFile, what = numeric(), skip = 1, quiet = TRUE)
+n <- length(x)
+readMs <- (proc.time()[["elapsed"]] - readStart) * 1000
+if (n < 2) fail("the data set needs at least 2 observations")
+
+# One set of B resamples; both statistics are computed on each resample.
+computeStart <- proc.time()[["elapsed"]]
+set.seed(seed)
+medians <- numeric(replicates)
+means <- numeric(replicates)
+for (b in seq_len(replicates)) {
+    resample <- sample(x, n, replace = TRUE)
+    means[b] <- mean(resample)
+    medians[b] <- median(resample)
+}
+standardErrorMedian <- sd(medians)
+standardErrorMean <- sd(means)
+computeMs <- (proc.time()[["elapsed"]] - computeStart) * 1000
+
+exact <- function(value) sprintf("%.17g", value)
+cat(paste(basename(dataFile), n, replicates, seed, "r",
+          exact(median(x)), exact(standardErrorMedian),
+          exact(mean(x)), exact(standardErrorMean), sep = "\t"), "\n", sep = "")
+cat(sprintf("read_ms=%.3f compute_ms=%.3f\n", readMs, computeMs), file = stderr())
+if (!is.na(mediansFile)) writeLines(exact(medians), mediansFile)
+
+===== FILE: r/bootstrap-se-boot.R =====
+# bootstrap-se-boot.R: the same analysis as bootstrap-se.R with the CRAN package "boot"
+# (Davison and Hinkley 1997; https://cran.r-project.org/package=boot).
+#
+# Usage: Rscript r/bootstrap-se-boot.R <data.csv> [replicates = 1000] [seed = 431]
+#
+# boot() draws all resample indices in one call and deals them to replicates in its own
+# order, so for the same seed its resamples differ from a sample() loop's. Its standard
+# errors agree with bootstrap-se.R statistically, not digit for digit; the output's "stream"
+# field says "boot" to mark that.
+
+arguments <- commandArgs(trailingOnly = TRUE)
+fail <- function(message) {
+    cat("bootstrap-se-boot.R: ", message, "\n", sep = "", file = stderr())
+    quit(status = 2)
+}
+if (length(arguments) < 1) fail("usage: Rscript r/bootstrap-se-boot.R <data.csv> [replicates] [seed]")
+dataFile <- arguments[1]
+replicates <- if (length(arguments) >= 2) suppressWarnings(as.integer(arguments[2])) else 1000L
+seed <- if (length(arguments) >= 3) suppressWarnings(as.integer(arguments[3])) else 431L
+if (!file.exists(dataFile)) fail(paste("cannot read", dataFile))
+if (is.na(replicates) || replicates < 2) fail("replicates must be a whole number of at least 2")
+if (is.na(seed)) fail("seed must be a whole number")
+
+loadStart <- proc.time()[["elapsed"]]
+suppressPackageStartupMessages(library(boot))
+loadMs <- (proc.time()[["elapsed"]] - loadStart) * 1000
+
+readStart <- proc.time()[["elapsed"]]
+x <- scan(dataFile, what = numeric(), skip = 1, quiet = TRUE)
+n <- length(x)
+readMs <- (proc.time()[["elapsed"]] - readStart) * 1000
+if (n < 2) fail("the data set needs at least 2 observations")
+
+# The statistic receives the data and the indices of one resample; it returns both values.
+medianAndMean <- function(data, indices) {
+    resample <- data[indices]
+    c(median(resample), mean(resample))
+}
+
+computeStart <- proc.time()[["elapsed"]]
+set.seed(seed)
+result <- boot(x, medianAndMean, R = replicates)
+standardErrorMedian <- sd(result$t[, 1])
+standardErrorMean <- sd(result$t[, 2])
+computeMs <- (proc.time()[["elapsed"]] - computeStart) * 1000
+
+exact <- function(value) sprintf("%.17g", value)
+cat(paste(basename(dataFile), n, replicates, seed, "boot",
+          exact(median(x)), exact(standardErrorMedian),
+          exact(mean(x)), exact(standardErrorMean), sep = "\t"), "\n", sep = "")
+cat(sprintf("load_ms=%.3f read_ms=%.3f compute_ms=%.3f\n", loadMs, readMs, computeMs), file = stderr())
+
+===== FILE: scripts/measure.sh =====
+#!/usr/bin/env bash
+# measure.sh: the official measurements (SFEDD §5.3; spec NFR-1 to NFR-6), on Luis's Mac only.
+#
+# Close other programs first. The script then:
+#   0. refuses a stale or modified copy, a failing data gate, or a machine without R and boot;
+#   1. runs the correctness comparison (scripts/compare.sh); nothing is timed unless it passes;
+#   2. times whole processes with /usr/bin/time -l, conditions interleaved:
+#        start-up     empty R script, R loading boot, the Go program printing its help
+#        scaling      5 implementations x 4 sizes, lognormal data (the parallel one uses
+#                     8 workers, the vCPU count of the larger cloud instance in prices/)
+#        shapes       normal and mirrored-lognormal data at n = 10,000
+#        course       the course's R program, unchanged
+#      one line per run in results/runs.tsv;
+#   3. runs the Go benchmarks (-benchmem)            -> results/benchmarks.txt
+#   4. profiles one n = 100,000 run                  -> results/cpu.prof, mem.prof and their text
+#   5. records the machine, versions, commit and load -> results/machine.txt
+#
+# Environment: RUNS (default 200; runs per condition up to n = 10,000 and for start-up),
+#              RUNS_LARGE (default 30; n = 100,000 and the course program),
+#              TIME_TOOL (default "/usr/bin/time -l").
+set -euo pipefail
+cd "$(dirname "$0")/.."
+runs="${RUNS:-200}"
+runs_large="${RUNS_LARGE:-30}"
+time_tool="${TIME_TOOL:-/usr/bin/time -l}"
+replicates=1000
+seed=431
+busy_load=2.0
+fail() { echo "measure: $*" >&2; exit 1; }
+
+[ "$(uname -s)" = "Darwin" ] || fail "official measurements run on the Mac (this is $(uname -s))."
+command -v Rscript >/dev/null 2>&1 || fail "Rscript not found; the measurement needs R."
+Rscript -e 'library(boot)' >/dev/null 2>&1 || fail "the R package boot is not installed."
+[ -z "$(git status --porcelain)" ] || fail "uncommitted changes; commit or stash them, then run again."
+git fetch -q origin
+[ "$(git rev-parse HEAD)" = "$(git rev-parse '@{u}')" ] || fail "this copy differs from GitHub; run git pull (or push), then run again."
+scripts/check-inputs.sh >/dev/null || fail "the data sets fail the data gate (run scripts/check-inputs.sh)."
+
+load_average() { sysctl -n vm.loadavg | awk '{print $2}'; }
+load_before="$(load_average)"
+if awk -v load="$load_before" -v limit="$busy_load" 'BEGIN { exit !(load > limit) }'; then
+  echo "measure: WARNING: the 1-minute load average is $load_before (above $busy_load). Other programs are busy; timings will be noisier." >&2
+fi
+
+mkdir -p results
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+go build -o "$work/bootse" .
+cpus="$(getconf _NPROCESSORS_ONLN)"
+# The parallel condition uses as many workers as the larger priced instance has vCPUs (8), so
+# its timing can be costed on that instance; fewer if this machine has fewer CPUs.
+workers=8
+[ "$cpus" -lt "$workers" ] && workers="$cpus"
+
+echo "measure: step 1 of 5: correctness comparison"
+scripts/compare.sh
+
+runs_file=results/runs.tsv
+printf 'group\timplementation\tdataset\tn\trun\treal_s\tuser_s\tsys_s\tmax_rss_bytes\tpeak_footprint_bytes\tread_ms\tcompute_ms\n' > "$runs_file"
+
+# time_run GROUP IMPLEMENTATION DATASET N RUN COMMAND...: runs the command once under the time
+# tool and appends one line to runs.tsv. The program's own log gives read_ms and compute_ms.
+time_run() {
+  local group="$1" implementation="$2" dataset="$3" n="$4" run="$5"; shift 5
+  local log="$work/run.log"
+  if ! $time_tool "$@" > /dev/null 2> "$log"; then
+    tail -n 15 "$log" >&2
+    fail "$implementation failed on $dataset (run $run)."
+  fi
+  field() { sed -n "s/.*$1=\([0-9.eE+-]*\).*/\1/p" "$log" | tail -n 1; }
+  local real footprint
+  real="$(awk '/ real /{print $1}' "$log")"
+  footprint="$(awk '/peak memory footprint/{print $1}' "$log")"
+  # Fail on the first run, not after half an hour, if the time tool's output is not understood.
+  if [ -z "$real" ] || [ -z "$footprint" ]; then
+    cat "$log" >&2
+    fail "could not read the time or memory of $implementation from the time tool's output (above)."
+  fi
+  case "$implementation" in r-loop|r-boot|go-r|go-block-1|go-block-multi)
+    [ -n "$(field compute_ms)" ] || { cat "$log" >&2; fail "$implementation logged no compute_ms."; } ;;
+  esac
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$group" "$implementation" "$dataset" "$n" "$run" \
+    "$real" "$(awk '/ real /{print $3}' "$log")" "$(awk '/ real /{print $5}' "$log")" \
+    "$(awk '/maximum resident set size/{print $1}' "$log")" "$footprint" \
+    "$(field read_ms)" "$(field compute_ms)" >> "$runs_file"
+}
+
+# run_implementation GROUP IMPLEMENTATION FILE N RUN: one timed run of one implementation.
+run_implementation() {
+  local group="$1" implementation="$2" file="$3" n="$4" run="$5"
+  case "$implementation" in
+    r-loop)       time_run "$group" "$implementation" "$file" "$n" "$run" Rscript r/bootstrap-se.R "data/$file" "$replicates" "$seed" ;;
+    r-boot)       time_run "$group" "$implementation" "$file" "$n" "$run" Rscript r/bootstrap-se-boot.R "data/$file" "$replicates" "$seed" ;;
+    go-r)         time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" ;;
+    go-block-1)   time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" -stream block -workers 1 ;;
+    go-block-multi) time_run "$group" "$implementation" "$file" "$n" "$run" "$work/bootse" -format tsv -data "data/$file" -replicates "$replicates" -seed "$seed" -stream block -workers "$workers" ;;
+    *) fail "unknown implementation $implementation" ;;
+  esac
+}
+
+echo "measure: step 2 of 5: whole-process timing ($runs runs per condition; $runs_large for the long ones)"
+for run in $(seq 1 "$runs"); do
+  time_run startup r-empty - 0 "$run" Rscript r/startup-empty.R
+  time_run startup r-boot-load - 0 "$run" Rscript r/startup-boot.R
+  time_run startup go-help - 0 "$run" "$work/bootse" -h
+done
+echo "measure:   the course's R program, unchanged ($runs_large runs)"
+for run in $(seq 1 "$runs_large"); do
+  time_run course r-course-program - 0 "$run" Rscript r/original/run-bootstrap-median.R
+done
+for n in 100 1000 10000 100000; do
+  count="$runs"; [ "$n" = "100000" ] && count="$runs_large"
+  echo "measure:   scaling, n = $n ($count runs of each implementation)"
+  for run in $(seq 1 "$count"); do
+    for implementation in r-loop r-boot go-r go-block-1 go-block-multi; do
+      run_implementation scaling "$implementation" "lognormal-$n.csv" "$n" "$run"
+    done
+  done
+done
+echo "measure:   shapes at n = 10000"
+for run in $(seq 1 "$runs"); do
+  for shape in normal mirrored-lognormal; do
+    for implementation in r-loop go-r go-block-multi; do
+      run_implementation shapes "$implementation" "$shape-10000.csv" 10000 "$run"
+    done
+  done
+done
+
+echo "measure: step 3 of 5: Go benchmarks"
+{
+  echo "# go test -run '^\$' -bench . -benchmem -count 5 ./rrand ./stats ./bootstrap"
+  go test -run '^$' -bench . -benchmem -count 5 ./rrand ./stats ./bootstrap
+} > results/benchmarks.txt
+
+echo "measure: step 4 of 5: profiles of one n = 100,000 run"
+"$work/bootse" -quiet -format tsv -data data/lognormal-100000.csv -cpuprofile results/cpu.prof -memprofile results/mem.prof > /dev/null
+{ echo "# go tool pprof -top: bootse -data data/lognormal-100000.csv (B = 1,000, R stream)"; go tool pprof -top -nodecount=15 "$work/bootse" results/cpu.prof 2>/dev/null; } > results/cpu-profile.txt
+{ echo "# go tool pprof -sample_index=alloc_space -top: same run"; go tool pprof -sample_index=alloc_space -top -nodecount=10 "$work/bootse" results/mem.prof 2>/dev/null; } > results/mem-profile.txt
+
+echo "measure: step 5 of 5: machine record"
+{
+  echo "machine: $(sysctl -n hw.model) · $(sysctl -n machdep.cpu.brand_string) · $(( $(sysctl -n hw.memsize) / 1073741824 )) GB · macOS $(sw_vers -productVersion)"
+  echo "cpus: $cpus"
+  echo "parallel workers: $workers"
+  echo "go: $(go version | awk '{print $3}')"
+  echo "r: $(Rscript -e 'cat(R.version.string)')"
+  echo "r package boot: $(Rscript -e 'cat(as.character(packageVersion("boot")))')"
+  echo "commit: $(git rev-parse --short HEAD)"
+  echo "measured: $(date '+%Y-%m-%d %H:%M %Z')"
+  echo "runs per condition: $runs (large conditions: $runs_large); B = $replicates; seed = $seed"
+  echo "time tool: $time_tool"
+  echo "load average (1 minute) before: $load_before"
+  echo "load average (1 minute) after: $(load_average)"
+} > results/machine.txt
+echo "measure: done; $(( $(wc -l < "$runs_file" | tr -d ' ') - 1 )) timed runs in $runs_file"
+
+===== FILE: scripts/acceptance.sh =====
+#!/usr/bin/env bash
+# acceptance.sh: checks every acceptance criterion of specs/001-bootstrap-median/spec.md (§8).
+# Run it on a fresh clone before submitting. It changes nothing in the repository: builds and
+# scratch files go to a temporary folder.
+#
+# Checks that need R run only where Rscript is installed; elsewhere they are reported as SKIP,
+# never silently passed. Exit status: 0 if no check failed, 1 otherwise.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+passed=0; failed=0; skipped=0
+
+# check NAME COMMAND...: runs the command quietly; PASS if it succeeds.
+check() {
+  local name="$1"; shift
+  if "$@" > "$work/output.txt" 2>&1; then
+    echo "PASS  $name"; passed=$((passed + 1))
+  else
+    echo "FAIL  $name"; sed 's/^/        /' "$work/output.txt" | tail -n 8; failed=$((failed + 1))
+  fi
+}
+skip() { echo "SKIP  $1 ($2)"; skipped=$((skipped + 1)); }
+
+# exits CODE COMMAND...: succeeds if the command exits with exactly that code.
+exits() { local want="$1"; shift; "$@" > /dev/null 2>&1; [ "$?" -eq "$want" ]; }
+# says TEXT COMMAND...: succeeds if the command's combined output contains the text.
+says() { local text="$1"; shift; "$@" > "$work/said.txt" 2>&1; grep -q -F -- "$text" "$work/said.txt"; }
+# has FILE TEXT: succeeds if the file contains the text.
+has() { grep -q -F -- "$2" "$1"; }
+
+have_r=no
+command -v Rscript >/dev/null 2>&1 && have_r=yes
+
+echo "== Build and quality (AC-16)"
+check "gofmt reports no file" test -z "$(gofmt -l . 2>&1)"
+check "go vet" go vet ./...
+check "go test -race ./... (needs neither R nor the internet)" go test -race -count=1 ./...
+check "program builds" go build -o "$work/bootse" .
+check "comparison tool builds" go build -o "$work/compare" ./cmd/compare
+DIST="$work/dist" scripts/build.sh > /dev/null 2>&1
+DIST="$work/dist" scripts/build-macos-app.sh > /dev/null 2>&1
+check "build scripts make the macOS binary, the Windows .exe and the .app (FR-14)" \
+  test -s "$work/dist/bootse-macos-arm64" -a -s "$work/dist/bootse.exe" -a -x "$work/dist/BootstrapSE.app/Contents/MacOS/BootstrapSE"
+
+echo "== Data (AC-1)"
+check "12 data sets match the manifest; each has at least 100 observations" scripts/check-inputs.sh
+
+echo "== Same results as R (AC-2, AC-3, AC-4, AC-6)"
+check "Go reproduces R's saved reference values (AC-4)" go test -count=1 -run 'MatchesR|MatchesSampleInt|MatchesRunif|ReproducesR|RecordEqualsR' ./rrand ./bootstrap .
+check "official comparison: every check passed" test "$(grep -c 'FAIL$' results/comparison.tsv)" = "0" -a "$(grep -c 'PASS$' results/comparison.tsv)" -ge 264
+check "official comparison covers 12 data sets x 1,000 resample medians, all identical (AC-3)" \
+  test "$(grep -c 'resample medians differing (of 1000)	0	0	0	0	PASS$' results/comparison.tsv)" = "12"
+check "official comparison includes block stream, boot and theory (AC-6)" \
+  test "$(cut -f1 results/comparison.tsv | sort -u | grep -c -E 'different draws|workers against 1 worker|against theory')" = "4"
+if [ "$have_r" = yes ]; then
+  Rscript r/original/run-bootstrap-median.R > "$work/course.txt" 2>/dev/null
+  # The listing must appear as one contiguous block inside the program's output (AC-2).
+  check "course R program, unchanged, reproduces its listing (AC-2)" \
+    awk 'NR==FNR { listing[++count] = $0; next }
+         { output[++lines] = $0 }
+         END { for (start = 1; start + count - 1 <= lines; start++) { same = 1
+                 for (i = 1; i <= count; i++) if (output[start + i - 1] != listing[i]) { same = 0; break }
+                 if (same) exit 0 }
+               exit 1 }' r/original/listing-from-100-run-bootstrap-median.txt "$work/course.txt"
+  mkdir -p "$work/r" "$work/go"
+  for file in lognormal-100.csv normal-1000.csv; do
+    Rscript r/bootstrap-se.R "data/$file" 1000 431 "$work/r/$file.medians" 2>/dev/null >> "$work/r-loop.tsv"
+    "$work/bootse" -quiet -format tsv -data "data/$file" -medians "$work/go/$file.medians" >> "$work/go-r.tsv"
+  done
+  check "live: R and Go agree on two data sets, including every resample median (AC-3)" \
+    "$work/compare" -label live -rule same-draws -reference "$work/r-loop.tsv" -candidate "$work/go-r.tsv" \
+    -reference-medians "$work/r" -candidate-medians "$work/go"
+else
+  skip "course R program reproduces its listing (AC-2)" "R is not installed here"
+  skip "live comparison of R and Go (AC-3)" "R is not installed here; the saved official comparison was checked above"
+fi
+
+echo "== Parallel results do not depend on the worker count (AC-5)"
+check "block stream identical for 1, 2, 4, 7, 8 workers, 10 times, under the race detector" \
+  go test -race -count=10 -run 'SameResultForAnyWorkerCount' ./bootstrap
+
+echo "== Statistics and reuse (AC-7, AC-15)"
+check "median, mean, standard deviation against independent answers (AC-7)" go test -count=1 ./stats
+check "an outside statistic and an outside random source work with the engine (AC-15)" \
+  go test -count=1 -run 'FromOutsideThePackage' ./bootstrap
+
+echo "== The application (AC-8, AC-9, AC-10)"
+printf 'value\n1.5\noops\n2.5\n' > "$work/text.csv"
+printf 'value\n1.5\n' > "$work/one.csv"
+check "no arguments: exit 0" exits 0 "$work/bootse"
+for field in "Data set:" "n = 1000" "B = 1000" "seed 431" "stream r" "Sample median:" "bootstrap SE of the median:" "Sample mean:" "bootstrap SE of the mean:"; do
+  check "no arguments: output names \"$field\" (AC-9)" says "$field" "$work/bootse" -quiet
+done
+check "missing file: exit 2" exits 2 "$work/bootse" -data "$work/absent.csv"
+check "non-numeric value: exit 2" exits 2 "$work/bootse" -data "$work/text.csv"
+check "non-numeric value: message names file and line" says 'text.csv, line 3: "oops" is not a number' "$work/bootse" -data "$work/text.csv"
+check "one observation: exit 2" exits 2 "$work/bootse" -data "$work/one.csv"
+check "one resample: exit 2" exits 2 "$work/bootse" -replicates 1
+check "R stream with 4 workers: exit 2" exits 2 "$work/bootse" -workers 4
+check "unknown stream: exit 2" exits 2 "$work/bootse" -stream fast
+check "unknown flag: exit 2" exits 2 "$work/bootse" -speed 9
+check "result file that cannot be written: exit 1" exits 1 "$work/bootse" -replicates 10 -medians "$work/no-such-folder/m.txt"
+check "profiles are written on request (AC-10)" \
+  sh -c "'$work/bootse' -quiet -replicates 50 -cpuprofile '$work/cpu.prof' -memprofile '$work/mem.prof' > /dev/null && test -s '$work/cpu.prof' -a -s '$work/mem.prof'"
+check "log names read_ms and compute_ms (FR-11)" sh -c "'$work/bootse' 2>&1 >/dev/null | grep -q 'read_ms=' && '$work/bootse' 2>&1 >/dev/null | grep -q 'compute_ms='"
+
+echo "== Saved measurements (AC-10, AC-11)"
+check "committed profiles exist" test -s results/cpu.prof -a -s results/mem.prof -a -s results/cpu-profile.txt -a -s results/mem-profile.txt
+for name in 'BenchmarkFloat64' 'BenchmarkStep1Median/before=sort' 'BenchmarkStep1Median/after=select' 'BenchmarkStep2Resample/before=allocate' \
+            'BenchmarkStep2Resample/after=reuse' 'BenchmarkStep3Index/before=logarithm' 'BenchmarkStep4Generator/before=uniforms' \
+            'BenchmarkStep4Generator/after=bits' 'BenchmarkEngine/before' 'BenchmarkEngine/after' 'BenchmarkWorkers'; do
+  check "benchmarks: $name has -benchmem rows" sh -c "grep -F '$name' results/benchmarks.txt | grep -q 'allocs/op'"
+done
+# runs GROUP IMPLEMENTATION N MINIMUM: succeeds if runs.tsv has at least MINIMUM such runs.
+runs() { [ "$(awk -F'\t' -v g="$1" -v i="$2" -v n="$3" '$1 == g && $2 == i && $4 == n' results/runs.tsv | wc -l | tr -d ' ')" -ge "$4" ]; }
+for implementation in r-empty r-boot-load go-help; do
+  check "runs: start-up $implementation, at least 200" runs startup "$implementation" 0 200
+done
+for implementation in r-loop r-boot go-r go-block-1 go-block-multi; do
+  for n in 100 1000 10000; do
+    check "runs: $implementation at n = $n, at least 200" runs scaling "$implementation" "$n" 200
+  done
+  check "runs: $implementation at n = 100000, at least 30" runs scaling "$implementation" 100000 30
+done
+check "runs: three shapes at n = 10,000 (the two other shapes, 200 each)" runs shapes r-loop 10000 400
+check "runs: course program, at least 30" runs course r-course-program 0 30
+check "runs: every run has a time and both memory figures" \
+  sh -c "awk -F'\t' 'NR > 1 && (\$6 == \"\" || \$9 == \"\" || \$10 == \"\")' results/runs.tsv | wc -l | grep -q '^ *0$'"
+check "machine record has machine, versions, commit and load averages" \
+  sh -c "for key in 'machine:' 'go:' 'r:' 'commit:' 'load average (1 minute) before:' 'load average (1 minute) after:'; do grep -q \"^\$key\" results/machine.txt || exit 1; done"
+measured="$(sed -n 's/^commit: //p' results/machine.txt)"
+check "what was measured is what is submitted (no change to program, R code or data since commit $measured)" \
+  git diff --quiet "$measured" HEAD -- main.go rrand/rrand.go stats/stats.go bootstrap/bootstrap.go bootstrap/stream.go dataset/dataset.go record/record.go r data
+check "no personal data in results (user name, home path, e-mail)" \
+  sh -c "! grep -r -I -l -E '/Users/|/home/[a-z]|@[a-z0-9-]+\.(com|co|edu|org)' results prices data testdata"
+
+echo "== Generated numbers and prices (AC-12, AC-13)"
+check "README numbers equal the generated ones" scripts/readme.sh --check
+check "every price has a source and a capture date" go test -count=1 -run 'ReadPrices' ./internal/report
+
+echo "== README content (AC-14)"
+for text in 'https://cran.r-project.org/package=boot' 'https://cran.r-project.org/package=bootstrap' 'pkg.go.dev' 'Awesome Go' \
+            'Gelman' 'https://github.com/seehuhn/mt19937' '## Recommendation' '## The R side' '## The Go side' '## Build, run, test' \
+            'Creating the executables' '## Results' '## Cloud cost' 'AWS EC2' '## Effort' 'testing, benchmarking, profiling and logging' \
+            '## GenAI Tools' 'docs/ai-dialogs'; do
+  check "README has \"$text\"" has README.md "$text"
+done
+check "README blocks are filled (headline has numbers)" sh -c "sed -n '/generated:headline:start/,/generated:headline:end/p' README.md | grep -q 'comparison checks passed'"
+
+echo "== AI dialogs (AC-17)"
+check "docs/ai-dialogs has an index and at least one dialog" \
+  sh -c "test -s docs/ai-dialogs/README.md && [ \"\$(ls docs/ai-dialogs | grep -v -c '^README.md\$')\" -ge 1 ]"
+check "every file named in the dialog index exists" \
+  sh -c "test -s docs/ai-dialogs/README.md && grep -o '\`[^\`]*\.\(pdf\|txt\|md\)\`' docs/ai-dialogs/README.md | tr -d '\`' | while read -r file; do test -e \"docs/ai-dialogs/\$file\" || test -e \"\$file\" || exit 1; done"
+
+echo
+echo "acceptance: $passed passed, $failed failed, $skipped skipped"
+[ "$failed" -eq 0 ]
+
+===== END OF BUNDLE (18 files) =====
