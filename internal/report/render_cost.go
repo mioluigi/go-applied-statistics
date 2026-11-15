@@ -206,9 +206,10 @@ func (inputs *Inputs) headline() (string, error) {
 		fmt.Sprintf("**Computation only, one core** (n = %s, B = 1,000): R %s ms, Go %s ms: Go is **%s** faster.",
 			thousands(largest), milliseconds(loopLarge.MeanComputeMs), milliseconds(goLarge.MeanComputeMs),
 			times(loopLarge.MeanComputeMs/goLarge.MeanComputeMs)),
-		fmt.Sprintf("**Whole process, small job** (n = %s): R %s s, Go %s s (**%s**); %s of R's time is start-up.",
-			thousands(smallest), seconds(loopSmall.Mean), seconds(goSmall.Mean), times(loopSmall.Mean/goSmall.Mean),
-			percent(empty.Mean/loopSmall.Mean)),
+		fmt.Sprintf("**Whole process, small job** (n = %s): R %s s, of which %s is R starting up; Go about %s s, "+
+			"which is below the timer's 0.01 s step, so the ratio is approximate: **%s** from medians, **%s** from means.",
+			thousands(smallest), seconds(loopSmall.Mean), percent(empty.Mean/loopSmall.Mean), seconds(goSmall.Mean),
+			times(loopSmall.Median/goSmall.Median), times(loopSmall.Mean/goSmall.Mean)),
 		fmt.Sprintf("**Whole process, large job** (n = %s): R %s s, Go %s s (**%s**).",
 			thousands(largest), seconds(loopLarge.Mean), seconds(goLarge.Mean), times(loopLarge.Mean/goLarge.Mean)),
 		fmt.Sprintf("**Parallel Go** (%s workers, n = %s): computation **%s** faster than one worker.",

@@ -1,6 +1,6 @@
 # Tasks 001
 
-Status: **APPROVED 2026-11-14** by Luis. One task = one commit (`T07: …`). 🔴 failing test first, 🟢 then code.
+Status: **APPROVED 2026-11-14** by Luis. Progress (2026-11-14): T01–T18 done; T11 gained a fourth performance step after official run 1 and T16 was run twice (`docs/decisions.md`). Open: T19 (review R2), T20 (dialogs, acceptance, submission). One task = one commit (`T07: …`). 🔴 failing test first, 🟢 then code.
 **Where**: C = Claude's workspace · M = Luis's Mac.
 
 | ID | Where | Task | Verify | Covers |

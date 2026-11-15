@@ -205,3 +205,18 @@ The original wording in §8 stays as written. Checked versions (review EC-3):
 | P4 | On the M1 Max, single-core Go does the course study's resampling volume (100 × (25 + 100 + 225 + 400) × 100 resamples, median and mean) in **under 0.20 s of computation time**: at least 25× less than the unchanged R program's 5.1 s whole-process time. Same resampling volume, not the same program. | A Go benchmark in the official measurement |
 | P5 | **Computation time** (`compute_ms`) of the final single-core Go against idiomatic base R (`sample()` loop), B = 1,000, is between **2× and 10×** in Go's favour for n = 1,000 and n = 10,000. | Generated tables |
 | P6 | At n = 100, B = 1,000, R's start-up is **more than 50 %** of its whole-process time; at n = 100,000 it is **under 20 %**. | Generated tables |
+
+## Addendum C (2026-11-14, after the official measurements): outcomes of P4–P7
+
+The outcomes are generated from the saved results and shown in the README ("Predictions, checked") and in
+`results/tables.md`; they are not repeated here so that no number is typed twice.
+
+- **P4, P6, P7 held** in both official runs.
+- **P5 did not hold in official run 1** (`results/run-1/`): at n = 10,000 Go's one-core lead over R in
+  computation was below the predicted 2×. The prediction assumed "the remaining gap is interpreter overhead
+  per resample". At large n that overhead is negligible: R spends its time inside compiled C (`sample`,
+  `mean`, `median`), and the Go program was spending more than half of its own time in the R-compatible
+  random generator. **P5 holds in the final run only after performance step 4**, which the run-1 profile
+  pointed to (`docs/decisions.md`).
+- **§6's workspace timing note is superseded:** the selection median and buffer reuse it anticipated became
+  steps 1 and 2; the profile-driven steps are listed in the README.
