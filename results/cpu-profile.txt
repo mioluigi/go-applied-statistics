@@ -1,0 +1,17 @@
+# go tool pprof -top: bootse -data data/lognormal-100000.csv (B = 1,000, R stream)
+File: bootse
+Type: cpu
+Time: 2026-11-14 19:54:16 EST
+Duration: 2.55s, Total samples = 2.31s (90.63%)
+Showing nodes accounting for 2.31s, 100% of 2.31s total
+      flat  flat%   sum%        cum   cum%
+     0.73s 31.60% 31.60%      0.73s 31.60%  github.com/mioluigi/go-applied-statistics/stats.selectPosition
+     0.64s 27.71% 59.31%      1.23s 53.25%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).Index
+     0.41s 17.75% 77.06%      0.58s 25.11%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).uint32
+     0.17s  7.36% 84.42%      0.17s  7.36%  github.com/mioluigi/go-applied-statistics/rrand.(*Generator).refill
+     0.15s  6.49% 90.91%      0.16s  6.93%  github.com/mioluigi/go-applied-statistics/stats.Mean
+     0.11s  4.76% 95.67%      1.34s 58.01%  github.com/mioluigi/go-applied-statistics/bootstrap.fillResample (inline)
+     0.08s  3.46% 99.13%      0.08s  3.46%  slices.Max[go.shape.[]float64,go.shape.float64] (inline)
+     0.02s  0.87%   100%      0.02s  0.87%  runtime.asyncPreempt
+         0     0%   100%      2.31s   100%  github.com/mioluigi/go-applied-statistics/bootstrap.Replicates.func1
+         0     0%   100%      0.81s 35.06%  github.com/mioluigi/go-applied-statistics/stats.MedianInPlace
