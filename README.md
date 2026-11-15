@@ -553,11 +553,11 @@ How to read it:
 | R: `r/bootstrap-se-boot.R` (`boot` package) | 35 | – | Resampling comes from the package |
 | Go: `rrand` | 82 | 269 | R's random generator and `sample()` (built into R) |
 | Go: `stats` | 85 | 144 | `mean`, `sd`, `median` (built into R) |
-| Go: `bootstrap` | 116 | 400 | The resampling loop, the streams, parallel workers |
+| Go: `bootstrap` | 116 | 405 | The resampling loop, the streams, parallel workers |
 | Go: `dataset` | 49 | 84 | Reading and checking the data file (`scan` in R) |
 | Go: `record` | 65 | 56 | The shared output line |
 | Go: `main.go` (command line) | 233 | 172 | Flags, validation, logging, profiles |
-| **Go, total** | **630** | **1125** | **17.5× the base-R script** |
+| **Go, total** | **630** | **1130** | **17.5× the base-R script** |
 
 Lines counted: not blank and not only a comment.
 <!-- generated:effort:end -->

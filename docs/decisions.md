@@ -1,5 +1,12 @@
 # Decisions log (newest first)
 
+## 2026-11-15 · Two defects found by re-running acceptance before hand-off
+- **Evidence:** `scripts/acceptance.sh`, run again in the workspace after a pause, failed two checks that had passed: the race-detector suite (intermittently) and "README numbers equal the generated ones".
+- **Cause 1:** the goroutine-leak test required the goroutine count after the runs to EQUAL the count before; once in about six runs the count was lower, because an unrelated goroutine had ended. Fixed in the test only (a leak is more goroutines, not fewer); the leak mutation is still caught.
+- **Cause 2:** the previous commit changed a test file after the README's line-count table was generated, so the committed README was five test lines out of date. Regenerated.
+- **Neither touches measured code or any measured number.** The "what was measured is what is submitted" check still passes.
+- **Lesson for the log:** run the acceptance script as the last act before every hand-off, not only at the end.
+
 ## 2026-11-14 · Review R2 triaged: documentation fixed, measured code left as measured
 - **Review:** 96/100, "submit after the listed changes" (`docs/reviews/002-repository-review.md`).
 - **Decision (Claude, for Luis to overturn):** fix every finding about the README, the report generator and the price file; record findings about the measured program as **known limits** in the README instead of patching them. Patching would break "what was measured is what is submitted" or need a third measurement, for defects that change no reported number. The alternative, for Luis: apply the code fixes and measure a third time (about 35 minutes on a quiet Mac).

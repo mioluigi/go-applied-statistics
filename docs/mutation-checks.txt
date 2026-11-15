@@ -71,3 +71,9 @@ Note (after review R2): the goroutine test failed once in about ten full runs un
 with nothing leaked. Cause: it counted goroutines the instant the engine returned, and a worker is still
 counted for a moment after it reports its work done. The test now waits up to two seconds for the count to
 return; the leak mutation above is still caught. The engine was not changed.
+
+Note (2026-11-15): the goroutine-leak test was still intermittent after the first fix. It failed about once
+in six full runs with "3 before, 2 after": the count had gone DOWN, because a goroutine that was alive when
+the "before" count was taken had since ended. Demanding an equal count was the defect in the check. The
+test now fails only on MORE goroutines than before. Verified: 12 full runs under the race detector without
+a failure, and the mutation "each worker leaves a goroutine behind" is still caught (-count=1).

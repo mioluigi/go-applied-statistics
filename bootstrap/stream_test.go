@@ -133,11 +133,13 @@ func TestNoGoroutineOutlivesARun(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// A leak shows as MORE goroutines than before. Fewer is not a leak: a goroutine that an
+	// earlier test or the runtime had running when the count was taken may have ended since.
 	deadline := time.Now().Add(2 * time.Second)
-	for runtime.NumGoroutine() != before && time.Now().Before(deadline) {
+	for runtime.NumGoroutine() > before && time.Now().Before(deadline) {
 		time.Sleep(time.Millisecond)
 	}
-	if after := runtime.NumGoroutine(); after != before {
+	if after := runtime.NumGoroutine(); after > before {
 		t.Errorf("goroutines: %d before, %d after (2 seconds after the last run)", before, after)
 	}
 }
